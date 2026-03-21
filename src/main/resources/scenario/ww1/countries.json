@@ -466,5 +466,17 @@
       "cavalry": 6
     },
     "base_stability": 60
+  },
+  "COL": {
+    "name": "Columbia",
+    "color": "222;187;91",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
   }
 }
