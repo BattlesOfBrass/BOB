@@ -454,5 +454,17 @@
       "cavalry": 6
     },
     "base_stability": 60
+  },
+  "VEN": {
+    "name": "Venezuela",
+    "color": "186;201;171",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
   }
 }
