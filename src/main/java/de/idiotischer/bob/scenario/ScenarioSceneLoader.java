@@ -24,16 +24,16 @@ public class ScenarioSceneLoader {
     private Path scenariopath;
 
     private BufferedImage map;
-    private List<Color> takenColors = new ArrayList<>(); //dreamwastaken oder so
+    private final List<Color> takenColors = new ArrayList<>(); //dreamwastaken oder so
 
     //outsource this and yeah, it's a bit messy bc of testing purposes
     public void load(URI uri) {
         this.takenColors.clear();
 
-        this.scenariopath = Paths.get(uri);
+        this.scenariopath = Paths.get(uri).resolve("ww1");
 
-        this.mapPath = scenariopath.resolve("ww1/map.png");
-        this.takenColorsPath = scenariopath.resolve("ww1/unusable.json"); //hardcoded for niw
+        this.mapPath = scenariopath.resolve("map.png");
+        this.takenColorsPath = scenariopath.resolve("unusable.json"); //hardcoded for niw
 
         if(Files.notExists(this.mapPath)) {
             System.exit(0);
@@ -41,7 +41,7 @@ public class ScenarioSceneLoader {
         }
 
         if(Files.notExists(this.takenColorsPath)) {
-            this.takenColorsPath = scenariopath.resolve("default/unusable.json");
+            this.takenColorsPath = scenariopath.resolve("../default/unusable.json");
 
             if(Files.notExists(this.takenColorsPath)) {
                 System.exit(0);

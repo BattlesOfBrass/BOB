@@ -62,7 +62,7 @@ public class RenderPanel extends JPanel {
         g2.translate(-renderer.getOffsetX(), -renderer.getOffsetY());
         g2.scale(renderer.getZoom(), renderer.getZoom());
 
-        g2.drawImage(frame, 0, 0, null);
+        g2.drawImage(frame, 0, 0, getWidth(),getHeight(),null);
 
         g2.setTransform(oldTransform);
     }

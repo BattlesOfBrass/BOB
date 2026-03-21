@@ -27,10 +27,14 @@ public class MainRenderer extends Thread {
     private double offsetX = 0;
     private double offsetY = 0;
 
+    private boolean lastMenuState = false;
+    private boolean inMenu = false;
+
     private double zoom = 1.0;
     private final JFrame frame = new JFrame("Spirits of Wish");
 
     private final Set<Integer> keysPressed = new HashSet<>();
+    private MenuPanel menuPanel;
 
     static void main(String[] args) {
         new MainRenderer(null).start();
@@ -42,15 +46,17 @@ public class MainRenderer extends Thread {
 
     @Override
     public void start() {
+        inMenu = false;
+
         map = BOB.getInstance().getScenarioSceneLoader().getMap();
         visualBorderOverlay = new BufferedImage(map.getWidth(), map.getHeight(), BufferedImage.TYPE_INT_ARGB);
 
         panel = new RenderPanel(map,this);
+        menuPanel = new MenuPanel(map,this);
 
         frame.setIconImage(BOB.getInstance().createIcon().getImage());
         frame.setBackground(Color.BLACK);
-        frame.add(panel);
-        //frame.add(menu);
+        frame.add(inMenu ? menuPanel : panel);
         frame.pack();
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
@@ -71,11 +77,32 @@ public class MainRenderer extends Thread {
         listen();
 
         while (running) {
-            handleMovement();
 
-            render(map);
+            if (inMenu != lastMenuState) {
+                frame.getContentPane().removeAll();
 
-            panel.repaint();
+                if (inMenu) {
+                    frame.add(menuPanel);
+                    menuPanel.requestFocusInWindow();
+                } else {
+                    frame.add(panel);
+                    panel.requestFocusInWindow();
+                }
+
+                frame.revalidate();
+                frame.repaint();
+
+                lastMenuState = inMenu;
+            }
+
+            if (!inMenu) {
+                handleMovement();
+                renderMap(map);
+                panel.repaint();
+            } else {
+                renderMenu();
+                menuPanel.repaint();
+            }
 
             try {
                 Thread.sleep(16);
@@ -85,7 +112,12 @@ public class MainRenderer extends Thread {
         }
     }
 
+    private void renderMenu() {
+
+    }
+
     public void listen() {
+
         panel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -94,8 +126,11 @@ public class MainRenderer extends Thread {
                 int x = (int) ((e.getX() + offsetX) / zoom);
                 int y = (int) ((e.getY() + offsetY) / zoom);
 
-                if(button == MouseEvent.BUTTON3) handleCountryMenu(x,y);
-                if(button == MouseEvent.BUTTON1) handleTileClick(x,y);
+                if(inMenu) handleMenuClick(x,y);
+                else {
+                    if(button == MouseEvent.BUTTON3) handleCountryMenu(x,y);
+                    if(button == MouseEvent.BUTTON1) handleTileClick(x,y);
+                }
             }
         });
 
@@ -175,11 +210,14 @@ public class MainRenderer extends Thread {
         //        });
     }
 
+    private void handleMenuClick(int x, int y) {
+
+    }
+
     private void handleMovement() {
         int dx = 0;
         int dy = 0;
         int speed = 5;
-
 
         if(keysPressed.contains(KeyEvent.VK_SHIFT)) speed += 5;
 
@@ -221,7 +259,7 @@ public class MainRenderer extends Thread {
         //FloodFill.fillBorder(visualBorderOverlay, map, x,y, Color.DARK_GRAY);
     }
 
-    private void render(BufferedImage map) {
+    private void renderMap(BufferedImage map) {
         BufferedImage frameBuffer = new BufferedImage(
                 map.getWidth(),
                 map.getHeight(),
@@ -265,7 +303,7 @@ public class MainRenderer extends Thread {
         System.exit(0);
     }
 
-    public RenderPanel getPanel() {
+    public RenderPanel getGamePanel() {
         return panel;
     }
 
