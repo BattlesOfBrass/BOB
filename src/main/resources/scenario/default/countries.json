@@ -1,0 +1,50 @@
+{
+  "GER": {
+    "name": "Germany",
+    "color": "102;102;102",
+    "capital": "",
+    "ideology": "none_aligned",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "FRA": {
+    "name": "France",
+    "color": "61;117;232",
+    "capital": "",
+    "ideology": "none_aligned",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "ENG": {
+    "name": "United Kingdom",
+    "color": "200;56;93",
+    "capital": "",
+    "ideology": "none_aligned",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "POL": {
+    "name": "Poland",
+    "color": "197;92;106",
+    "capital": "",
+    "ideology": "none_aligned",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  }
+}

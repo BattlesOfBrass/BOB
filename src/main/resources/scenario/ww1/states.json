@@ -1,0 +1,14 @@
+{
+  "state_1": {
+    "name": "memel",
+    "x": 642,
+    "y": 115,
+    "controller": "GER"
+  },
+  "state_2": {
+    "name": "koenigsberg",
+    "x": 641,
+    "y": 118,
+    "controller": "GER"
+  }
+}

@@ -1,0 +1,93 @@
+package de.idiotischer.bob.networking.render;
+
+import de.idiotischer.bob.networking.render.menu.Menu;
+import de.idiotischer.bob.networking.render.menu.impl.DefaultMenu;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
+
+public class RenderPanel extends JPanel {
+
+    private final MainRenderer renderer;
+    private final Menu menu;
+    private BufferedImage frame;
+
+    int curvature = 24;
+
+    public RenderPanel(BufferedImage map, MainRenderer renderer) {
+        setFrame(map);
+
+        this.renderer = renderer;
+        this.menu = new DefaultMenu(renderer);
+
+        this.setBackground(Color.BLACK);
+        this.setFocusable(true);
+        this.requestFocusInWindow();
+        this.setPreferredSize(new Dimension(frame.getWidth(), frame.getHeight()));
+    }
+
+    public void setFrame(BufferedImage frame) {
+        this.frame = frame;
+    }
+
+    //@Override
+    //public Dimension getPreferredSize() {
+    //    return new Dimension(frame.getWidth(), frame.getHeight());
+    //}
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+
+        if (frame == null) return;
+
+        Graphics2D g2 = (Graphics2D) g;
+
+        handleZoom(g2);
+
+        handleDragOverlay(g2);
+
+        //wegen z als letztes
+        menu.paint(g);
+    }
+
+    private void handleZoom(Graphics2D g2) {
+        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+                RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+
+        AffineTransform oldTransform = g2.getTransform();
+
+        g2.translate(-renderer.getOffsetX(), -renderer.getOffsetY());
+        g2.scale(renderer.getZoom(), renderer.getZoom());
+
+        g2.drawImage(frame, 0, 0, null);
+
+        g2.setTransform(oldTransform);
+    }
+
+    //TODO: gucken ob curvature sinn macht weil bei kleinen selections ist es inakkurat
+    private void handleDragOverlay(Graphics2D g2) {
+        Point start = renderer.getDragStart();
+        Point end = renderer.getDragEnd();
+
+        if (start != null && end != null) {
+            int x = Math.min(start.x, end.x);
+            int y = Math.min(start.y, end.y);
+            int w = Math.abs(start.x - end.x);
+            int h = Math.abs(start.y - end.y);
+
+            g2.setColor(new Color(255, 255, 255, 50));
+            g2.fillRoundRect(x, y, w, h,curvature, curvature);
+
+            g2.setColor(Color.WHITE);
+            g2.setStroke(new BasicStroke(2));
+            g2.drawRoundRect(x, y, w, h,curvature, curvature);
+        }
+    }
+
+    public BufferedImage getFrame() {
+        return frame;
+    }
+}
