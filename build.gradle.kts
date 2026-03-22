@@ -38,7 +38,8 @@ tasks.build {
 }
 
 tasks.shadowJar {
-    configurations = listOf(project.configurations.runtimeClasspath.get())
+    //configurations = listOf(project.configurations.runtimeClasspath.get())
+    configurations = listOf(project.configurations.getByName("runtimeClasspath"))
 
     archiveBaseName.set("BOB-main")
     archiveClassifier.set("")
