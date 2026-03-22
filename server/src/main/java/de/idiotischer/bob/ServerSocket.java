@@ -4,6 +4,8 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonReader;
+import de.idiotischer.bob.util.FileUtil;
+import de.idiotischer.bob.util.HostUtil;
 
 import java.io.FileReader;
 import java.net.InetSocketAddress;
@@ -24,9 +26,7 @@ public class ServerSocket {
     //immer erster ist der peer bzw hoster
     private final Set<AsynchronousSocketChannel> clients = Collections.synchronizedSet(new HashSet<>());
 
-    private final Gson gson = new Gson();
-
-    private int port = 2776;
+    private HostUtil hostUtil = new HostUtil();
 
     public ServerSocket() {
         loadDetails();
@@ -38,7 +38,7 @@ public class ServerSocket {
             //channel.setOption(StandardSocketOptions.SO_KEEPALIVE, true);
             //channel.setOption(StandardSocketOptions.TCP_NODELAY, true);
 
-            channel.bind(new InetSocketAddress("localhost", port));
+            channel.bind(new InetSocketAddress("localhost", hostUtil.getLocalPort()));
 
             startAccepting();
         } catch(Exception e) {
@@ -111,23 +111,7 @@ public class ServerSocket {
     }
 
     public void loadDetails() {
-        try (JsonReader reader = new JsonReader(new FileReader(Server.getInstance().getCore().getConfigs().resolve("host.json").toFile()))) {
-            JsonElement root = gson.fromJson(reader, JsonElement.class);
-
-            root.getAsJsonObject().entrySet().forEach(entry -> {
-                JsonObject countryElement = entry.getValue().getAsJsonObject();
-
-                if(entry.getKey().equals("local")) {
-                    port = countryElement.get("localPort").getAsInt();
-                }
-            });
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public int getPort() {
-        return port;
+        hostUtil.reload();
     }
 
     public AsynchronousServerSocketChannel getChannel() {

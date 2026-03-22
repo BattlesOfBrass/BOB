@@ -2,6 +2,7 @@ package de.idiotischer.bob;
 
 import de.idiotischer.bob.listener.PacketEvents;
 import de.idiotischer.bob.networking.communication.SendTool;
+import de.idiotischer.bob.util.FileUtil;
 
 public class Server {
     private static Server instance;
@@ -18,10 +19,13 @@ public class Server {
 
         registerListeners();
 
+
         init();
     }
 
     public void init() {
+        FileUtil.replaceIfNotExisting(this.getClass().getClassLoader());
+
         sendTool = new SendTool(core);
         serverSocket = new ServerSocket();
     }

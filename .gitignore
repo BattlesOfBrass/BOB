@@ -6,6 +6,7 @@ build/
 .kotlin
 
 .idea
+/run
 
 ### IntelliJ IDEA ###
 .idea/modules.xml

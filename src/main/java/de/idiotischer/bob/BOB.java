@@ -1,27 +1,27 @@
 package de.idiotischer.bob;
 
-import de.idiotischer.bob.country.Countries;
+import de.idiotischer.bob.country.CountryManager;
 import de.idiotischer.bob.debug.Debugger;
 import de.idiotischer.bob.networking.ClientSocket;
 import de.idiotischer.bob.networking.communication.SendTool;
 import de.idiotischer.bob.player.LocalPlayer;
 import de.idiotischer.bob.player.Player;
 import de.idiotischer.bob.render.MainRenderer;
+import de.idiotischer.bob.scenario.ScenarioManager;
 import de.idiotischer.bob.scenario.ScenarioSceneLoader;
 import de.idiotischer.bob.state.StateManager;
+import de.idiotischer.bob.util.FileUtil;
+import de.idiotischer.bob.util.MainConfigUtil;
 
 import javax.swing.*;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Objects;
 
 public class BOB {
     private static BOB instance;
 
-    private Countries countries;
+    private CountryManager countries;
 
     private MainRenderer mapRenderer;
 
@@ -31,8 +31,6 @@ public class BOB {
 
     private Debugger debugger;
 
-    private Path configs;
-
     private final ScenarioSceneLoader scenarioSceneLoader = new ScenarioSceneLoader();
 
     private ClientSocket client;
@@ -40,6 +38,10 @@ public class BOB {
     private SharedCore sharedCore;
 
     private SendTool sendTool;
+
+    private ScenarioManager scenarioManager;
+
+    private MainConfigUtil config;
 
     private boolean isHost = false;
 
@@ -50,33 +52,22 @@ public class BOB {
     public BOB() {
         BOB.instance = this;
 
-        try {
-            configs = Paths.get(Objects.requireNonNull(getClass()
-                    .getClassLoader()
-                    .getResource("config/")).toURI());
-
-            URI testURI = Objects.requireNonNull(getClass()
-                    .getClassLoader()
-                    .getResource("scenario/")).toURI();
-
-            scenarioSceneLoader.load(testURI);
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-
-            System.exit(1);
-
-            return;
-        }
-
+        FileUtil.replaceIfNotExistingAsync(this.getClass().getClassLoader()).join();
         init();
     }
 
     public void init() {
+        config = new MainConfigUtil();
         this.sharedCore = new SharedCore();
 
         this.sendTool = new SendTool(sharedCore);
 
-        this.countries = new Countries();
+        this.scenarioManager = new ScenarioManager();
+
+        this.scenarioSceneLoader.load(scenarioManager.getRandom());
+
+        this.countries = new CountryManager();
+
         this.stateManager = new StateManager();
 
         this.client = new ClientSocket();
@@ -85,24 +76,24 @@ public class BOB {
 
         this.mapRenderer = new MainRenderer(player);
 
-        debugger = new Debugger();
+        this.debugger = new Debugger();
 
         //davor (vor start) ensuren dass der scenescenarioloader halt geladen hat
-        if (mapRenderer != null) {
-            mapRenderer.start();
-        }
+        this.mapRenderer.start();
     }
 
     public ImageIcon createIcon() {
-        URL imgURL = Objects.requireNonNull(getClass()
-                .getClassLoader()
-                .getResource("icons/icon.png"));
-        if(imgURL != null)
-            return new ImageIcon(imgURL);
-        else
-            return null;
+        URL imgURL;
+
+        try {
+            imgURL = FileUtil.getIconPath().toUri().toURL();
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
+
+        return new ImageIcon(imgURL);
     }
-    public Countries getCountries() {
+    public CountryManager getCountries() {
         return countries;
     }
 
@@ -113,6 +104,7 @@ public class BOB {
     public MainRenderer getMapRenderer() {
         return mapRenderer;
     }
+
 
     public ScenarioSceneLoader getScenarioSceneLoader() {
         return scenarioSceneLoader;
@@ -130,14 +122,6 @@ public class BOB {
         return sendTool;
     }
 
-    public Path getConfigPath() {
-        return configs;
-    }
-
-    public void setConfigPath(Path configPath) {
-        this.configs = configPath;
-    }
-
     public Debugger getDebugger() {
         return debugger;
     }
@@ -153,4 +137,17 @@ public class BOB {
     public boolean save() {
         return true;
     }
+
+    public boolean isDebug() {
+        return config.isDebug();
+    }
+
+    public boolean isHost() {
+        return isHost;
+    }
+
+    public ScenarioManager getScenarioManager() {
+        return scenarioManager;
+    }
+
 }

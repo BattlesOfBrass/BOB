@@ -1,12 +1,9 @@
 package de.idiotischer.bob.networking;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.stream.JsonReader;
 import de.idiotischer.bob.BOB;
 import de.idiotischer.bob.networking.packet.impl.PingPacket;
+import de.idiotischer.bob.util.HostUtil;
 
-import java.io.FileReader;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousChannelGroup;
@@ -17,17 +14,12 @@ public class ClientSocket {
     private AsynchronousChannelGroup workerGroup;
     private AsynchronousSocketChannel channel;
 
-    private int port = 3995;
-    private int remotePort = 2776;
-    private String host = "127.0.0.1";
-    private boolean multiplayerEnabled = false;
-    private boolean useSpecifications = false;
-
+    private final HostUtil hostUtil = new HostUtil();
 
     public ClientSocket() {
         loadDetails();
 
-        if(!multiplayerEnabled) return;
+        if(!hostUtil.isMultiplayerEnabled()) return;
 
         try {
             workerGroup = AsynchronousChannelGroup.withFixedThreadPool(3, Thread::new);
@@ -36,9 +28,9 @@ public class ClientSocket {
             //channel.setOption(StandardSocketOptions.SO_KEEPALIVE, true);
             //channel.setOption(StandardSocketOptions.TCP_NODELAY, true);
 
-            if(useSpecifications) channel.bind(new InetSocketAddress("localhost", port));
+            if(hostUtil.isUseSpecifications()) channel.bind(new InetSocketAddress("localhost", hostUtil.getLocalPort()));
 
-            channel.connect(new InetSocketAddress(host, remotePort), null, new CompletionHandler<Void, Void>() {
+            channel.connect(new InetSocketAddress(hostUtil.getHost(), hostUtil.getRemotePort()), null, new CompletionHandler<Void, Void>() {
                 @Override
                 public void completed(Void result, Void attachment) {
                     System.out.println("Connected to server!");
@@ -97,37 +89,19 @@ public class ClientSocket {
     }
 
     public void loadDetails() {
-        try (JsonReader reader = new JsonReader(new FileReader(BOB.getInstance().getSharedCore().getConfigs().resolve("host.json").toFile()))) {
-            JsonElement root = BOB.getInstance().getScenarioSceneLoader().getGson().fromJson(reader, JsonElement.class);
-
-            root.getAsJsonObject().entrySet().forEach(entry -> {
-                JsonObject countryElement = entry.getValue().getAsJsonObject();
-
-                if(entry.getKey().equals("remote")) {
-                    remotePort = countryElement.get("remotePort").getAsInt();
-                    host = countryElement.get("remoteHost").getAsString();
-                }
-                if(entry.getKey().equals("local")) {
-                    port = countryElement.get("localPort").getAsInt();
-                    useSpecifications = countryElement.get("useSpecifications").getAsBoolean();
-                    multiplayerEnabled = countryElement.get("multiplayerEnabled").getAsBoolean();
-                }
-            });
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
+        hostUtil.reload();
     }
 
     public int getPort() {
-        return port;
+        return hostUtil.getLocalPort();
     }
 
     public int getRemotePort() {
-        return remotePort;
+        return hostUtil.getRemotePort();
     }
 
     public String getHost() {
-        return host;
+        return hostUtil.getHost();
     }
 
     public AsynchronousSocketChannel getChannel() {

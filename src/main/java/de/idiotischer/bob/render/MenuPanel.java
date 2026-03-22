@@ -33,6 +33,13 @@ public class MenuPanel extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
+        JButton button = new JButton();
+        button.paintComponents(g);
+
+        Graphics2D g2 = (Graphics2D) g;
+
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
         g.drawImage(frame, 0, 0, getWidth(),getHeight(),this);
 
         g.setColor(new Color(255, 255, 255, 70));

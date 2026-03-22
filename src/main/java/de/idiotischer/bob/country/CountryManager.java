@@ -4,31 +4,29 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonReader;
 import de.idiotischer.bob.BOB;
+import de.idiotischer.bob.SharedCore;
 import de.idiotischer.bob.state.State;
 
 import java.awt.*;
-import java.io.FileReader;
-import java.nio.file.Path;
+import java.nio.file.Files;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
-public class Countries {
+public class CountryManager {
 
     private final Set<Country> countrySet = new HashSet<>();
 
-    public Countries() {
+    public CountryManager() {
         reload();
     }
 
-    private void reload() {
+    public void reload() {
         countrySet.clear();
 
-        Path path = BOB.getInstance().getScenarioSceneLoader().getScenariopath();
-
-        try (JsonReader reader = new JsonReader(new FileReader(path.resolve("countries.json").toFile()))) {
-            JsonElement root = BOB.getInstance().getScenarioSceneLoader().getGson().fromJson(reader, JsonElement.class);
+        try (JsonReader reader = new JsonReader(Files.newBufferedReader(BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getCountryConfig()))) {
+            JsonElement root = SharedCore.GSON.fromJson(reader, JsonElement.class);
 
             root.getAsJsonObject().entrySet().forEach(entry -> {
                 String countryAbbreviation = entry.getKey();
@@ -37,11 +35,17 @@ public class Countries {
 
                 String name = countryElement.get("name").getAsString();
 
+                boolean majorAtStart = false;
+
+                if(countryElement.has("majorAtStart") && !countryElement.get("majorAtStart").isJsonNull()) {
+                    majorAtStart = countryElement.get("majorAtStart").getAsBoolean();
+                }
+
                 String[] colorStrings = countryElement.get("color").getAsString().split(";");
 
                 Color color = new Color(Integer.parseInt(colorStrings[0]), Integer.parseInt(colorStrings[1]), Integer.parseInt(colorStrings[2]));
 
-                Country country = new Country(countryAbbreviation.toUpperCase(), name, color);
+                Country country = new Country(countryAbbreviation.toUpperCase(), name, color, majorAtStart);
 
                 registerCountry(country);
 
@@ -72,6 +76,14 @@ public class Countries {
 
     public Set<Country> getCountrySet() {
         return countrySet;
+    }
+
+    public List<Country> getMajors() {
+        return getCountrySet().stream().filter(Country::isMajor).toList();
+    }
+
+    public List<Country> getMinors() {
+        return getCountrySet().stream().filter(c -> !c.isMajor()).toList();
     }
 
     public void splitCountry(Country country) {

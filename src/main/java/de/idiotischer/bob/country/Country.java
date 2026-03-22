@@ -11,11 +11,13 @@ public class Country {
     private final String name;
     private final Color color;
     private final String abbreviation;
+    private boolean major = false;
 
-    public Country(String abbreviation, String name, Color color) {
+    public Country(String abbreviation, String name, Color color, boolean major) {
         this.abbreviation = abbreviation;
         this.name = name;
         this.color = color;
+        this.major = major;
     }
 
     public Color countryColor() {
@@ -58,6 +60,14 @@ public class Country {
 
     public boolean isAutonomous() {
         return true;
+    }
+
+    public boolean isMajor() {
+        return major;
+    }
+
+    public void setMajor(boolean major) {
+        this.major = major;
     }
 
     public Set<Country> getPuppets() {

@@ -9,7 +9,8 @@
       "motorized": 12,
       "cavalry": 6
     },
-    "base_stability": 60
+    "base_stability": 60,
+    "major": true
   },
   "FRA": {
     "name": "France",
@@ -21,7 +22,8 @@
       "motorized": 12,
       "cavalry": 6
     },
-    "base_stability": 60
+    "base_stability": 60,
+    "major": true
   },
   "ENG": {
     "name": "United Kingdom",
@@ -33,7 +35,8 @@
       "motorized": 12,
       "cavalry": 6
     },
-    "base_stability": 60
+    "base_stability": 60,
+    "major": true
   },
   "SWI": {
     "name": "Switzerland",
@@ -57,7 +60,8 @@
       "motorized": 12,
       "cavalry": 6
     },
-    "base_stability": 60
+    "base_stability": 60,
+    "major": true
   },
   "BEL": {
     "name": "Belgium",
@@ -177,7 +181,8 @@
       "motorized": 12,
       "cavalry": 6
     },
-    "base_stability": 60
+    "base_stability": 60,
+    "major": true
   },
   "OTT": {
     "name": "Ottoman Empire",
@@ -333,7 +338,8 @@
       "motorized": 12,
       "cavalry": 6
     },
-    "base_stability": 60
+    "base_stability": 60,
+    "major": true
   },
   "MEX": {
     "name": "Mexico",

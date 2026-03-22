@@ -4,7 +4,7 @@
     "color": "102;102;102",
     "capital": "",
     "ideology": "none_aligned",
-    "leader": "",
+    "leader": "Wilhelm II",
     "startingDivisions": {
       "motorized": 12,
       "cavalry": 6
@@ -15,7 +15,7 @@
     "name": "France",
     "color": "61;117;232",
     "capital": "",
-    "ideology": "none_aligned",
+    "ideology": "democratic",
     "leader": "",
     "startingDivisions": {
       "motorized": 12,
@@ -27,7 +27,7 @@
     "name": "United Kingdom",
     "color": "200;56;93",
     "capital": "",
-    "ideology": "none_aligned",
+    "ideology": "democratic",
     "leader": "",
     "startingDivisions": {
       "motorized": 12,
@@ -35,11 +35,443 @@
     },
     "base_stability": 60
   },
-  "POL": {
-    "name": "Poland",
-    "color": "197;92;106",
+  "SWI": {
+    "name": "Switzerland",
+    "color": "224;5;5",
     "capital": "",
-    "ideology": "none_aligned",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "AUS": {
+    "name": "Austria-Hungary",
+    "color": "233;234;227",
+    "capital": "",
+    "ideology": "non_aligned",
+    "leader": "Franz Joseph I",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "BEL": {
+    "name": "Belgium",
+    "color": "193;171;8",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "NET": {
+    "name": "Netherlands",
+    "color": "199;135;73",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "LUX": {
+    "name": "Luxemburg",
+    "color": "85;228;233",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "DEN": {
+    "name": "Denmark",
+    "color": "153;116;93",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "ITA": {
+    "name": "Italy",
+    "color": "86;165;82",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "SPA": {
+    "name": "Spain",
+    "color": "232;143;72",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "POR": {
+    "name": "Portugal",
+    "color": "0;102;122",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "NOR": {
+    "name": "Norway",
+    "color": "111;71;71",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "SWE": {
+    "name": "Sweden",
+    "color": "36;132;247",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "RUS": {
+    "name": "Russia",
+    "color": "74;99;41",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "OTT": {
+    "name": "Ottoman Empire",
+    "color": "162;20;0",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "BUL": {
+    "name": "Bulgaria",
+    "color": "66;113;69",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "ALB": {
+    "name": "Albania",
+    "color": "173;83;114",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "ROM": {
+    "name": "Romania",
+    "color": "255;255;119",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "SER": {
+    "name": "Serbia",
+    "color": "13;70;130",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "MON": {
+    "name": "Montenegro",
+    "color": "77;89;105",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "GRE": {
+    "name": "Greece",
+    "color": "124;166;212",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "LIB": {
+    "name": "Liberia",
+    "color": "81;61;118",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "ETH": {
+    "name": "Ethiopia",
+    "color": "190;176;215",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "ASS": {
+    "name": "Aussa",
+    "color": "130;72;96",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "SAF": {
+    "name": "South Africa",
+    "color": "102;30;52",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "CAN": {
+    "name": "Canada",
+    "color": "119;48;39",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "USA": {
+    "name": "United States of America",
+    "color": "20;133;237",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "MEX": {
+    "name": "Mexico",
+    "color": "104;151;82",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "CUB": {
+    "name": "Cuba",
+    "color": "151;68;176",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "GUA": {
+    "name": "Guatemala",
+    "color": "72;48;109",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "ELS": {
+    "name": "El Salvador",
+    "color": "190;176;215",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "HON": {
+    "name": "Honduras",
+    "color": "153;176;74",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "NIC": {
+    "name": "Nicaragua",
+    "color": "145;178;190",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "COS": {
+    "name": "Costa Rica",
+    "color": "167;140;42",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "PAN": {
+    "name": "Panama",
+    "color": "60;53;88",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "HAI": {
+    "name": "Haiti",
+    "color": "165;116;111",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 1200,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "DOM": {
+    "name": "Dominica",
+    "color": "114;136;119",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "VEN": {
+    "name": "Venezuela",
+    "color": "186;201;171",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "COL": {
+    "name": "Columbia",
+    "color": "222;187;91",
+    "capital": "",
+    "ideology": "democratic",
     "leader": "",
     "startingDivisions": {
       "motorized": 12,

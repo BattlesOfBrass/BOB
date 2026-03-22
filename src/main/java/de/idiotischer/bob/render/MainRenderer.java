@@ -31,7 +31,7 @@ public class MainRenderer extends Thread {
     private boolean inMenu = false;
 
     private double zoom = 1.0;
-    private final JFrame frame = new JFrame("Spirits of Wish");
+    private final JFrame frame = new JFrame("Battles of Brass");
 
     private final Set<Integer> keysPressed = new HashSet<>();
     private MenuPanel menuPanel;
@@ -72,6 +72,14 @@ public class MainRenderer extends Thread {
         super.start();
     }
 
+    public void setMainMenu(boolean mm) {
+        this.inMenu = mm;
+    }
+
+    public MenuPanel getMenuPanel() {
+        return menuPanel;
+    }
+
     @Override
     public void run() {
         listen();
@@ -82,6 +90,7 @@ public class MainRenderer extends Thread {
                 frame.getContentPane().removeAll();
 
                 if (inMenu) {
+                    BOB.getInstance().getCountries().reload();
                     frame.add(menuPanel);
                     menuPanel.requestFocusInWindow();
                 } else {
@@ -96,7 +105,7 @@ public class MainRenderer extends Thread {
             }
 
             if (!inMenu) {
-                handleMovement();
+                if(!panel.isPaused()) handleMovement();
                 renderMap(map);
                 panel.repaint();
             } else {
@@ -126,17 +135,27 @@ public class MainRenderer extends Thread {
                 int x = (int) ((e.getX() + offsetX) / zoom);
                 int y = (int) ((e.getY() + offsetY) / zoom);
 
-                if(inMenu) handleMenuClick(x,y);
+                if(inMenu || panel.isEscMenu()) handleMenuClick(e,x,y);
                 else {
                     if(button == MouseEvent.BUTTON3) handleCountryMenu(x,y);
                     if(button == MouseEvent.BUTTON1) handleTileClick(x,y);
                 }
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                int x = (int) ((e.getX() + offsetX) / zoom);
+                int y = (int) ((e.getY() + offsetY) / zoom);
+
+                if(inMenu || panel.isEscMenu()) handleMenuRelease(e,x,y);
             }
         });
 
         panel.addMouseWheelListener(new MouseAdapter() {
             @Override
             public void mouseWheelMoved(MouseWheelEvent e) {
+                if(panel.isEscMenu()) return;
+
                 if (e.getScrollType() != MouseWheelEvent.WHEEL_UNIT_SCROLL) return;
 
                 double oldZoom = zoom;
@@ -180,12 +199,24 @@ public class MainRenderer extends Thread {
 
                 panel.repaint();
             }
+
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                int x = (int) ((e.getX() + offsetX) / zoom);
+                int y = (int) ((e.getY() + offsetY) / zoom);
+
+                if(inMenu || panel.isEscMenu()) handleMenuMove(e,x,y);
+            }
         });
 
         panel.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
                 keysPressed.add(e.getKeyCode());
+
+                if(keysPressed.contains(KeyEvent.VK_ESCAPE)) {
+                    panel.setEscMenu(!panel.isEscMenu());
+                }
             }
 
             @Override
@@ -210,8 +241,16 @@ public class MainRenderer extends Thread {
         //        });
     }
 
-    private void handleMenuClick(int x, int y) {
+    private void handleMenuClick(MouseEvent e, int x, int y) {
+        panel.onClick(e,x,y);
+    }
 
+    private void handleMenuRelease(MouseEvent e, int x, int y) {
+        panel.onRelease(e,x,y);
+    }
+
+    private void handleMenuMove(MouseEvent e, int x, int y) {
+        panel.onMove(e,x,y);
     }
 
     private void handleMovement() {
@@ -229,12 +268,19 @@ public class MainRenderer extends Thread {
         move(dx, dy);
     }
 
+    public Set<Integer> getKeysPressed() {
+        return keysPressed;
+    }
+
     public void move(int xMove, int yMove) {
         offsetX += xMove;
         offsetY += yMove;
     }
 
     private void handleCountryMenu(int x, int y) {
+
+        if(panel.isPaused()) return;
+
         Color oldColor = new Color(map.getRGB(x, y), true);
 
         if(BOB.getInstance().getScenarioSceneLoader().getTakenColors().contains(oldColor)) return;
@@ -244,6 +290,8 @@ public class MainRenderer extends Thread {
 
     private void handleTileClick(int x, int y) {
         //IO.println("Click at " + x + ", " + y);
+
+        if(panel.isPaused()) return;
 
         if (x > 0 && y > 0 && x < map.getWidth() && y < map.getHeight()) {
             Color oldColor = new Color(map.getRGB(x, y), true);
