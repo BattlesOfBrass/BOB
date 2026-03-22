@@ -23,11 +23,8 @@ dependencies {
 }
 
 tasks.shadowJar {
-    // Only embed shared classes
+    // (shared + gson + craftscore)
     configurations = listOf(project.configurations.getByName("runtimeClasspath"))
-    dependencies {
-        include(project(":shared"))
-    }
     archiveClassifier.set("")
     archiveBaseName.set("BOB-main")
     manifest {
