@@ -1,4 +1,4 @@
-package de.idiotischer.bob.render.menu.menuComponent;
+package de.idiotischer.bob.render.menu.components;
 
 import de.idiotischer.bob.BOB;
 import de.idiotischer.bob.render.menu.Component;
@@ -20,11 +20,16 @@ public class ButtonComp implements Component {
     private final int borderWidth;
     private final Color borderColor;
     private final Color borderColorWhenHover;
+    private final boolean unselectWhenUnhover;
 
     private boolean hovered = false;
     private boolean pressed = false;
 
-    public ButtonComp(String text, Color textColor, Color borderColor, int x, int y, int width, int height, int arcWidth, int arcHeight, int borderWidth, Color borderColorWhenHover, Color color, boolean centered, Consumer<ButtonComp> onClick) {
+    public static long lastClickTime = 0;
+    private long CLICK_THRESHOLD = 200;
+    private JPanel panel;
+
+    public ButtonComp(String text, Color textColor, Color borderColor, boolean unselectWhenUnhover, int x, int y, int width, int height, int arcWidth, int arcHeight, int borderWidth, Color borderColorWhenHover, Color color, boolean centered, Consumer<ButtonComp> onClick) {
         this.text = text;
         this.bounds = new Rectangle(x, y, width, height);
         this.bgColor = color;
@@ -36,6 +41,11 @@ public class ButtonComp implements Component {
         this.borderWidth = borderWidth;
         this.borderColor = borderColor;
         this.borderColorWhenHover = borderColorWhenHover;
+        this.unselectWhenUnhover = unselectWhenUnhover;
+    }
+
+    public void setPanel(JPanel pl) {
+        this.panel = pl;
     }
 
     @Override
@@ -46,13 +56,12 @@ public class ButtonComp implements Component {
         //g2.setColor(displayColor);
         //g2.fillRoundRect(bounds.x, bounds.y, bounds.width, bounds.height, arcWidth, arcHeight);
 
-        JPanel pl = BOB.getInstance().getMapRenderer().getGamePanel();
+        JPanel pl = panel != null ? panel : BOB.getInstance().getMapRenderer().getGamePanel();
 
         int x = centered ? pl.getWidth() / 2 - (bounds.width / 2) : bounds.x;
         int y = centered ? pl.getHeight() / 2 - (bounds.height / 2) : bounds.y;
         x += bounds.x;
         y -= bounds.y;
-
 
         Color displayColor = bgColor;
         if (pressed) {
@@ -89,6 +98,13 @@ public class ButtonComp implements Component {
     @Override
     public void mouseClick(MouseEvent e, int x, int y) {
         if (getActualBounds().contains(e.getPoint()) && onClick != null) {
+            long currentTime = System.currentTimeMillis();
+
+            if (currentTime - lastClickTime < CLICK_THRESHOLD) {
+                return;
+            }
+
+            lastClickTime = currentTime;
             onClick.accept(this);
         }
         pressed = false;
@@ -109,7 +125,7 @@ public class ButtonComp implements Component {
     }
 
     private Rectangle getActualBounds() {
-        JPanel pl = BOB.getInstance().getMapRenderer().getGamePanel();
+        JPanel pl = panel != null ? panel : BOB.getInstance().getMapRenderer().getGamePanel();
         int x = centered ? pl.getWidth() / 2 - (bounds.width / 2) : bounds.x;
         int y = centered ? pl.getHeight() / 2 - (bounds.height / 2) : bounds.y;
         x += bounds.x;

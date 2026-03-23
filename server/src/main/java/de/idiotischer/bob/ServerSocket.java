@@ -1,13 +1,7 @@
 package de.idiotischer.bob;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.stream.JsonReader;
-import de.idiotischer.bob.util.FileUtil;
 import de.idiotischer.bob.util.HostUtil;
 
-import java.io.FileReader;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousChannelGroup;
@@ -18,6 +12,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+//server PW adden
 public class ServerSocket {
 
     private AsynchronousChannelGroup workerGroup;

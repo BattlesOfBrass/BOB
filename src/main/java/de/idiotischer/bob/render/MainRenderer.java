@@ -3,12 +3,15 @@ package de.idiotischer.bob.render;
 import de.idiotischer.bob.BOB;
 import de.idiotischer.bob.map.FloodFill;
 import de.idiotischer.bob.player.Player;
+import de.idiotischer.bob.render.menu.Panel;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class MainRenderer extends Thread {
@@ -16,7 +19,7 @@ public class MainRenderer extends Thread {
     private final Player player;
     private boolean running = true;
 
-    private RenderPanel panel;
+    private RenderPanel renderPanel;
     private BufferedImage map;
     private BufferedImage visualBorderOverlay;
     private BufferedImage icon;
@@ -36,9 +39,8 @@ public class MainRenderer extends Thread {
     private final Set<Integer> keysPressed = new HashSet<>();
     private MenuPanel menuPanel;
 
-    static void main(String[] args) {
-        new MainRenderer(null).start();
-    }
+    List<Panel> panels = new ArrayList<>();
+    private boolean wasAtMinZoom;
 
     public MainRenderer(Player player) {
         this.player = player;
@@ -51,25 +53,47 @@ public class MainRenderer extends Thread {
         map = BOB.getInstance().getScenarioSceneLoader().getMap();
         visualBorderOverlay = new BufferedImage(map.getWidth(), map.getHeight(), BufferedImage.TYPE_INT_ARGB);
 
-        panel = new RenderPanel(map,this);
+        renderPanel = new RenderPanel(map,this);
         menuPanel = new MenuPanel(map,this);
+
+        panels.add(renderPanel);
+        panels.add(menuPanel);
 
         frame.setIconImage(BOB.getInstance().createIcon().getImage());
         frame.setBackground(Color.BLACK);
-        frame.add(inMenu ? menuPanel : panel);
+        frame.add(inMenu ? menuPanel : renderPanel);
         frame.pack();
+        //frame.setLocationRelativeTo(renderPanel);
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
-        frame.addWindowListener(new WindowAdapter() {
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        //frame.setIconImage(icon);
+        frame.setIgnoreRepaint(true); // TODO: check if it causes bugs or fixes window flicker on windows
+
+        frame.addComponentListener(new FrameListen() {
             @Override
-            public void windowClosing(WindowEvent e) {
-                shutdown();
+            public void componentResized(ComponentEvent e) {
+                SwingUtilities.invokeLater(() -> {
+                    double newMinZoom = getMinZoom();
+
+                    if (wasAtMinZoom) {
+                        zoom = newMinZoom;
+
+                        offsetX = 0;
+                        offsetY = 0;
+                    } else {
+                        zoom = Math.max(newMinZoom, zoom);
+                    }
+
+                    clampOffsets();
+                    //renderPanel.repaint(); makes everything bug when going back to smaller window
+                });
             }
         });
 
-        //frame.setIconImage(icon);
-
         super.start();
+
+        frame.setExtendedState(Frame.MAXIMIZED_BOTH);
     }
 
     public void setMainMenu(boolean mm) {
@@ -91,11 +115,20 @@ public class MainRenderer extends Thread {
 
                 if (inMenu) {
                     BOB.getInstance().getCountries().reload();
+
+                    menuPanel.setVisible(true);
+                    renderPanel.setVisible(false);
+
                     frame.add(menuPanel);
+
                     menuPanel.requestFocusInWindow();
                 } else {
-                    frame.add(panel);
-                    panel.requestFocusInWindow();
+                    menuPanel.setVisible(false);
+                    renderPanel.setVisible(true);
+
+                    frame.add(renderPanel);
+
+                    renderPanel.requestFocusInWindow();
                 }
 
                 frame.revalidate();
@@ -105,9 +138,9 @@ public class MainRenderer extends Thread {
             }
 
             if (!inMenu) {
-                if(!panel.isPaused()) handleMovement();
+                if(!renderPanel.isPaused()) handleMovement();
                 renderMap(map);
-                panel.repaint();
+                renderPanel.repaint();
             } else {
                 renderMenu();
                 menuPanel.repaint();
@@ -125,107 +158,145 @@ public class MainRenderer extends Thread {
 
     }
 
+    public JFrame getFrame() {
+        return frame;
+    }
+
     public void listen() {
 
-        panel.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                int button = e.getButton();
+        for(Panel p : panels) {
+            if(p instanceof JPanel panel) {
+                panel.addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mouseClicked(MouseEvent e) {
+                        int button = e.getButton();
 
-                int x = (int) ((e.getX() + offsetX) / zoom);
-                int y = (int) ((e.getY() + offsetY) / zoom);
+                        //TODO: fix wrong x and y when maximizing or sqashing tab
+                        int x = (int) ((e.getX() + offsetX) / zoom);
+                        int y = (int) ((e.getY() + offsetY) / zoom);
 
-                if(inMenu || panel.isEscMenu()) handleMenuClick(e,x,y);
-                else {
-                    if(button == MouseEvent.BUTTON3) handleCountryMenu(x,y);
-                    if(button == MouseEvent.BUTTON1) handleTileClick(x,y);
-                }
+                        if(panel instanceof RenderPanel panel1) {
+                            if (panel1.isEscMenu()) {
+                                handleMenuClick(e, x, y);
+                                return;
+                            }
+
+                            if(button == MouseEvent.BUTTON3){
+                                handleCountryMenu(x,y);
+                                return;
+                            }
+
+                            if(button == MouseEvent.BUTTON1) {
+                                handleTileClick(x,y);
+                            }
+
+                        } else if(inMenu) handleMenuClick(e, x, y);
+
+                    }
+
+                    @Override
+                    public void mouseReleased(MouseEvent e) {
+                        int x = (int) ((e.getX() + offsetX) / zoom);
+                        int y = (int) ((e.getY() + offsetY) / zoom);
+
+                        if(panel instanceof RenderPanel panel1) {
+                            if (panel1.isEscMenu()) handleMenuRelease(e, x, y);
+                        } else if(inMenu) handleMenuRelease(e, x, y);
+                    }
+                });
+
+                panel.addMouseWheelListener(new MouseAdapter() {
+                    @Override
+                    public void mouseWheelMoved(MouseWheelEvent e) {
+                        if(renderPanel.isEscMenu()) return;
+
+                        if (e.getScrollType() != MouseWheelEvent.WHEEL_UNIT_SCROLL) return;
+
+                        double oldZoom = zoom;
+
+                        int rotation = e.getWheelRotation();
+                        zoom *= Math.pow(1.1, -rotation);
+
+                        double minZoom = getMinZoom();
+
+                        wasAtMinZoom = Math.abs(zoom - minZoom) < 0.0001;
+
+                        zoom = Math.max(minZoom, Math.min(zoom, 20));
+
+                        double mouseX = e.getX();
+                        double mouseY = e.getY();
+
+                        offsetX = (offsetX + mouseX) * (zoom / oldZoom) - mouseX;
+                        offsetY = (offsetY + mouseY) * (zoom / oldZoom) - mouseY;
+
+                        int x = (int) ((e.getX() + offsetX) / zoom);
+                        int y = (int) ((e.getY() + offsetY) / zoom);
+
+                        p.mouseScroll(e, x, y);
+                    }
+                });
+
+                panel.addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mousePressed(MouseEvent e) {
+                        dragStart = e.getPoint();
+                        dragEnd = dragStart;
+                    }
+
+                    @Override
+                    public void mouseReleased(MouseEvent e) {
+                        dragEnd = e.getPoint();
+                        renderPanel.repaint();
+
+                        dragStart = null;
+                        dragEnd = null;
+                    }
+                });
+
+                panel.addMouseMotionListener(new MouseAdapter() {
+                    @Override
+                    public void mouseDragged(MouseEvent e) {
+                        dragEnd = e.getPoint();
+
+                        panel.repaint();
+                    }
+
+                    @Override
+                    public void mouseMoved(MouseEvent e) {
+                        int x = (int) ((e.getX() + offsetX) / zoom);
+                        int y = (int) ((e.getY() + offsetY) / zoom);
+
+                        if(panel instanceof RenderPanel panel1) {
+                            if (panel1.isEscMenu()) handleMenuMove(e, x, y);
+                        } else if(inMenu) handleMenuMove(e, x, y);
+                    }
+                });
+
+                panel.addKeyListener(new KeyAdapter() {
+                    @Override
+                    public void keyPressed(KeyEvent e) {
+                        keysPressed.add(e.getKeyCode());
+
+                        if(panel instanceof RenderPanel panel1) {
+                            if (keysPressed.contains(KeyEvent.VK_ESCAPE)) {
+                                panel1.setEscMenu(!panel1.isEscMenu());
+                            }
+                        }
+
+                        handleKeyPress(e);
+                    }
+
+                    @Override
+                    public void keyReleased(KeyEvent e) {
+                        keysPressed.remove(e.getKeyCode());
+
+                        handleKeyRelease(e);
+                    }
+                });
             }
+        }
 
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                int x = (int) ((e.getX() + offsetX) / zoom);
-                int y = (int) ((e.getY() + offsetY) / zoom);
-
-                if(inMenu || panel.isEscMenu()) handleMenuRelease(e,x,y);
-            }
-        });
-
-        panel.addMouseWheelListener(new MouseAdapter() {
-            @Override
-            public void mouseWheelMoved(MouseWheelEvent e) {
-                if(panel.isEscMenu()) return;
-
-                if (e.getScrollType() != MouseWheelEvent.WHEEL_UNIT_SCROLL) return;
-
-                double oldZoom = zoom;
-
-                int rotation = e.getWheelRotation();
-                zoom *= Math.pow(1.1, -rotation);
-
-                zoom = Math.max(1, Math.min(zoom, 20));
-
-                double mouseX = e.getX();
-                double mouseY = e.getY();
-
-                offsetX = (offsetX + mouseX) * (zoom / oldZoom) - mouseX;
-                offsetY = (offsetY + mouseY) * (zoom / oldZoom) - mouseY;
-
-                panel.repaint();
-            }
-        });
-
-        panel.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mousePressed(MouseEvent e) {
-                dragStart = e.getPoint();
-                dragEnd = dragStart;
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                dragEnd = e.getPoint();
-                panel.repaint();
-
-                dragStart = null;
-                dragEnd = null;
-            }
-        });
-
-        panel.addMouseMotionListener(new MouseAdapter() {
-            @Override
-            public void mouseDragged(MouseEvent e) {
-                dragEnd = e.getPoint();
-
-                panel.repaint();
-            }
-
-            @Override
-            public void mouseMoved(MouseEvent e) {
-                int x = (int) ((e.getX() + offsetX) / zoom);
-                int y = (int) ((e.getY() + offsetY) / zoom);
-
-                if(inMenu || panel.isEscMenu()) handleMenuMove(e,x,y);
-            }
-        });
-
-        panel.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyPressed(KeyEvent e) {
-                keysPressed.add(e.getKeyCode());
-
-                if(keysPressed.contains(KeyEvent.VK_ESCAPE)) {
-                    panel.setEscMenu(!panel.isEscMenu());
-                }
-            }
-
-            @Override
-            public void keyReleased(KeyEvent e) {
-                keysPressed.remove(e.getKeyCode());
-            }
-        });
-
-        //panel.addKeyListener(new KeyAdapter() {
+        //renderPanel.addKeyListener(new KeyAdapter() {
         //            @Override
         //            public void keyPressed(KeyEvent e) {
         //                char forward = 'w';
@@ -241,16 +312,63 @@ public class MainRenderer extends Thread {
         //        });
     }
 
+    private double getMinZoom() {
+        double panelWidth = renderPanel.getWidth();
+        double panelHeight = renderPanel.getHeight();
+
+        double mapWidth = map.getWidth();
+        double mapHeight = map.getHeight();
+
+        double zoomX = panelWidth / mapWidth;
+        double zoomY = panelHeight / mapHeight;
+
+        return Math.min(zoomX, zoomY);
+    }
+
     private void handleMenuClick(MouseEvent e, int x, int y) {
-        panel.onClick(e,x,y);
+
+        panels.forEach(p1 -> {
+            if(p1 instanceof JPanel p)
+                if(p.isVisible()){
+                    p1.mouseClick(e, x, y);
+                }
+
+        });
+    }
+
+    private void handleKeyRelease(KeyEvent e) {
+
+        panels.forEach(p1 -> {
+            if(p1 instanceof JPanel p)
+                if(p.isVisible()){
+                    p1.keyRelease(e);
+                }
+
+        });
+    }
+
+    private void handleKeyPress(KeyEvent e) {
+
+        panels.forEach(p1 -> {
+            if(p1 instanceof JPanel p)
+                if(p.isVisible()){
+                    p1.keyPress(e);
+                }
+
+        });
     }
 
     private void handleMenuRelease(MouseEvent e, int x, int y) {
-        panel.onRelease(e,x,y);
+
+        panels.forEach(p1 -> {
+            if(p1 instanceof JPanel p) if(p.isVisible()) p1.mouseRelease(e, x, y);
+        });
     }
 
     private void handleMenuMove(MouseEvent e, int x, int y) {
-        panel.onMove(e,x,y);
+        panels.forEach(p1 -> {
+            if(p1 instanceof JPanel p) if(p.isVisible()) p1.mouseMove(e, x, y);
+        });
     }
 
     private void handleMovement() {
@@ -275,11 +393,37 @@ public class MainRenderer extends Thread {
     public void move(int xMove, int yMove) {
         offsetX += xMove;
         offsetY += yMove;
+
+        clampOffsets();
+    }
+
+    //TODO: damit man nciht beim zoomen so kurz raus und wieder rein gebuggt wird halt die neuen offsets übergeben, dann die geclampten zurückgeben lassen und dann erst setzen
+    private void clampOffsets() {
+        int panelWidth = renderPanel.getWidth();
+        int panelHeight = renderPanel.getHeight();
+
+        int mapWidth = map.getWidth();
+        int mapHeight = map.getHeight();
+
+        double scaledWidth = mapWidth * zoom;
+        double scaledHeight = mapHeight * zoom;
+
+        if (scaledWidth <= panelWidth) {
+            offsetX = -(panelWidth - scaledWidth) / 2;
+        } else {
+            offsetX = Math.max(0, Math.min(offsetX, scaledWidth - panelWidth));
+        }
+
+        if (scaledHeight <= panelHeight) {
+            offsetY = -(panelHeight - scaledHeight) / 2;
+        } else {
+            offsetY = Math.max(0, Math.min(offsetY, scaledHeight - panelHeight));
+        }
     }
 
     private void handleCountryMenu(int x, int y) {
 
-        if(panel.isPaused()) return;
+        if(renderPanel.isPaused()) return;
 
         Color oldColor = new Color(map.getRGB(x, y), true);
 
@@ -291,7 +435,7 @@ public class MainRenderer extends Thread {
     private void handleTileClick(int x, int y) {
         //IO.println("Click at " + x + ", " + y);
 
-        if(panel.isPaused()) return;
+        if(renderPanel.isPaused()) return;
 
         if (x > 0 && y > 0 && x < map.getWidth() && y < map.getHeight()) {
             Color oldColor = new Color(map.getRGB(x, y), true);
@@ -322,7 +466,7 @@ public class MainRenderer extends Thread {
 
         g.dispose();
 
-        panel.setFrame(frameBuffer);
+        renderPanel.setFrame(frameBuffer);
     }
 
     public Point getDragStart() {
@@ -342,8 +486,21 @@ public class MainRenderer extends Thread {
     //    Graphics2D g = frame.createGraphics();
     //    g.drawImage(map, 0, 0, null);
     //    g.dispose();
-    //    panel.setFrame(frame);
+    //    renderPanel.setFrame(frame);
     //}
+
+    private static abstract class FrameListen implements ComponentListener{
+        public void componentHidden(ComponentEvent arg0) {
+        }
+        public void componentMoved(ComponentEvent arg0) {
+        }
+
+        public abstract void componentResized(ComponentEvent arg0);
+
+        public void componentShown(ComponentEvent arg0) {
+
+        }
+    }
 
     public void shutdown() {
         if(!BOB.getInstance().save()) IO.println("Failed to safe before shutdown...");
@@ -352,7 +509,7 @@ public class MainRenderer extends Thread {
     }
 
     public RenderPanel getGamePanel() {
-        return panel;
+        return renderPanel;
     }
 
     public double getZoom() {

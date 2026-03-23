@@ -151,4 +151,7 @@ public class BOB {
         return scenarioManager;
     }
 
+    public void setHost(boolean b) {
+        this.isHost = b;
+    }
 }

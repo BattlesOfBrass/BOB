@@ -62,6 +62,7 @@ public class ClientSocket {
             @Override
             public void completed(Integer bytesRead, ByteBuffer attachment) {
                 if (bytesRead == -1) {
+                    BOB.getInstance().setHost(false);
                     try {
                         channel.close();
                     } catch (Exception ignored) {}
@@ -81,6 +82,9 @@ public class ClientSocket {
             @Override
             public void failed(Throwable exc, ByteBuffer attachment) {
                 exc.printStackTrace();
+
+                BOB.getInstance().setHost(false);
+
                 try {
                     channel.close();
                 } catch (Exception ignored) {}

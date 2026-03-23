@@ -25,7 +25,6 @@ public class Server {
     }
 
     public void init() {
-
         sendTool = new SendTool(core);
         serverSocket = new ServerSocket();
     }

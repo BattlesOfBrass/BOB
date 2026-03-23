@@ -1,16 +1,18 @@
 package de.idiotischer.bob.render;
 
 import de.idiotischer.bob.render.menu.Menu;
+import de.idiotischer.bob.render.menu.Panel;
 import de.idiotischer.bob.render.menu.impl.DefaultMenu;
 import de.idiotischer.bob.render.menu.impl.ESCMenu;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 
-public class RenderPanel extends JPanel {
+public class RenderPanel extends JPanel implements Panel {
 
     private final MainRenderer renderer;
     private final Menu menu;
@@ -30,6 +32,7 @@ public class RenderPanel extends JPanel {
         this.setBackground(Color.BLACK);
         this.setFocusable(true);
         this.requestFocusInWindow();
+        this.setIgnoreRepaint(true); // TODO: check if it causes bugs or fixes window flicker on windows
         this.setPreferredSize(new Dimension(frame.getWidth(), frame.getHeight()));
     }
 
@@ -76,13 +79,15 @@ public class RenderPanel extends JPanel {
 
         g2.scale(renderer.getZoom(), renderer.getZoom());
 
-        g2.drawImage(frame, 0, 0, getWidth(),getHeight(),null);
+        g2.drawImage(frame, 0, 0,null);
 
         g2.setTransform(oldTransform);
     }
 
     //TODO: gucken ob curvature sinn macht weil bei kleinen selections ist es inakkurat
     private void handleDragOverlay(Graphics2D g2) {
+        if(escMenu) return;
+
         Point start = renderer.getDragStart();
         Point end = renderer.getDragEnd();
 
@@ -117,15 +122,18 @@ public class RenderPanel extends JPanel {
         return escMenu; // + andere sachen später
     }
 
-    public void onClick(MouseEvent e, int x, int y) {
+    @Override
+    public void mouseClick(MouseEvent e, int x, int y) {
         escOverlay.mouseClick(e, x, y);
     }
 
-    public void onRelease(MouseEvent e, int x, int y) {
+    @Override
+    public void mouseRelease(MouseEvent e, int x, int y) {
         escOverlay.mouseRelease(e, x, y);
     }
 
-    public void onMove(MouseEvent e, int x, int y) {
+    @Override
+    public void mouseMove(MouseEvent e, int x, int y) {
         escOverlay.mouseMove(e, x, y);
     }
 }
