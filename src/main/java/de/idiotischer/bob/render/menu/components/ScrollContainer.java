@@ -56,53 +56,56 @@ public class ScrollContainer implements Component {
     @Override
     public void paint(Graphics g) {
         Graphics2D g2 = (Graphics2D) g.create();
+        try {
+            JPanel pl = panel != null ? panel : BOB.getInstance().getMainRenderer().getGamePanel();
 
-        JPanel pl = panel != null ? panel : BOB.getInstance().getMainRenderer().getGamePanel();
+            Rectangle bounds = getActualBounds();
 
-        Rectangle bounds = getActualBounds();
+            int x = centered ? (pl.getWidth() - bounds.width) / 2 : bounds.x;
+            int y = centered ? (pl.getHeight() - bounds.height) / 2 : bounds.y;
 
-        int x = centered ? (pl.getWidth() - bounds.width) / 2 : bounds.x;
-        int y = centered ? (pl.getHeight() - bounds.height) / 2 : bounds.y;
+            g2.setColor(Color.WHITE);
+            g2.setStroke(new BasicStroke(3));
+            g2.drawRoundRect(x, y, bounds.width, bounds.height, 24, 24);
 
-        g2.setColor(Color.WHITE);
-        g2.setStroke(new BasicStroke(3));
-        g2.drawRoundRect(x, y, bounds.width, bounds.height, 24, 24);
+            g2.setClip(x, y, bounds.width, bounds.height);
 
-        g2.setClip(x, y, bounds.width, bounds.height);
+            //this will be the image container btu i am too stupdi so i just copied the scrollabr xD
+            int heightShrink = 40;
 
-        //this will be the image container btu i am too stupdi so i just copied the scrollabr xD
-        int heightShrink = 40;
+            int imgFrameWidth = 350;
+            int frameX = x + bounds.width - imgFrameWidth - 2;
+            int bufferX = heightShrink / 2;
 
-        int imgFrameWidth = 350;
-        int frameX = x + bounds.width - imgFrameWidth - 2;
-        int bufferX = heightShrink / 2;
+            g2.drawRoundRect(
+                    frameX - bufferX,
+                    y + (heightShrink / 2),
+                    imgFrameWidth,
+                    bounds.height - heightShrink,
+                    24,
+                    24
+            );
 
-        g2.drawRoundRect(
-                frameX - bufferX,
-                y + (heightShrink / 2),
-                imgFrameWidth,
-                bounds.height - heightShrink,
-                24,
-                24
-        );
+            //scrollbar ykyk
+            int barX = x + (bounds.width / 2) - scrollbarWidth - 2;
 
-        //scrollbar ykyk
-        int barX = x + (bounds.width / 2) - scrollbarWidth - 2;
+            this.scrollBounds = new Rectangle(barX - 15, y + (heightShrink / 2), scrollbarWidth, bounds.height - heightShrink);
 
-        this.scrollBounds = new Rectangle(barX - 15, y + (heightShrink / 2), scrollbarWidth, bounds.height - heightShrink);
+            g2.drawRoundRect(
+                    scrollBounds.x,
+                    scrollBounds.y,
+                    scrollbarWidth,
+                    bounds.height - heightShrink,
+                    12,
+                    12
+            );
 
-        g2.drawRoundRect(
-                scrollBounds.x,
-                scrollBounds.y,
-                scrollbarWidth,
-                bounds.height - heightShrink,
-                12,
-                12
-        );
-
-        for (ButtonComp child : children) {
-            child.setDebug(true);
-            child.paint(g2);
+            for (ButtonComp child : children) {
+                child.setDebug(true);
+                child.paint(g2);
+            }
+        } finally {
+            g2.dispose();
         }
     }
 
