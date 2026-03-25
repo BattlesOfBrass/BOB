@@ -1,38 +1,50 @@
-package de.idiotischer.bob.render.menu.impl;
+package de.idiotischer.bob.render.menu.impl.select;
 
 import de.idiotischer.bob.BOB;
 import de.idiotischer.bob.render.menu.Component;
-import de.idiotischer.bob.render.menu.Menu;
 import de.idiotischer.bob.render.menu.components.button.ButtonComp;
 import de.idiotischer.bob.render.menu.components.ScrollContainer;
+import de.idiotischer.bob.render.menu.components.button.ButtonGroup;
+import de.idiotischer.bob.render.menu.components.button.IButtonComp;
 import de.idiotischer.bob.scenario.Scenario;
+import de.idiotischer.bob.util.ImageUtil;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
-import java.awt.geom.RoundRectangle2D;
-import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-public class ScenarioSelectMenu implements Menu {
+public class ScenarioSelectMenu extends SelectMenu {
 
-    private final JPanel parent;
-    private final int layoutScaleX;
-    private final int layoutScaleY;
     private Set<Scenario> scenarios;
     private final ScrollContainer scroller;
     private Scenario selectedScenario = null;
 
+    private final ButtonGroup scrollGroup = new ButtonGroup((pair) -> {
+        IButtonComp newButton = pair.left();
+        String id = newButton.getId();
+
+        if(id.isEmpty()) return;
+
+        Scenario scenario = BOB.getInstance().getScenarioManager().getScenario(id);
+
+        if(scenario == null) return;
+
+        selectedScenario = scenario;
+    });
+
     private final ButtonComp nextMenuButton = new ButtonComp("Next", Color.WHITE, Color.DARK_GRAY.darker(),true,320,-208,95,28, 16,16, 15, Color.DARK_GRAY.brighter(), Color.BLACK, true, (b) -> {
-        System.out.println("clicked next");
+        if(selectedScenario == null) return;
+
+        BOB.getInstance().getScenarioSceneLoader().load(selectedScenario, true);
     });
 
     private final ButtonComp backMenuButton = new ButtonComp("Back to Menu", Color.WHITE, Color.DARK_GRAY.darker(),true,0,-210,138,28, 16,16, 15, Color.DARK_GRAY.brighter(), Color.BLACK, true, (b) -> {
-        BOB.getInstance().getMapRenderer().getMenuPanel().setInScenarioSelect(false);
+        BOB.getInstance().getMainRenderer().getMenuPanel().setInScenarioSelect(false);
     });
 
     private final ButtonComp buttonSoThatItLooksBetter = new ButtonComp("Placeholder", Color.WHITE, Color.DARK_GRAY.darker(),true,-320,-208,120,28, 16,16, 15, Color.DARK_GRAY.brighter(), Color.BLACK, true, (b) -> {
@@ -42,12 +54,9 @@ public class ScenarioSelectMenu implements Menu {
     List<Component> components = new ArrayList<>();
 
     public ScenarioSelectMenu(JPanel panel, int layoutScaleX, int layoutScaleY) {
-        this.parent = panel;
+        super(panel, layoutScaleX, layoutScaleY);
 
         scroller = new ScrollContainer(panel, new Color(200, 200, 200, 180), true);
-
-        this.layoutScaleX = layoutScaleX;
-        this.layoutScaleY = layoutScaleY;
 
         selectedScenario = BOB.getInstance().getScenarioSceneLoader().getCurrentScenario();
 
@@ -81,6 +90,8 @@ public class ScenarioSelectMenu implements Menu {
 
     @Override
     public void paint(Graphics g) {
+        super.paint(g);
+
         g.setColor(Color.DARK_GRAY);
 
         Graphics2D g2 = (Graphics2D) g;
@@ -90,19 +101,17 @@ public class ScenarioSelectMenu implements Menu {
 
         g2.setStroke(new BasicStroke(16));
 
-        drawBack(g2, x, y);
+        components.forEach(component -> {
+            if(component instanceof ButtonComp c) {
+                c.setPanel(parent);
+                c.paint(g);}
+        });
 
-        components.forEach(component -> component.paint(g2));
+        components.forEach(component -> {
+            if(!(component instanceof ButtonComp)) {component.paint(g);}
+        });
 
         drawImageFrame(g2);
-    }
-
-    private void drawBack(Graphics2D g2, int x, int y) {
-        g2.setColor(Color.DARK_GRAY.darker());
-        g2.drawRoundRect(x, y, layoutScaleX, layoutScaleY + 40,32,32);
-
-        g2.setColor(Color.DARK_GRAY);
-        g2.fillRoundRect(x, y, layoutScaleX, layoutScaleY + 40,32,32);
     }
 
     public void drawImageFrame(Graphics2D g2) {
@@ -137,35 +146,14 @@ public class ScenarioSelectMenu implements Menu {
         g2.setStroke(new BasicStroke(5)); //thickness of the img frame
         g2.drawRoundRect(x + 405, y + 40, width, height, 24, 24);
 
-        g2.drawImage(makeRoundedCorner(selectedScenario.getMapImage(), 100), x + 405, y + 40, width,height,null);
-    }
-
-    public static BufferedImage makeRoundedCorner(BufferedImage image, int cornerRadius) {
-        int w = image.getWidth();
-        int h = image.getHeight();
-        BufferedImage output = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-
-        Graphics2D g2 = output.createGraphics();
-
-        g2.setComposite(AlphaComposite.Src);
-        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON); //this doesnt cause the low quality, prob just the small scale
-        g2.setColor(Color.WHITE);
-        g2.fill(new RoundRectangle2D.Float(0, 0, w, h, cornerRadius, cornerRadius));
-
-        g2.setComposite(AlphaComposite.SrcAtop);
-        g2.drawImage(image, 0, 0, null);
-
-        g2.dispose();
-
-        return output;
+        g2.drawImage(ImageUtil.makeRoundedCorner(selectedScenario.getMapImage(), 100), x + 405, y + 40, width,height,null);
     }
 
 
     @Override
     public void keyPress(KeyEvent e) {
         if(e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-            BOB.getInstance().getMapRenderer().getMenuPanel().setInScenarioSelect(false);
+            BOB.getInstance().getMainRenderer().getMenuPanel().setInScenarioSelect(false);
         }
     }
 
@@ -196,6 +184,7 @@ public class ScenarioSelectMenu implements Menu {
         for (Scenario s : scenarios) {
             //TODO: make it so i dont need to trial and error with these values (bs but gonna leave this todo in anyways)
             ButtonComp b = new ButtonComp(
+                    s.getAbbreviation(),
                     s.getName(),
                     Color.WHITE,
                     Color.BLACK,
@@ -203,11 +192,15 @@ public class ScenarioSelectMenu implements Menu {
                     -200, 25,
                     300, 40,
                     16, 16,
-                    2, Color.LIGHT_GRAY,
+                    3, Color.LIGHT_GRAY,
                     Color.DARK_GRAY,
-                    true, (b1) -> {System.out.println("clicked settings");});
+                    true, scrollGroup, (_) -> {});
             b.setPanel(parent);
             buttons.add(b);
+
+            if (s.equals(selectedScenario)) {
+                scrollGroup.select(b);
+            }
         }
 
         scroller.setChildren(new ArrayList<>(buttons));

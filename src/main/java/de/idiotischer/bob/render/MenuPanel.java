@@ -2,15 +2,15 @@ package de.idiotischer.bob.render;
 
 import de.idiotischer.bob.render.menu.Menu;
 import de.idiotischer.bob.render.menu.Panel;
-import de.idiotischer.bob.render.menu.impl.ScenarioSelectMenu;
+import de.idiotischer.bob.render.menu.impl.select.ScenarioSelectMenu;
 import de.idiotischer.bob.render.menu.impl.StartMenu;
+import de.idiotischer.bob.render.menu.impl.select.SelectMenu;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
-import java.awt.image.Raster;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,7 +24,7 @@ public class MenuPanel extends JPanel implements Panel {
 
     private boolean scenarioSelect = false;
 
-    private final ScenarioSelectMenu scenarioSelectMenu;
+    private final SelectMenu scenarioSelectMenu;
     private final StartMenu startMenu;
 
     private final List<Menu> menuList = new ArrayList<>();
@@ -34,7 +34,7 @@ public class MenuPanel extends JPanel implements Panel {
 
         this.renderer = renderer;
 
-        this.scenarioSelectMenu = new ScenarioSelectMenu(this, layoutScaleX, layoutScaleY);
+        this.scenarioSelectMenu = new ScenarioSelectMenu(this, layoutScaleX, layoutScaleY); //Oder später eben countryselect
         this.startMenu = new StartMenu(this);
 
         this.menuList.add(scenarioSelectMenu);
@@ -73,7 +73,6 @@ public class MenuPanel extends JPanel implements Panel {
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         if(scenarioSelect) {
-            scenarioSelectMenu.reload();
             scenarioSelectMenu.paint(g2);
         } else {
             startMenu.paint(g2);
@@ -98,32 +97,67 @@ public class MenuPanel extends JPanel implements Panel {
 
     @Override
     public void mouseScroll(MouseWheelEvent e, int x, int y) {
-        menuList.forEach(p -> p.mouseScroll(e, x, y));
+        //menuList.forEach(p -> p.mouseScroll(e, x, y));
+        if(scenarioSelect) {
+            scenarioSelectMenu.mouseScroll(e, x, y);
+        } else {
+            startMenu.mouseScroll(e, x, y);
+        }
     }
 
     @Override
     public void mouseClick(MouseEvent e, int x, int y) {
-        menuList.forEach(p -> p.mouseClick(e, x, y));
+        //menuList.forEach(p -> p.mouseClick(e, x, y));
+
+        if(scenarioSelect) {
+            scenarioSelectMenu.mouseClick(e, x, y);
+        } else {
+            startMenu.mouseClick(e, x, y);
+        }
     }
 
     @Override
     public void mouseRelease(MouseEvent e, int x, int y) {
-        menuList.forEach(p -> p.mouseRelease(e, x, y));
+        //menuList.forEach(p -> p.mouseRelease(e, x, y));
+
+        if(scenarioSelect) {
+            scenarioSelectMenu.mouseRelease(e, x, y);
+        } else {
+            startMenu.mouseRelease(e, x, y);
+        }
     }
 
     @Override
     public void mouseMove(MouseEvent e, int x, int y) {
-        menuList.forEach(p -> p.mouseMove(e, x, y));
+        //menuList.forEach(p -> p.mouseMove(e, x, y));
+
+        if(scenarioSelect) {
+            scenarioSelectMenu.mouseMove(e, x, y);
+        } else {
+            startMenu.mouseMove(e, x, y);
+        }
     }
 
     @Override
     public void keyPress(KeyEvent e) {
-        menuList.forEach(p -> p.keyPress(e));
+        //menuList.forEach(p -> p.keyPress(e));
+
+        if(scenarioSelect) {
+            scenarioSelectMenu.keyPress(e);
+        } else {
+            startMenu.keyPress(e);
+        }
     }
 
     @Override
     public void keyRelease(KeyEvent e) {
-        menuList.forEach(p -> p.keyRelease(e));
+        //menuList.forEach(p -> p.keyRelease(e));
+
+        if(scenarioSelect) {
+            scenarioSelectMenu.keyRelease(e);
+        } else {
+            startMenu.keyRelease(e);
+        }
     }
 
 }

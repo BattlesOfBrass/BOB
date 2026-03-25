@@ -1,22 +1,24 @@
 package de.idiotischer.bob.render.menu.components.button;
 
 import de.idiotischer.bob.BOB;
+import de.idiotischer.bob.util.ImageUtil;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
 import java.util.function.Consumer;
 
-public class ButtonComp implements IButtonComp {
+public class ImageButtonComp implements IButtonComp {
     private final String text;
     private final String id;
     private final Color selectedColor;
     private final ButtonGroup group;
 
     private Rectangle bounds;
-    private final Color bgColor;
+    private BufferedImage image;
     private final Color textColor;
-    private final Consumer<ButtonComp> onClick;
+    private final Consumer<ImageButtonComp> onClick;
     private final int arcWidth;
     private final int arcHeight;
     private final boolean centered;
@@ -34,23 +36,23 @@ public class ButtonComp implements IButtonComp {
     private JPanel panel;
     private boolean debug = false;
 
-    public ButtonComp(String text, Color textColor, Color borderColor, boolean unselectWhenUnhover, int x, int y, int width, int height, int arcWidth, int arcHeight, int borderWidth, Color borderColorWhenHover, Color color, boolean centered, Consumer<ButtonComp> onClick) {
-        this("", text,textColor, Color.WHITE, borderColor, unselectWhenUnhover, x, y, width, height, arcWidth, arcHeight, borderWidth, borderColorWhenHover, color, centered, null, onClick);
+    public ImageButtonComp(String text, Color textColor, Color borderColor, boolean unselectWhenUnhover, int x, int y, int width, int height, int arcWidth, int arcHeight, int borderWidth, Color borderColorWhenHover, BufferedImage image, boolean centered, Consumer<ImageButtonComp> onClick) {
+        this("", text,textColor, Color.WHITE, borderColor, unselectWhenUnhover, x, y, width, height, arcWidth, arcHeight, borderWidth, borderColorWhenHover, image, centered, null, onClick);
     }
 
-    public ButtonComp(String id, String text, Color textColor, Color borderColor, boolean unselectWhenUnhover, int x, int y, int width, int height, int arcWidth, int arcHeight, int borderWidth, Color borderColorWhenHover, Color color, boolean centered, ButtonGroup group, Consumer<ButtonComp> onClick) {
-        this(id, text,textColor, Color.WHITE, borderColor, unselectWhenUnhover, x, y, width, height, arcWidth, arcHeight, borderWidth, borderColorWhenHover, color, centered,group, onClick);
+    public ImageButtonComp(String id, String text, Color textColor, Color borderColor, boolean unselectWhenUnhover, int x, int y, int width, int height, int arcWidth, int arcHeight, int borderWidth, Color borderColorWhenHover, BufferedImage image, boolean centered, ButtonGroup group, Consumer<ImageButtonComp> onClick) {
+        this(id, text,textColor, Color.WHITE, borderColor, unselectWhenUnhover, x, y, width, height, arcWidth, arcHeight, borderWidth, borderColorWhenHover, image, centered,group, onClick);
     }
 
-    public ButtonComp(String text, Color textColor, Color borderColor, boolean unselectWhenUnhover, int x, int y, int width, int height, int arcWidth, int arcHeight, int borderWidth, Color borderColorWhenHover, Color color, boolean centered, ButtonGroup group, Consumer<ButtonComp> onClick) {
-        this("", text,textColor, Color.WHITE, borderColor, unselectWhenUnhover, x, y, width, height, arcWidth, arcHeight, borderWidth, borderColorWhenHover, color, centered,group, onClick);
+    public ImageButtonComp(String text, Color textColor, Color borderColor, boolean unselectWhenUnhover, int x, int y, int width, int height, int arcWidth, int arcHeight, int borderWidth, Color borderColorWhenHover,BufferedImage image, boolean centered, ButtonGroup group, Consumer<ImageButtonComp> onClick) {
+        this("", text,textColor, Color.WHITE, borderColor, unselectWhenUnhover, x, y, width, height, arcWidth, arcHeight, borderWidth, borderColorWhenHover, image, centered,group, onClick);
     }
 
-    public ButtonComp(String id, String text, Color textColor, Color selectedColor, Color borderColor, boolean unselectWhenUnhover, int x, int y, int width, int height, int arcWidth, int arcHeight, int borderWidth, Color borderColorWhenHover, Color color, boolean centered, ButtonGroup group, Consumer<ButtonComp> onClick) {
+    public ImageButtonComp(String id, String text, Color textColor, Color selectedColor, Color borderColor, boolean unselectWhenUnhover, int x, int y, int width, int height, int arcWidth, int arcHeight, int borderWidth, Color borderColorWhenHover, BufferedImage image, boolean centered, ButtonGroup group, Consumer<ImageButtonComp> onClick) {
         this.id = id;
         this.text = text;
         this.bounds = new Rectangle(x, y, width, height);
-        this.bgColor = color;
+        this.image = image;
         this.textColor = textColor;
         this.selectedColor = selectedColor;
         this.onClick = onClick;
@@ -91,13 +93,6 @@ public class ButtonComp implements IButtonComp {
         x += bounds.x;
         y -= bounds.y;
 
-        Color displayColor = bgColor;
-        if (pressed && unselectWhenUnhover) {
-            displayColor = bgColor.darker();
-        } else if (hovered) {
-            displayColor = bgColor.brighter();
-        }
-
         //if (debug) {
         //    Rectangle r = getActualBounds();
         //    g2.setColor(Color.RED);
@@ -105,6 +100,13 @@ public class ButtonComp implements IButtonComp {
         //    g2.drawRect(r.x, r.y, r.width, r.height);
         //    g2.setColor(new Color(255, 0, 0, 50));
         //    g2.fillRect(r.x, r.y, r.width, r.height);
+        //}
+
+        //Color displayColor = bgColor;
+        //if (pressed && unselectWhenUnhover) {
+        //    displayColor = bgColor.darker();
+        //} else if (hovered) {
+        //    displayColor = bgColor.brighter();
         //}
 
         g2.setColor(borderColor);
@@ -120,8 +122,9 @@ public class ButtonComp implements IButtonComp {
         g2.setColor(Color.WHITE);
         if(selected) g2.drawRoundRect(x, y, bounds.width, bounds.height, arcWidth, arcHeight);;
 
-        g.setColor(displayColor);
-        g.fillRoundRect(x, y, bounds.width, bounds.height, arcWidth, arcHeight);
+        g2.drawImage(ImageUtil.makeRoundedCorner(image,arcHeight /*i found that 100 is most similar to 24 but still doing it like this for now */),
+                x, y, bounds.width, bounds.height,null
+        );
 
         g.setColor(textColor);
         g.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 16));
@@ -196,5 +199,9 @@ public class ButtonComp implements IButtonComp {
 
     public void setDebug(boolean debug) {
         this.debug = debug;
+    }
+
+    public void setImage(BufferedImage image) {
+        this.image = image;
     }
 }

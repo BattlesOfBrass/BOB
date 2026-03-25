@@ -1,16 +1,20 @@
 package de.idiotischer.bob.render;
 
+import de.idiotischer.bob.BOB;
 import de.idiotischer.bob.render.menu.Menu;
 import de.idiotischer.bob.render.menu.Panel;
-import de.idiotischer.bob.render.menu.impl.DefaultMenu;
+import de.idiotischer.bob.render.menu.impl.HUD;
 import de.idiotischer.bob.render.menu.impl.ESCMenu;
+import de.idiotischer.bob.troop.Troop;
+import de.idiotischer.bob.troop.TroopDrawer;
+import de.idiotischer.bob.troop.TroopManager;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
+import java.util.List;
 
 public class RenderPanel extends JPanel implements Panel {
 
@@ -26,7 +30,7 @@ public class RenderPanel extends JPanel implements Panel {
         setFrame(map);
 
         this.renderer = renderer;
-        this.menu = new DefaultMenu(renderer);
+        this.menu = new HUD(renderer);
         this.escOverlay = new ESCMenu();
 
         this.setBackground(Color.BLACK);
@@ -66,7 +70,7 @@ public class RenderPanel extends JPanel implements Panel {
             escOverlay.paint(g);
         }
 
-        repaint();
+        drawTroops(g2);
     }
 
     private void handleZoom(Graphics2D g2) {
@@ -82,6 +86,12 @@ public class RenderPanel extends JPanel implements Panel {
         g2.drawImage(frame, 0, 0,null);
 
         g2.setTransform(oldTransform);
+    }
+
+    public void drawTroops(Graphics2D g2) {
+        List<Troop> visible = BOB.getInstance().getTroopManager().getVisible(BOB.getInstance().getPlayer().country());
+
+        TroopDrawer.drawTroops(g2, visible);
     }
 
     //TODO: gucken ob curvature sinn macht weil bei kleinen selections ist es inakkurat

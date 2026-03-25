@@ -48,7 +48,7 @@ public class MainRenderer extends Thread {
 
     @Override
     public void start() {
-        inMenu = false;
+        inMenu = true;
 
         map = BOB.getInstance().getScenarioSceneLoader().getMap();
         visualBorderOverlay = new BufferedImage(map.getWidth(), map.getHeight(), BufferedImage.TYPE_INT_ARGB);
@@ -106,8 +106,6 @@ public class MainRenderer extends Thread {
                 frame.getContentPane().removeAll();
 
                 if (inMenu) {
-                    BOB.getInstance().getCountries().reload();
-
                     menuPanel.setVisible(true);
                     renderPanel.setVisible(false);
 
@@ -121,6 +119,8 @@ public class MainRenderer extends Thread {
                     frame.add(renderPanel);
 
                     renderPanel.requestFocusInWindow();
+                    zoom = getMinZoom();
+                    clampOffsets();
                 }
 
                 frame.revalidate();
@@ -336,7 +336,7 @@ public class MainRenderer extends Thread {
 
         if(BOB.getInstance().getScenarioSceneLoader().getTakenColors().contains(oldColor)) return;
 
-        IO.println("Click at " + x + ", " + y + " to open country menu for country at x,y");
+        System.out.println("Click at " + x + ", " + y + " to open country menu for country at x,y");
     }
 
     private void handleTileClick(int x, int y) {
@@ -351,7 +351,7 @@ public class MainRenderer extends Thread {
 
             de.idiotischer.bob.state.State state = BOB.getInstance().getStateManager().getStateAt(x,y);
 
-            if(state != null) IO.println("clicked state: " + state.getName());
+            if(state != null) System.out.println("clicked state: " + state.getName());
 
             FloodFill.fill(map, x,y, player.country().countryColor());
         }
@@ -365,10 +365,10 @@ public class MainRenderer extends Thread {
 
         if(keysPressed.contains(KeyEvent.VK_SHIFT)) speed += 5;
 
-        if(keysPressed.contains(KeyEvent.VK_W)) dy -= speed;
-        if(keysPressed.contains(KeyEvent.VK_S)) dy += speed;
-        if(keysPressed.contains(KeyEvent.VK_A)) dx -= speed;
-        if(keysPressed.contains(KeyEvent.VK_D)) dx += speed;
+        if(keysPressed.contains(KeyEvent.VK_W) || keysPressed.contains(KeyEvent.VK_UP)) dy -= speed;
+        if(keysPressed.contains(KeyEvent.VK_S) || keysPressed.contains(KeyEvent.VK_DOWN)) dy += speed;
+        if(keysPressed.contains(KeyEvent.VK_A) || keysPressed.contains(KeyEvent.VK_LEFT)) dx -= speed;
+        if(keysPressed.contains(KeyEvent.VK_D) || keysPressed.contains(KeyEvent.VK_RIGHT)) dx += speed;
 
         move(dx, dy);
     }
@@ -439,7 +439,7 @@ public class MainRenderer extends Thread {
     }
 
     public void shutdown() {
-        if(!BOB.getInstance().save()) IO.println("Failed to safe before shutdown...");
+        if(!BOB.getInstance().save()) System.out.println("Failed to safe before shutdown...");
         running = false;
         System.exit(0);
     }
@@ -507,6 +507,10 @@ public class MainRenderer extends Thread {
 
     public void setMainMenu(boolean mm) {
         this.inMenu = mm;
+    }
+
+    public void setMap(BufferedImage map) {
+        this.map = map;
     }
 
     public MenuPanel getMenuPanel() {

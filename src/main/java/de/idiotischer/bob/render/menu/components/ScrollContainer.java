@@ -6,10 +6,12 @@ import de.idiotischer.bob.render.menu.components.button.ButtonComp;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.util.ArrayList;
 import java.util.List;
 
+//add scrolling xD
 public class ScrollContainer implements Component {
     private final JPanel panel;
     private final Color color;
@@ -20,12 +22,11 @@ public class ScrollContainer implements Component {
     private List<ButtonComp> children = new ArrayList<>();
 
     private int scrollOffset = 0;
-    private int contentHeight = 0;
 
-    private int padding = 10;
-    private int spacing = 10;
+    private final int padding = 10;
+    private final int spacing = 10;
 
-    private int scrollbarWidth = 8;
+    private int scrollbarWidth = 12;
     private Rectangle scrollBounds;
 
     public ScrollContainer(JPanel panel, Color color, boolean centered) {
@@ -46,19 +47,17 @@ public class ScrollContainer implements Component {
         for (Component child : children) {
             if (child instanceof ButtonComp btn) {
                 Rectangle b = btn.getBounds();
-                b.y += yOffset;
+                b.y += yOffset - scrollOffset;
                 yOffset += b.height + spacing;
             }
         }
-
-        contentHeight = yOffset;
     }
 
     @Override
     public void paint(Graphics g) {
         Graphics2D g2 = (Graphics2D) g.create();
 
-        JPanel pl = panel != null ? panel : BOB.getInstance().getMapRenderer().getGamePanel();
+        JPanel pl = panel != null ? panel : BOB.getInstance().getMainRenderer().getGamePanel();
 
         Rectangle bounds = getActualBounds();
 
@@ -89,9 +88,9 @@ public class ScrollContainer implements Component {
 
         //scrollbar ykyk
         int barX = x + (bounds.width / 2) - scrollbarWidth - 2;
-        
+
         this.scrollBounds = new Rectangle(barX - 15, y + (heightShrink / 2), scrollbarWidth, bounds.height - heightShrink);
-       
+
         g2.drawRoundRect(
                 scrollBounds.x,
                 scrollBounds.y,
@@ -100,16 +99,31 @@ public class ScrollContainer implements Component {
                 12,
                 12
         );
-        
+
         for (ButtonComp child : children) {
+            child.setDebug(true);
             child.paint(g2);
         }
-
-        g2.dispose();
     }
 
     @Override
     public void mouseScroll(MouseWheelEvent e, int x, int y) {
+
+    }
+
+    @Override
+    public void mouseClick(MouseEvent e, int x, int y) {
+        getChildren().forEach(component -> component.mouseClick(e, x, y));
+    }
+
+    @Override
+    public void mouseRelease(MouseEvent e, int x, int y) {
+        getChildren().forEach(component -> component.mouseRelease(e, x, y));
+    }
+
+    @Override
+    public void mouseMove(MouseEvent e, int x, int y) {
+        getChildren().forEach(component -> component.mouseMove(e, x, y));
     }
 
     public void setBounds(Rectangle rectangle) {
@@ -117,21 +131,12 @@ public class ScrollContainer implements Component {
     }
 
     public Rectangle getActualBounds() {
-        JPanel pl = panel != null ? panel : BOB.getInstance().getMapRenderer().getGamePanel();
+        JPanel pl = panel != null ? panel : BOB.getInstance().getMainRenderer().getGamePanel();
         int x = centered ? pl.getWidth() / 2 - (bounds.width / 2) : bounds.x;
         int y = centered ? pl.getHeight() / 2 - (bounds.height / 2) : bounds.y;
         x += bounds.x;
         y -= bounds.y;
         return new Rectangle(x, y, bounds.width, bounds.height);
-    }
-
-    public Rectangle getActualScrollBounds() {
-        JPanel pl = panel != null ? panel : BOB.getInstance().getMapRenderer().getGamePanel();
-        int x = centered ? pl.getWidth() / 2 - (scrollBounds.width / 2) : scrollBounds.x;
-        int y = centered ? pl.getHeight() / 2 - (scrollBounds.height / 2) : scrollBounds.y;
-        x += scrollBounds.x;
-        y -= scrollBounds.y;
-        return new Rectangle(x, y, scrollBounds.width, scrollBounds.height);
     }
 
     public Rectangle getScrollBounds() {
@@ -144,6 +149,10 @@ public class ScrollContainer implements Component {
 
     public boolean isCentered() {
         return centered;
+    }
+
+    public List<ButtonComp> getChildren() {
+        return children;
     }
 
     public JPanel getPanel() {

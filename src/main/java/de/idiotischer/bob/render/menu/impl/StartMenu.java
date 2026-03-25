@@ -13,18 +13,22 @@ import java.util.List;
 
 public class StartMenu implements Menu {
 
-    ButtonComp quit = new ButtonComp("Quit", Color.WHITE, Color.DARK_GRAY,true,0,-100,150,50, 16,16, 15, Color.DARK_GRAY.brighter(), Color.BLACK, true,(b) -> {
-        System.out.println("clicked continue");
-        System.exit(0);
-    });
-
     ButtonComp start = new ButtonComp("Select Start", Color.WHITE, Color.DARK_GRAY,true,0,100,150,50, 16,16, 15, Color.DARK_GRAY.brighter(), Color.BLACK, true,(b) -> {
         System.out.println("clicked mm");
-        BOB.getInstance().getMapRenderer().getMenuPanel().setInScenarioSelect(true);
+        BOB.getInstance().getMainRenderer().getMenuPanel().setInScenarioSelect(true);
     });
 
-    ButtonComp settings = new ButtonComp("Settings", Color.WHITE, Color.DARK_GRAY,true,0,0,150,50, 16,16, 15, Color.DARK_GRAY.brighter(), Color.BLACK, true,(b) -> {
+    ButtonComp multiplayer = new ButtonComp("Multiplayer", Color.WHITE, Color.DARK_GRAY,true,0,0,150,50, 16,16, 15, Color.DARK_GRAY.brighter(), Color.BLACK, true,(b) -> {
         System.out.println("clicked settings");
+    });
+
+    ButtonComp settings = new ButtonComp("Settings", Color.WHITE, Color.DARK_GRAY,true,0,-100,150,50, 16,16, 15, Color.DARK_GRAY.brighter(), Color.BLACK, true,(b) -> {
+        System.out.println("clicked settings");
+    });
+
+    ButtonComp quit = new ButtonComp("Quit", Color.WHITE, Color.DARK_GRAY,true,0,-200,150,50, 16,16, 15, Color.DARK_GRAY.brighter(), Color.BLACK, true,(b) -> {
+        System.out.println("clicked continue");
+        System.exit(0);
     });
 
     private final List<Component> components = new ArrayList<>();
@@ -33,6 +37,7 @@ public class StartMenu implements Menu {
         components.add(start);
         components.add(settings);
         components.add(quit);
+        components.add(multiplayer);
 
         components.forEach(component -> {
             if(component instanceof ButtonComp b) {

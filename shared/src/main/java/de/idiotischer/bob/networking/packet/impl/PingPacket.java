@@ -13,6 +13,6 @@ public class PingPacket implements Packet {
 
     @Override
     public void read(ByteBuffer buffer) {
-        IO.println("PingPacket read");
+        System.out.println("PingPacket read");
     }
 }

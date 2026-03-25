@@ -13,12 +13,12 @@ public class ESCMenu implements Menu {
 
     ButtonComp continueButton = new ButtonComp("Continue", Color.WHITE, Color.DARK_GRAY,true,0,100,150,50, 16,16, 15, Color.DARK_GRAY.brighter(), Color.BLACK, true,(b) -> {
         System.out.println("clicked continue");
-        BOB.getInstance().getMapRenderer().getGamePanel().setEscMenu(false);
+        BOB.getInstance().getMainRenderer().getGamePanel().setEscMenu(false);
     });
 
     ButtonComp menu = new ButtonComp("Main Menu", Color.WHITE, Color.DARK_GRAY,true,0,-100,150,50, 16,16, 15, Color.DARK_GRAY.brighter(), Color.BLACK, true,(b) -> {
         System.out.println("clicked mm");
-        BOB.getInstance().getMapRenderer().setMainMenu(true);
+        BOB.getInstance().getMainRenderer().setMainMenu(true);
     });
 
     ButtonComp settings = new ButtonComp("Settings", Color.WHITE, Color.DARK_GRAY,true,0,0,150,50, 16,16, 15, Color.DARK_GRAY.brighter(), Color.BLACK, true,(b) -> {

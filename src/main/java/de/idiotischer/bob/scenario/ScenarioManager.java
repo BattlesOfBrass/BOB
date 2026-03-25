@@ -37,8 +37,8 @@ public class ScenarioManager {
         return scenarios.stream().filter(s -> s.getDir().equals(path)).findFirst().orElse(null);
     }
 
-    public Scenario getScenario(String name) {
-        return scenarios.stream().filter(s -> s.getName().equals(name)).findFirst().orElse(null);
+    public Scenario getScenario(String abbreviation) {
+        return scenarios.stream().filter(s -> s.getAbbreviation().equals(abbreviation)).findFirst().orElse(null);
     }
 
     public Scenario registerScenario(Scenario scenario) {

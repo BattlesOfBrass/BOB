@@ -31,6 +31,8 @@ dependencies {
 
     // Source: https://mvnrepository.com/artifact/com.google.guava/guava
     implementation("com.google.guava:guava:33.5.0-jre")
+    // Source: https://mvnrepository.com/artifact/it.unimi.dsi/fastutil
+    implementation("it.unimi.dsi:fastutil:8.5.18")
 }
 
 tasks.build {

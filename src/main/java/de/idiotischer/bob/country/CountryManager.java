@@ -49,7 +49,7 @@ public class CountryManager {
 
                 registerCountry(country);
 
-                IO.println("registered country: " + countryAbbreviation + " with name: " + name + " and color: " + color);
+                System.out.println("registered country: " + countryAbbreviation + " with name: " + name + " and color: " + color);
             });
 
         } catch (Exception e) {
