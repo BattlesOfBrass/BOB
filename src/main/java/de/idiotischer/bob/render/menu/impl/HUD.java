@@ -7,11 +7,11 @@ import de.idiotischer.bob.render.menu.Menu;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 
-public class DefaultMenu implements Menu {
+public class HUD implements Menu {
 
     private final MainRenderer renderer;
 
-    public DefaultMenu(MainRenderer renderer) {
+    public HUD(MainRenderer renderer) {
         this.renderer = renderer;
     }
 

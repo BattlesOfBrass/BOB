@@ -1,16 +1,22 @@
 package de.idiotischer.bob.render;
 
+import de.idiotischer.bob.BOB;
 import de.idiotischer.bob.render.menu.Menu;
-import de.idiotischer.bob.render.menu.impl.DefaultMenu;
+import de.idiotischer.bob.render.menu.Panel;
+import de.idiotischer.bob.render.menu.impl.HUD;
 import de.idiotischer.bob.render.menu.impl.ESCMenu;
+import de.idiotischer.bob.troop.Troop;
+import de.idiotischer.bob.troop.TroopDrawer;
+import de.idiotischer.bob.troop.TroopManager;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
+import java.util.List;
 
-public class RenderPanel extends JPanel {
+public class RenderPanel extends JPanel implements Panel {
 
     private final MainRenderer renderer;
     private final Menu menu;
@@ -24,12 +30,13 @@ public class RenderPanel extends JPanel {
         setFrame(map);
 
         this.renderer = renderer;
-        this.menu = new DefaultMenu(renderer);
+        this.menu = new HUD(renderer);
         this.escOverlay = new ESCMenu();
 
         this.setBackground(Color.BLACK);
         this.setFocusable(true);
         this.requestFocusInWindow();
+        this.setIgnoreRepaint(true); // TODO: check if it causes bugs or fixes window flicker on windows
         this.setPreferredSize(new Dimension(frame.getWidth(), frame.getHeight()));
     }
 
@@ -63,7 +70,7 @@ public class RenderPanel extends JPanel {
             escOverlay.paint(g);
         }
 
-        repaint();
+        drawTroops(g2);
     }
 
     private void handleZoom(Graphics2D g2) {
@@ -76,13 +83,21 @@ public class RenderPanel extends JPanel {
 
         g2.scale(renderer.getZoom(), renderer.getZoom());
 
-        g2.drawImage(frame, 0, 0, getWidth(),getHeight(),null);
+        g2.drawImage(frame, 0, 0,null);
 
         g2.setTransform(oldTransform);
     }
 
+    public void drawTroops(Graphics2D g2) {
+        List<Troop> visible = BOB.getInstance().getTroopManager().getVisible(BOB.getInstance().getPlayer().country());
+
+        TroopDrawer.drawTroops(g2, visible);
+    }
+
     //TODO: gucken ob curvature sinn macht weil bei kleinen selections ist es inakkurat
     private void handleDragOverlay(Graphics2D g2) {
+        if(escMenu) return;
+
         Point start = renderer.getDragStart();
         Point end = renderer.getDragEnd();
 
@@ -117,15 +132,18 @@ public class RenderPanel extends JPanel {
         return escMenu; // + andere sachen später
     }
 
-    public void onClick(MouseEvent e, int x, int y) {
+    @Override
+    public void mouseClick(MouseEvent e, int x, int y) {
         escOverlay.mouseClick(e, x, y);
     }
 
-    public void onRelease(MouseEvent e, int x, int y) {
+    @Override
+    public void mouseRelease(MouseEvent e, int x, int y) {
         escOverlay.mouseRelease(e, x, y);
     }
 
-    public void onMove(MouseEvent e, int x, int y) {
+    @Override
+    public void mouseMove(MouseEvent e, int x, int y) {
         escOverlay.mouseMove(e, x, y);
     }
 }

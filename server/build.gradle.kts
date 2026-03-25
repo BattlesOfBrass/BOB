@@ -25,6 +25,8 @@ dependencies {
     annotationProcessor("org.jetbrains:annotations:26.1.0")
 
     implementation("com.google.guava:guava:33.5.0-jre")
+    // Source: https://mvnrepository.com/artifact/it.unimi.dsi/fastutil
+    implementation("it.unimi.dsi:fastutil:8.5.18")
 }
 
 tasks.shadowJar {

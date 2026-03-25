@@ -6,14 +6,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.file.*;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 import java.util.stream.Stream;
 
 //TODO: placeholder aus github asets fetchen

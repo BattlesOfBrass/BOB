@@ -17,15 +17,14 @@ public class Server {
     public Server() {
         instance = this;
 
-        registerListeners();
+        FileUtil.replaceIfNotExistingAsync(this.getClass().getClassLoader()).join();
 
+        registerListeners();
 
         init();
     }
 
     public void init() {
-        FileUtil.replaceIfNotExisting(this.getClass().getClassLoader());
-
         sendTool = new SendTool(core);
         serverSocket = new ServerSocket();
     }

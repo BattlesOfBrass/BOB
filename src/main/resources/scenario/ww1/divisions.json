@@ -1,0 +1,34 @@
+{
+    "GER":{
+        "div1":{
+            "name":"div1",
+            "org":"40",
+            "strength":"100",
+            "template":"test",
+            "state":"state_1"
+        },
+        "div2":{
+            "name":"div2",
+            "org":"40",
+            "strength":"100",
+            "template":"test",
+            "state":"state_1"
+        }
+    },
+    "FRA":{
+        "div1":{
+            "name":"div1",
+            "org":"40",
+            "strength":"100",
+            "template":"test",
+            "state":"state_1"
+        },
+        "div2":{
+            "name":"div2",
+            "org":"40",
+            "strength":"100",
+            "template":"test",
+            "state":"state_1"
+        }
+    }
+}

@@ -1,5 +1,7 @@
 {
   "border": "0;0;0",
   "water": "126;142;158",
-  "water_border": "105;118;132"
+  "water_border": "105;118;132",
+  "water_new": "125;141;155",
+  "water_border_new": "104;117;130"
 }

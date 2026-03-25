@@ -484,5 +484,330 @@
       "cavalry": 6
     },
     "base_stability": 60
+  },
+  "ECU": {
+    "name": "Ecuador",
+    "color": "249;146;98",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "PER": {
+    "name": "Peru",
+    "color": "196;189;204",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "BRA": {
+    "name": "Brazil",
+    "color": "76;145;63",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "PAR": {
+    "name": "Paraguay",
+    "color": "57;113;228",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "URU": {
+    "name": "Uruguay",
+    "color": "174;192;156",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "ARG": {
+    "name": "Argentina",
+    "color": "145;157;236",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "CHL": {
+    "name": "Chile",
+    "color": "155;101;107",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "BOL": {
+    "name": "Bolivia",
+    "color": "204;166;108",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "JAB": {
+    "name": "Jabal Shammar",
+    "color": "222;84;10",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "OMA": {
+    "name": "Muscat and Oman",
+    "color": "176;121;118",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "SAU": {
+    "name": "Sultanate of Najd",
+    "color": "171;190;152",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "YEM": {
+    "name": "Yemen",
+    "color": "222;84;10",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "IRA": {
+    "name": "Persia",
+    "color": "47;100;74",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "AFG": {
+    "name": "Afghanistan",
+    "color": "64;160;167",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "RAJ": {
+    "name": "British Raj",
+    "color": "170;10;10",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "Nep": {
+    "name": "Nepal",
+    "color": "0;56;89",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "BUT": {
+    "name": "Bhutan",
+    "color": "121;100;95",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "TIB": {
+    "name": "Tibet",
+    "color": "80;115;45",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "MNG": {
+    "name": "Mongolia",
+    "color": "80,200,45",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "CHI": {
+    "name": "China",
+    "color": "224;139;13",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "JAP": {
+    "name": "Japan",
+    "color": "201;191;183",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "THA": {
+    "name": "Thailand",
+    "color": "140;166;115",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "MAL": {
+    "name": "Malaya",
+    "color": "255;117;152",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "IND": {
+    "name": "Dutch East Indies",
+    "color": "40;50;120",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "AST": {
+    "name": "Australia",
+    "color": "57;143;97",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "NZE": {
+    "name": "New Zealand",
+    "color": "218;209;233",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "PHI": {
+    "name": "Philipines",
+    "color": "0;56;147",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
   }
 }
+

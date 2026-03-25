@@ -6,7 +6,10 @@ build/
 .kotlin
 
 .idea
-/run
+
+#dont push anything from run except the start.sh
+/run/*
+!/run/start.sh
 
 ### IntelliJ IDEA ###
 .idea/modules.xml

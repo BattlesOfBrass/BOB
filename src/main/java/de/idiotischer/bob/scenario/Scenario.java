@@ -21,8 +21,10 @@ public class Scenario {
     private final Path dir;
 
     private final List<Color> takenColors = new ArrayList<>();
+    private final String abbreviation;
 
-    public Scenario(String name, /*vorerst halt nur der dir name anstatt von ner config zu holen*/Path dir) {
+    public Scenario(String abbreviation, String name, Path dir) {
+        this.abbreviation = abbreviation;
         this.name = name;
         this.dir = dir;
 
@@ -108,6 +110,10 @@ public class Scenario {
         } catch (IOException e) {
             return false;
         }
+    }
+
+    public String getAbbreviation() {
+        return abbreviation;
     }
 
     public List<Color> getTakenColors() {

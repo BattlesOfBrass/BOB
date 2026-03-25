@@ -27,7 +27,8 @@ public class ScenarioManager {
             String dirName = p.getFileName().toString();
 
             if (BOB.getInstance().isDebug() || (!dirName.equals("default") && !dirName.endsWith("_"))) {
-                registerScenario(new Scenario(dirName, p));
+                /*vorerst abbreviation halt nur der dir name anstatt von ner config zu holen*/
+                registerScenario(new Scenario(dirName, dirName, p));
             }
         });
     }
@@ -36,8 +37,8 @@ public class ScenarioManager {
         return scenarios.stream().filter(s -> s.getDir().equals(path)).findFirst().orElse(null);
     }
 
-    public Scenario getScenario(String name) {
-        return scenarios.stream().filter(s -> s.getName().equals(name)).findFirst().orElse(null);
+    public Scenario getScenario(String abbreviation) {
+        return scenarios.stream().filter(s -> s.getAbbreviation().equals(abbreviation)).findFirst().orElse(null);
     }
 
     public Scenario registerScenario(Scenario scenario) {

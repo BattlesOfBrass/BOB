@@ -10,7 +10,7 @@ public class PacketEvents implements ListenerAdapter {
     @EventHandler
     public void onPacketReceive(PacketRegistry.PacketReceiveEvent event) {
         if(event.getPacket() instanceof PingPacket) {
-            IO.println("Ping packet received");
+            System.out.println("Ping packet received");
         }
     }
 

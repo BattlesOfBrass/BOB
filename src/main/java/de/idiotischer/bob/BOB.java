@@ -10,13 +10,13 @@ import de.idiotischer.bob.render.MainRenderer;
 import de.idiotischer.bob.scenario.ScenarioManager;
 import de.idiotischer.bob.scenario.ScenarioSceneLoader;
 import de.idiotischer.bob.state.StateManager;
+import de.idiotischer.bob.troop.TroopManager;
 import de.idiotischer.bob.util.FileUtil;
 import de.idiotischer.bob.util.MainConfigUtil;
 
 import javax.swing.*;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Objects;
 
 public class BOB {
     private static BOB instance;
@@ -44,6 +44,7 @@ public class BOB {
     private MainConfigUtil config;
 
     private boolean isHost = false;
+    private TroopManager troopManager;
 
     static void main() {
         new BOB();
@@ -53,6 +54,7 @@ public class BOB {
         BOB.instance = this;
 
         FileUtil.replaceIfNotExistingAsync(this.getClass().getClassLoader()).join();
+
         init();
     }
 
@@ -69,6 +71,8 @@ public class BOB {
         this.countries = new CountryManager();
 
         this.stateManager = new StateManager();
+
+        this.troopManager = new TroopManager();
 
         this.client = new ClientSocket();
 
@@ -101,7 +105,7 @@ public class BOB {
         return BOB.instance;
     }
 
-    public MainRenderer getMapRenderer() {
+    public MainRenderer getMainRenderer() {
         return mapRenderer;
     }
 
@@ -150,4 +154,11 @@ public class BOB {
         return scenarioManager;
     }
 
+    public void setHost(boolean b) {
+        this.isHost = b;
+    }
+
+    public TroopManager getTroopManager() {
+        return troopManager;
+    }
 }

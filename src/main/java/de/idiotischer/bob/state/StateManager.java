@@ -9,9 +9,7 @@ import de.idiotischer.bob.country.Country;
 import de.idiotischer.bob.map.FloodFill;
 
 import java.awt.*;
-import java.io.FileReader;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -49,7 +47,7 @@ public class StateManager {
 
                 registerState(state);
 
-                IO.println("registered state: " + state.getName()
+                System.out.println("registered state: " + state.getName()
                         + " (" + state.getAbbreviation() + ") at: "
                         + state.getX() + ";"
                         + state.getY() + " with controller: "
@@ -78,7 +76,7 @@ public class StateManager {
     }
 
     public State getStateAt(int x, int y) {
-        List<Point> points = FloodFill.getPossiblePos(BOB.getInstance().getMapRenderer().getGamePanel().getFrame(), x, y);
+        List<Point> points = FloodFill.getPossiblePos(BOB.getInstance().getMainRenderer().getGamePanel().getFrame(), x, y);
         Map<Point, State> statePoints = getStateSet().stream().collect(Collectors.toMap(s -> new Point(s.getX(), s.getY()), s -> s));
 
         Optional<Point> point = points.stream().filter(statePoints::containsKey).findFirst();
