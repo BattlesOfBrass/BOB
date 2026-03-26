@@ -10,8 +10,10 @@ import java.awt.image.BufferedImage;
 import java.util.function.Consumer;
 
 public class ImageButtonComp implements IButtonComp {
-    private final String text;
-    private final String id;
+
+    private String text;
+    private String id;
+
     private final Color selectedColor;
     private ButtonGroup group;
 
@@ -35,6 +37,13 @@ public class ImageButtonComp implements IButtonComp {
     private static final long CLICK_THRESHOLD = 200L;
     private JPanel panel;
     private boolean debug = false;
+    private boolean useImgHeight = true;
+
+    private int imgWidth = 1;
+    private int imgHeight = 1;
+    private int imgOffsetX = 0;
+    private int imgOffsetY = 0;
+
 
     public ImageButtonComp(String text, Color textColor, Color borderColor, boolean unselectWhenUnhover, int x, int y, int width, int height, int arcWidth, int arcHeight, int borderWidth, Color borderColorWhenHover, BufferedImage image, boolean centered, Consumer<ImageButtonComp> onClick) {
         this("", text,textColor, Color.WHITE, borderColor, unselectWhenUnhover, x, y, width, height, arcWidth, arcHeight, borderWidth, borderColorWhenHover, image, centered, null, onClick);
@@ -120,11 +129,26 @@ public class ImageButtonComp implements IButtonComp {
 
         g2.setStroke(new BasicStroke(3));
         g2.setColor(Color.WHITE);
-        if(selected) g2.drawRoundRect(x, y, bounds.width, bounds.height, arcWidth, arcHeight);;
+        if(selected) g2.drawRoundRect(x, y, bounds.width, bounds.height, arcWidth, arcHeight);
 
-        g2.drawImage(ImageUtil.makeRoundedCorner(image,arcHeight /*i found that 100 is most similar to 24 but still doing it like this for now */),
-                x, y, bounds.width, bounds.height,null
-        );
+        if(image != null) {
+            g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+            int widthImg =  bounds.width;
+            int heightImg =  bounds.height;
+
+            if(!useImgHeight) {
+                widthImg = imgWidth;
+                heightImg = imgHeight;
+            }
+            Image scaled = image.getScaledInstance(widthImg, heightImg, Image.SCALE_SMOOTH);
+
+            g2.drawImage(ImageUtil.makeRoundedCorner(scaled, widthImg, heightImg, arcHeight/*i found that 100 arc is most similar to 24 arc but still doing it like this for now */),
+                    x + imgOffsetX, y + imgOffsetY, widthImg, heightImg, null
+            );
+        }
 
         g.setColor(textColor);
         g.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 16));
@@ -197,6 +221,14 @@ public class ImageButtonComp implements IButtonComp {
         return id;
     }
 
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public void setText(String text) {
+        this.text = text;
+    }
+
     public void setDebug(boolean debug) {
         this.debug = debug;
     }
@@ -208,5 +240,25 @@ public class ImageButtonComp implements IButtonComp {
 
     public void setImage(BufferedImage image) {
         this.image = image;
+    }
+
+    public void setImgWidth(int imgWidth) {
+        this.imgWidth = imgWidth;
+    }
+
+    public void setImgHeight(int imgHeight) {
+        this.imgHeight = imgHeight;
+    }
+
+    public void setUseImgHeight(boolean useImgHeight) {
+        this.useImgHeight = useImgHeight;
+    }
+
+    public void setImgOffsetY(int i) {
+        this.imgOffsetY = i;
+    }
+
+    public void setImgOffsetX(int i) {
+        this.imgOffsetX = i;
     }
 }

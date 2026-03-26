@@ -36,16 +36,21 @@ public class CountryManager {
                 String name = countryElement.get("name").getAsString();
 
                 boolean majorAtStart = false;
+                boolean selectScreen = false;
 
                 if(countryElement.has("majorAtStart") && !countryElement.get("majorAtStart").isJsonNull()) {
                     majorAtStart = countryElement.get("majorAtStart").getAsBoolean();
+                }
+
+                if(countryElement.has("selectScreen") && !countryElement.get("selectScreen").isJsonNull()) {
+                    selectScreen = countryElement.get("selectScreen").getAsBoolean();
                 }
 
                 String[] colorStrings = countryElement.get("color").getAsString().split(";");
 
                 Color color = new Color(Integer.parseInt(colorStrings[0]), Integer.parseInt(colorStrings[1]), Integer.parseInt(colorStrings[2]));
 
-                Country country = new Country(countryAbbreviation.toUpperCase(), name, color, majorAtStart);
+                Country country = new Country(countryAbbreviation.toUpperCase(), name, color, majorAtStart, selectScreen);
 
                 registerCountry(country);
 
@@ -82,8 +87,26 @@ public class CountryManager {
         return countrySet;
     }
 
+    //public List<Country> getMajors() {
+    //    return getCountrySet().stream().filter(Country::isMajor).toList();
+    //}
+
+    //public List<Country> getOnSelectScreen() {
+    //    return getCountrySet().stream().filter(Country::isSelectScreen).toList();
+    //}
+
     public List<Country> getMajors() {
-        return getCountrySet().stream().filter(Country::isMajor).toList();
+        return getCountrySet().stream()
+                .filter(Country::isMajor)
+                .sorted((c1, c2) -> c1.getAbbreviation().compareTo(c2.getAbbreviation()))
+                .toList();
+    }
+
+    public List<Country> getOnSelectScreen() {
+        return getCountrySet().stream()
+                .filter(Country::isSelectScreen)
+                .sorted((c1, c2) -> c1.getAbbreviation().compareTo(c2.getAbbreviation()))
+                .toList();
     }
 
     public List<Country> getMinors() {

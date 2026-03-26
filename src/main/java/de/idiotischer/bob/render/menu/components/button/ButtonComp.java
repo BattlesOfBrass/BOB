@@ -8,8 +8,8 @@ import java.awt.event.MouseEvent;
 import java.util.function.Consumer;
 
 public class ButtonComp implements IButtonComp {
-    private final String text;
-    private final String id;
+    private String text;
+    private String id;
     private final Color selectedColor;
     private ButtonGroup group;
 
@@ -116,12 +116,12 @@ public class ButtonComp implements IButtonComp {
         g2.setStroke(new BasicStroke(borderWidth));
         g2.drawRoundRect(x, y, bounds.width, bounds.height, arcWidth, arcHeight);
 
-        g2.setStroke(new BasicStroke(3));
-        g2.setColor(Color.WHITE);
-        if(selected) g2.drawRoundRect(x, y, bounds.width, bounds.height, arcWidth, arcHeight);;
-
         g.setColor(displayColor);
         g.fillRoundRect(x, y, bounds.width, bounds.height, arcWidth, arcHeight);
+
+        g2.setStroke(new BasicStroke(3));
+        g2.setColor(Color.WHITE);
+        if(selected) g2.drawRoundRect(x, y, bounds.width, bounds.height, arcWidth, arcHeight);
 
         g.setColor(textColor);
         g.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 16));
@@ -201,5 +201,13 @@ public class ButtonComp implements IButtonComp {
 
     public void setDebug(boolean debug) {
         this.debug = debug;
+    }
+
+    public void setText(String text) {
+        this.text = text;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 }

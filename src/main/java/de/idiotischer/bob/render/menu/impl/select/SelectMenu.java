@@ -1,7 +1,6 @@
 package de.idiotischer.bob.render.menu.impl.select;
 
 import de.idiotischer.bob.render.menu.Menu;
-import de.idiotischer.bob.render.menu.components.ScrollContainer;
 
 import javax.swing.*;
 import java.awt.*;

@@ -1,8 +1,14 @@
 package de.idiotischer.bob.country;
 
 import de.idiotischer.bob.BOB;
+import de.idiotischer.bob.scenario.Scenario;
+import de.idiotischer.bob.util.FileUtil;
 
+import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -11,13 +17,32 @@ public class Country {
     private final String name;
     private final Color color;
     private final String abbreviation;
-    private boolean major = false;
+    private final boolean selectScreen;
+    private boolean major;
 
-    public Country(String abbreviation, String name, Color color, boolean major) {
+    public Country(String abbreviation, String name, Color color, boolean major, boolean selectScreen) {
         this.abbreviation = abbreviation;
         this.name = name;
         this.color = color;
         this.major = major;
+        this.selectScreen = selectScreen;
+    }
+
+    //später nicht die default sondern die current flag returnen
+    public Path getFlag() {
+        return FileUtil.getFlag(abbreviation);
+    }
+
+    public BufferedImage getFlagImage() {
+        try {
+            return ImageIO.read(FileUtil.getFlag(abbreviation).toFile());
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
+    public Path getDefaultFlag() {
+        return FileUtil.getFlag(abbreviation);
     }
 
     public Color countryColor() {
@@ -64,6 +89,10 @@ public class Country {
 
     public boolean isMajor() {
         return major;
+    }
+
+    public boolean isSelectScreen() {
+        return selectScreen;
     }
 
     public void setMajor(boolean major) {

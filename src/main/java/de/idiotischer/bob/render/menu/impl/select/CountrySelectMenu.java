@@ -3,10 +3,8 @@ package de.idiotischer.bob.render.menu.impl.select;
 import de.idiotischer.bob.BOB;
 import de.idiotischer.bob.country.Country;
 import de.idiotischer.bob.render.menu.Component;
-import de.idiotischer.bob.render.menu.components.button.ButtonComp;
+import de.idiotischer.bob.render.menu.components.button.*;
 import de.idiotischer.bob.render.menu.components.button.ButtonGroup;
-import de.idiotischer.bob.render.menu.components.button.ButtonRow;
-import de.idiotischer.bob.render.menu.components.button.IButtonComp;
 import de.idiotischer.bob.scenario.Scenario;
 
 import javax.swing.*;
@@ -16,6 +14,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class CountrySelectMenu extends SelectMenu {
 
@@ -83,39 +82,74 @@ public class CountrySelectMenu extends SelectMenu {
         });
 
         reload();
-
-        row = new ButtonRow(iButtonComps, 8, buttonGroup);
     }
 
     public void reload() {
         iButtonComps.clear();
 
-        BOB.getInstance().getCountries().getCountrySet()
-                .stream()
-                .filter(Country::isMajor)
-                .forEach(country -> iButtonComps.add(createButton(country)));
-
-        if (row != null) {
-            row.setButtons(iButtonComps);
+        for (int i = 0; i < 6; i++) {
+            iButtonComps.add(createButton());
         }
+
+        List<Country> cs = BOB.getInstance().getCountries().getOnSelectScreen();
+
+        int limit = Math.min(iButtonComps.size(), cs.size());
+
+        for (int i = 0; i < limit; i++) {
+            IButtonComp btn = iButtonComps.get(i);
+            Country c = cs.get(i);
+
+            if (!(btn instanceof ImageButtonComp comp)) continue;
+
+            if(c == null) continue;
+
+            comp.setId(c.getAbbreviation());
+
+            //eh nur placeholder
+            if(c.countryName().length() > 11) comp.setText(c.getAbbreviation());
+            else comp.setText(c.countryName());
+
+            if (c.getFlagImage() != null) {
+                comp.setImage(c.getFlagImage());
+            } else {
+                comp.setImage(null);
+            }
+        }
+
+        IButtonComp btn = iButtonComps.get(ThreadLocalRandom.current().nextInt(iButtonComps.size()));
+
+        buttonGroup.select(btn);
+
+        buttonGroup.set(iButtonComps);
+
+        if (row == null) row = new ButtonRow(this.parent, Color.WHITE, true);
+        row.setSpacing(10);
+
+        row.setChildren(iButtonComps);
     }
 
-    public IButtonComp createButton(Country country) {
-        ButtonComp b = new ButtonComp(
-                country.getAbbreviation(),
-                country.countryName(),
+    public IButtonComp createButton() {
+        ImageButtonComp b = new ImageButtonComp(
+                "",
+                "",
                 Color.WHITE,
                 Color.BLACK,
                 false,
-                0, 0,
-                300, 40,
+                -335, 85,
+                120, 200,
                 16, 16,
                 3, Color.LIGHT_GRAY,
-                Color.DARK_GRAY,
+                null,
                 true,
                 buttonGroup,
                 (_) -> {}
         );
+
+        b.setUseImgHeight(false);
+        b.setImgHeight(70);
+        b.setImgWidth(110);
+        b.setImgOffsetX(5);
+        b.setImgOffsetY(5);
 
         b.setPanel(parent);
         return b;
@@ -126,12 +160,17 @@ public class CountrySelectMenu extends SelectMenu {
         super.paint(g);
 
         Graphics2D g2 = (Graphics2D) g;
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        row.getButtons().forEach(b -> {
-            if (b instanceof ButtonComp c) {
-                c.setPanel(parent);
-            }
-        });
+        int x = parent.getWidth() / 2 - (layoutScaleX / 2);
+        int y = parent.getHeight() / 2 - (layoutScaleY / 2);
+
+        g2.setStroke(new BasicStroke(8));
+        g2.setColor(Color.DARK_GRAY.darker());
+
+        int yMod = -235;
+
+        g2.drawLine(x,y - yMod,x + layoutScaleX,y - yMod);
 
         row.paint(g2);
 

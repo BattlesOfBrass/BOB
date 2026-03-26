@@ -116,6 +116,7 @@ public class ScenarioSelectMenu extends SelectMenu {
     }
 
     public void drawImageFrame(Graphics2D g2) {
+        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
         int heightShrink = 40;
 
         Rectangle bounds = scroller.getActualBounds();
