@@ -7,7 +7,7 @@ import de.idiotischer.bob.render.menu.components.ScrollContainer;
 import de.idiotischer.bob.render.menu.components.button.ButtonGroup;
 import de.idiotischer.bob.render.menu.components.button.IButtonComp;
 import de.idiotischer.bob.scenario.Scenario;
-import de.idiotischer.bob.util.ImageUtil;
+import de.idiotischer.bob.util.RenderUtil;
 
 import javax.swing.*;
 import java.awt.*;
@@ -148,7 +148,7 @@ public class ScenarioSelectMenu extends SelectMenu {
         g2.setStroke(new BasicStroke(5)); //thickness of the img frame
         g2.drawRoundRect(x + 405, y + 40, width, height, 24, 24);
 
-        g2.drawImage(ImageUtil.makeRoundedCorner(selectedScenario.getMapImage(), 100), x + 405, y + 40, width,height,null);
+        g2.drawImage(RenderUtil.makeRoundedCorner(selectedScenario.getMapImage(), 100), x + 405, y + 40, width,height,null);
     }
 
 

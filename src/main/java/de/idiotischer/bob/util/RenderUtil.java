@@ -1,10 +1,11 @@
 package de.idiotischer.bob.util;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 
-public class ImageUtil {
+public class RenderUtil {
     public static BufferedImage makeRoundedCorner(Image image, int width, int height, int cornerRadius) {
         BufferedImage output = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2 = output.createGraphics();
@@ -44,4 +45,50 @@ public class ImageUtil {
 
         return output;
     }
+
+
+    // THESE WORK
+
+    public static int scaleUniform(JPanel p, int designW, int designH, int value) {
+        double scaleX = (double) p.getWidth() / designW;
+        double scaleY = (double) p.getHeight() / designH;
+        return (int) (value * Math.min(scaleX, scaleY));
+    }
+
+    public static int scaleUniformWidth(JPanel p, int designW, int designH, int originalWidth) {
+        double scaleX = (double) p.getWidth() / designW;
+        double scaleY = (double) p.getHeight() / designH;
+        double scale = Math.min(scaleX, scaleY);
+
+        return (int) (originalWidth * scale);
+    }
+
+    public static int scaleUniformHeight(JPanel p, int designW, int designH, int originalHeight) {
+        double scaleX = (double) p.getWidth() / designW;
+        double scaleY = (double) p.getHeight() / designH;
+        double scale = Math.min(scaleX, scaleY);
+
+        return (int) (originalHeight * scale);
+    }
+
+
+    //private static final int BASE_WIDTH = 1920;
+    //private static final int BASE_HEIGHT = 1080;
+
+    //public static int scaleWidth(JPanel p, int originalWidth) {
+    //    double scale = (double) p.getWidth() / BASE_WIDTH;
+    //    return (int) (originalWidth * scale);
+    //}
+
+    //public static int scaleHeight(JPanel p, int originalHeight) {
+    //    double scale = (double) p.getHeight() / BASE_HEIGHT;
+    //    return (int) (originalHeight * scale);
+    //}
+
+    //public static int scaleUniform(JPanel p, int originalSize) {
+    //    double scaleX = (double) p.getWidth() / BASE_WIDTH;
+    //    double scaleY = (double) p.getHeight() / BASE_HEIGHT;
+    //    double scale = Math.min(scaleX, scaleY);
+    //    return (int) (originalSize * scale);
+    //}
 }

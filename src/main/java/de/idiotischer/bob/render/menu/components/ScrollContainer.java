@@ -12,7 +12,14 @@ import java.awt.event.MouseWheelEvent;
 import java.util.ArrayList;
 import java.util.List;
 
-//add scrolling xD
+
+//TODO: BUGS
+// - scrolling lwk woirks between two clicks, not when unrelasing
+// - scrollable height ain't calculated right (just using a placeholder now)
+// - the thumb always snaps to the top or bottom and doesnt stay where it was dragged
+// - buttons are scrolled too much (prob bc of placeholders
+// - buttons are now defaulty too high up
+// - on first scroll all offsets between the buttons are lost and they get merged on the same spot and scroll that way too
 public class ScrollContainer implements Component {
     private final JPanel panel;
     private final Color color;
@@ -29,6 +36,13 @@ public class ScrollContainer implements Component {
 
     private int scrollbarWidth = 12;
     private Rectangle scrollBounds;
+
+    private boolean isDragging = false;
+    private int dragStartY = 0;
+    private int dragStartOffset = 0;
+
+    private int totalContentHeight = 20000;
+    private int visualThumbY = 0;
 
     public ScrollContainer(JPanel panel, Color color, boolean centered) {
         bounds = new Rectangle(0, 0, 0, 0);
@@ -47,12 +61,14 @@ public class ScrollContainer implements Component {
         int yOffset = padding;
 
         for (Component child : children) {
-            if (child instanceof IButtonComp btn) {
+            if (child instanceof ButtonComp btn) {
                 Rectangle b = btn.getBounds();
                 b.y += yOffset - scrollOffset;
                 yOffset += b.height + spacing;
             }
         }
+
+        this.totalContentHeight = yOffset;
     }
 
     @Override
@@ -102,10 +118,48 @@ public class ScrollContainer implements Component {
                 12
         );
 
+        if (totalContentHeight > 0) {
+            int drawY = isDragging ? visualThumbY : scrollBounds.y + (int)((scrollBounds.height - 30) * ((float)scrollOffset / (totalContentHeight - bounds.height)));
+
+            g2.setColor(new Color(255, 255, 255, 180));
+            g2.fillRoundRect(
+                    scrollBounds.x + 2,
+                    drawY,
+                    scrollbarWidth - 3,
+                    30,
+                    8,
+                    8
+            );
+        }
+
         for (ButtonComp child : children) {
             //child.setDebug(true);
             child.paint(g2);
         }
+    }
+
+    public Rectangle getThumbBounds() {
+        if (scrollBounds == null) {
+            System.out.println("scrollBounds == null");
+            return new Rectangle(0, 0, 0, 0);
+        }
+
+        if (totalContentHeight <= bounds.height) {
+            System.out.println("heighht lic is the full bug");
+            return new Rectangle(0, 0, 0, 0);
+        }
+
+        int thumbHeight = 30;
+        int maxScroll = totalContentHeight - bounds.height;
+
+        if (maxScroll <= 0) maxScroll = 1;
+
+        float scrollPercent = (float) scrollOffset / maxScroll;
+
+        int thumbY = scrollBounds.y +
+                (int) ((scrollBounds.height - thumbHeight) * scrollPercent);
+
+        return new Rectangle(scrollBounds.x + 2, thumbY, scrollbarWidth - 3, thumbHeight);
     }
 
     @Override
@@ -115,17 +169,57 @@ public class ScrollContainer implements Component {
 
     @Override
     public void mouseClick(MouseEvent e, int x, int y) {
-        getChildren().forEach(component -> component.mouseClick(e, x, y));
+        int maxScroll = Math.max(1, totalContentHeight - bounds.height);
+        int currentThumbY = scrollBounds.y + (int)((scrollBounds.height - 30) * ((float)scrollOffset / maxScroll));
+
+        Rectangle thumbHitbox = getThumbBounds();
+
+        System.out.println("Mouse clicked at: " + x + ", " + y);
+        System.out.println("Thumb bounds: " + thumbHitbox);
+
+        if (thumbHitbox.contains(x, y)) {
+            System.out.println(">>> CLICKED SCROLL THUMB <<<");
+
+            isDragging = true;
+            dragStartY = y;
+            dragStartOffset = scrollOffset;
+            visualThumbY = currentThumbY;
+        } else {
+            isDragging = false;
+            System.out.println("Clicked outside thumb");
+        }
+
+        children.forEach(component -> component.mouseClick(e, x, y));
     }
 
     @Override
     public void mouseRelease(MouseEvent e, int x, int y) {
-        getChildren().forEach(component -> component.mouseRelease(e, x, y));
+        isDragging = false;
+        children.forEach(component -> component.mouseRelease(e, x, y));
     }
 
     @Override
     public void mouseMove(MouseEvent e, int x, int y) {
-        getChildren().forEach(component -> component.mouseMove(e, x, y));
+        if (isDragging) {
+            System.out.println("Dragging... mouseY=" + y);
+
+            int deltaY = y - dragStartY;
+            float scrollRatio = (float) totalContentHeight / scrollBounds.height;
+            this.scrollOffset = dragStartOffset + (int)(deltaY * scrollRatio);
+
+            int maxScroll = Math.max(0, totalContentHeight - getActualBounds().height);
+            if (scrollOffset < 0) scrollOffset = 0;
+            if (scrollOffset > maxScroll) scrollOffset = maxScroll;
+
+            this.visualThumbY = Math.max(scrollBounds.y, Math.min(y, scrollBounds.y + scrollBounds.height - 30));
+
+            System.out.println("ScrollOffset: " + scrollOffset);
+            System.out.println("ThumbY: " + visualThumbY);
+
+            layoutChildren();
+        }
+
+        children.forEach(component -> component.mouseMove(e, x, y));
     }
 
     public void setBounds(Rectangle rectangle) {
@@ -143,6 +237,15 @@ public class ScrollContainer implements Component {
 
     public Rectangle getScrollBounds() {
         return scrollBounds;
+    }
+
+    public Rectangle getActualScrollBounds() {
+        JPanel pl = panel != null ? panel : BOB.getInstance().getMainRenderer().getGamePanel();
+        int x = centered ? pl.getWidth() / 2 - (scrollBounds.width / 2) : scrollBounds.x;
+        int y = centered ? pl.getHeight() / 2 - (scrollBounds.height / 2) : scrollBounds.y;
+        x += scrollBounds.x;
+        y -= scrollBounds.y;
+        return new Rectangle(x, y, scrollBounds.width, scrollBounds.height);
     }
 
     public Rectangle getBounds() {

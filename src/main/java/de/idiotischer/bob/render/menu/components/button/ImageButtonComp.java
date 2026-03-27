@@ -1,7 +1,7 @@
 package de.idiotischer.bob.render.menu.components.button;
 
 import de.idiotischer.bob.BOB;
-import de.idiotischer.bob.util.ImageUtil;
+import de.idiotischer.bob.util.RenderUtil;
 
 import javax.swing.*;
 import java.awt.*;
@@ -145,7 +145,7 @@ public class ImageButtonComp implements IButtonComp {
             }
             Image scaled = image.getScaledInstance(widthImg, heightImg, Image.SCALE_SMOOTH);
 
-            g2.drawImage(ImageUtil.makeRoundedCorner(scaled, widthImg, heightImg, arcHeight/*i found that 100 arc is most similar to 24 arc but still doing it like this for now */),
+            g2.drawImage(RenderUtil.makeRoundedCorner(scaled, widthImg, heightImg, arcHeight/*i found that 100 arc is most similar to 24 arc but still doing it like this for now */),
                     x + imgOffsetX, y + imgOffsetY, widthImg, heightImg, null
             );
         }
