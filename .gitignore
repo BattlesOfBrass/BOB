@@ -3,13 +3,15 @@ build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
-.kotlin
+.kotlindd
 
 #compiled jar started stuff
 config/
 icons/
 mapBase/
 scenario/
+
+temp/
 
 .idea
 
