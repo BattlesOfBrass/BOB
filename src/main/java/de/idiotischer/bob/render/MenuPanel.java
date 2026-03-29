@@ -25,7 +25,7 @@ public class MenuPanel extends JPanel implements Panel {
 
     private boolean scenarioSelect = false;
 
-    private SelectMenu scenarioSelectMenu;
+    private SelectMenu selectMenu;
     private final StartMenu startMenu;
 
     private final List<Menu> menuList = new ArrayList<>();
@@ -37,10 +37,10 @@ public class MenuPanel extends JPanel implements Panel {
 
         this.renderer = renderer;
 
-        this.scenarioSelectMenu = new ScenarioSelectMenu(BOB.getInstance().getScenarioSceneLoader().getCurrentScenario(),this, layoutScaleX, layoutScaleY); //Oder später eben countryselect
+        this.selectMenu = new ScenarioSelectMenu(BOB.getInstance().getScenarioSceneLoader().getCurrentScenario(),this, layoutScaleX, layoutScaleY); //Oder später eben countryselect
         this.startMenu = new StartMenu(this);
 
-        this.menuList.add(scenarioSelectMenu);
+        this.menuList.add(selectMenu);
         this.menuList.add(startMenu);
 
         this.setBackground(Color.BLACK);
@@ -77,10 +77,12 @@ public class MenuPanel extends JPanel implements Panel {
 
         if(scenarioSelect) {
             if(!wasSelectBefore) {
-                this.scenarioSelectMenu =  new ScenarioSelectMenu(BOB.getInstance().getScenarioSceneLoader().getCurrentScenario(),this, layoutScaleX, layoutScaleY);
+                this.selectMenu =  new ScenarioSelectMenu(BOB.getInstance().getScenarioSceneLoader().getCurrentScenario(),this, layoutScaleX, layoutScaleY);
+
+                reloadMenuList();
             }
 
-            scenarioSelectMenu.paint(g2);
+            selectMenu.paint(g2);
             wasSelectBefore = true;
         } else {
             wasSelectBefore = false;
@@ -88,26 +90,19 @@ public class MenuPanel extends JPanel implements Panel {
         }
     }
 
-    private void handleZoom(Graphics2D g2) {
-        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-                RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+    public void reloadMenuList() {
+        menuList.clear();
 
-        AffineTransform oldTransform = g2.getTransform();
-
-        g2.translate(-renderer.getOffsetX(), -renderer.getOffsetY());
-
-        g2.scale(renderer.getZoom(), renderer.getZoom());
-
-        g2.drawImage(frame, 0, 0,null);
-
-        g2.setTransform(oldTransform);
+        menuList.add(selectMenu);
+        menuList.add(startMenu);
     }
+
 
     @Override
     public void mouseScroll(MouseWheelEvent e, int x, int y) {
         //menuList.forEach(p -> p.mouseScroll(e, x, y));
         if(scenarioSelect) {
-            scenarioSelectMenu.mouseScroll(e, x, y);
+            selectMenu.mouseScroll(e, x, y);
         } else {
             startMenu.mouseScroll(e, x, y);
         }
@@ -118,7 +113,7 @@ public class MenuPanel extends JPanel implements Panel {
         //menuList.forEach(p -> p.mouseClick(e, x, y));
 
         if(scenarioSelect) {
-            scenarioSelectMenu.mouseClick(e, x, y);
+            selectMenu.mouseClick(e, x, y);
         } else {
             startMenu.mouseClick(e, x, y);
         }
@@ -129,7 +124,7 @@ public class MenuPanel extends JPanel implements Panel {
         //menuList.forEach(p -> p.mouseRelease(e, x, y));
 
         if(scenarioSelect) {
-            scenarioSelectMenu.mouseRelease(e, x, y);
+            selectMenu.mouseRelease(e, x, y);
         } else {
             startMenu.mouseRelease(e, x, y);
         }
@@ -140,7 +135,7 @@ public class MenuPanel extends JPanel implements Panel {
         //menuList.forEach(p -> p.mouseMove(e, x, y));
 
         if(scenarioSelect) {
-            scenarioSelectMenu.mouseMove(e, x, y);
+            selectMenu.mouseMove(e, x, y);
         } else {
             startMenu.mouseMove(e, x, y);
         }
@@ -151,7 +146,7 @@ public class MenuPanel extends JPanel implements Panel {
         //menuList.forEach(p -> p.keyPress(e));
 
         if(scenarioSelect) {
-            scenarioSelectMenu.keyPress(e);
+            selectMenu.keyPress(e);
         } else {
             startMenu.keyPress(e);
         }
@@ -162,7 +157,7 @@ public class MenuPanel extends JPanel implements Panel {
         //menuList.forEach(p -> p.keyRelease(e));
 
         if(scenarioSelect) {
-            scenarioSelectMenu.keyRelease(e);
+            selectMenu.keyRelease(e);
         } else {
             startMenu.keyRelease(e);
         }
@@ -177,6 +172,6 @@ public class MenuPanel extends JPanel implements Panel {
     }
 
     public void setScenarioSelectMenu(SelectMenu scenarioSelectMenu) {
-        this.scenarioSelectMenu = scenarioSelectMenu;
+        this.selectMenu = scenarioSelectMenu;
     }
 }

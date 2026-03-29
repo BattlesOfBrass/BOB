@@ -194,14 +194,13 @@ public class ScrollContainer implements Component {
     public void mouseScroll(MouseWheelEvent e, int x, int y) {
         Rectangle actualBounds = getActualBounds();
 
-        if (!actualBounds.contains(e.getPoint())) return;
+        if (!actualBounds.contains(x, y)) return;
 
         int scrollAmount = e.getWheelRotation() * 30;
         scrollOffset += scrollAmount;
 
-        int maxScroll = Math.max(0, totalContentHeight - getActualBounds().height);
+        int maxScroll = Math.max(0, totalContentHeight - actualBounds.height);
         scrollOffset = Math.max(0, Math.min(scrollOffset, maxScroll));
-
     }
 
     public Rectangle getActualBounds() {

@@ -1,6 +1,7 @@
 package de.idiotischer.bob.render;
 
 import de.idiotischer.bob.BOB;
+import de.idiotischer.bob.camera.Camera;
 import de.idiotischer.bob.map.FloodFill;
 import de.idiotischer.bob.player.Player;
 import de.idiotischer.bob.render.menu.Panel;
@@ -42,6 +43,7 @@ public class MainRenderer extends Thread {
 
     List<Panel> panels = new ArrayList<>();
     private boolean wasAtMinZoom;
+    private Camera camera;
 
     public MainRenderer(Player player) {
         this.player = player;
@@ -51,10 +53,13 @@ public class MainRenderer extends Thread {
     public void start() {
         inMenu = true;
 
-        map = BOB.getInstance().getScenarioSceneLoader().getMap();
+        setMap(BOB.getInstance().getScenarioSceneLoader().getMap());
         visualBorderOverlay = new BufferedImage(map.getWidth(), map.getHeight(), BufferedImage.TYPE_INT_ARGB);
 
         renderPanel = new RenderPanel(map,this);
+
+        camera.setViewportSize(renderPanel.getWidth(), renderPanel.getHeight());
+
         menuPanel = new MenuPanel(map,this);
 
         panels.add(renderPanel);
@@ -70,24 +75,15 @@ public class MainRenderer extends Thread {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         //frame.setIconImage(icon);
         frame.setIgnoreRepaint(true); // TODO: check if it causes bugs or fixes window flicker on windows
+        frame.validate();
+        camera.setViewportSize(renderPanel.getWidth(), renderPanel.getHeight());
 
         frame.addComponentListener(new FrameListen() {
             @Override
             public void componentResized(ComponentEvent e) {
                 SwingUtilities.invokeLater(() -> {
-                    double newMinZoom = getMinZoom();
-
-                    if (wasAtMinZoom) {
-                        zoom = newMinZoom;
-
-                        offsetX = 0;
-                        offsetY = 0;
-                    } else {
-                        zoom = Math.max(newMinZoom, zoom);
-                    }
-
-                    clampOffsets();
-                    //renderPanel.repaint(); makes everything bug when going back to smaller window
+                    camera.setViewportSize(renderPanel.getWidth(), renderPanel.getHeight());
+                    SwingUtilities.invokeLater(() -> {camera.clamp();});
                 });
             }
         });
@@ -120,8 +116,8 @@ public class MainRenderer extends Thread {
                     frame.add(renderPanel);
 
                     renderPanel.requestFocusInWindow();
-                    zoom = getMinZoom();
-                    clampOffsets();
+                    //zoom = getMinZoom();
+                    //clampOffsets();
                 }
 
                 frame.revalidate();
@@ -158,8 +154,21 @@ public class MainRenderer extends Thread {
                         int button = e.getButton();
 
                         //TODO: fix wrong x and y when maximizing or sqashing tab
-                        int x = (int) ((e.getX() + offsetX) / zoom);
-                        int y = (int) ((e.getY() + offsetY) / zoom);
+                        int x = camera.screenToWorldX(e.getX());
+                        int y = camera.screenToWorldY(e.getY());
+
+                        //int sx = e.getX();
+                        //int sy = e.getY();
+
+                        //int wx = camera.screenToWorldX(sx);
+                        //int wy = camera.screenToWorldY(sy);
+
+                        //int sx2 = (int) (wx * camera.getZoom() - camera.getX());
+                        //int sy2 = (int) (wy * camera.getZoom() - camera.getY());
+
+                        //System.out.println("screen: " + sx + "," + sy);
+                        //System.out.println("world: " + wx + "," + wy);
+                        //System.out.println("back:  " + sx2 + "," + sy2);
 
                         if(panel instanceof RenderPanel panel1) {
                             if (panel1.isEscMenu()) {
@@ -182,8 +191,8 @@ public class MainRenderer extends Thread {
 
                     @Override
                     public void mouseReleased(MouseEvent e) {
-                        int x = (int) ((e.getX() + offsetX) / zoom);
-                        int y = (int) ((e.getY() + offsetY) / zoom);
+                        int x = camera.screenToWorldX(e.getX());
+                        int y = camera.screenToWorldY(e.getY());
 
                         if(panel instanceof RenderPanel panel1) {
                             if (panel1.isEscMenu()) handleMenuRelease(e, x, y);
@@ -194,31 +203,18 @@ public class MainRenderer extends Thread {
                 panel.addMouseWheelListener(new MouseAdapter() {
                     @Override
                     public void mouseWheelMoved(MouseWheelEvent e) {
-                        if(renderPanel.isEscMenu()) return;
+                        if (inMenu && getGamePanel().isEscMenu() /*gucken ob probleme macht*/) {
 
-                        if (e.getScrollType() != MouseWheelEvent.WHEEL_UNIT_SCROLL) return;
+                            p.mouseScroll(e, e.getX(), e.getY());
+                        } else {
+                            if (renderPanel.isEscMenu()) return;
+                            double factor = Math.pow(1.1, -e.getWheelRotation());
+                            camera.zoom(factor, e.getX(), e.getY());
 
-                        double oldZoom = zoom;
-
-                        int rotation = e.getWheelRotation();
-                        zoom *= Math.pow(1.1, -rotation);
-
-                        double minZoom = getMinZoom();
-
-                        wasAtMinZoom = Math.abs(zoom - minZoom) < 0.0001;
-
-                        zoom = Math.max(minZoom, Math.min(zoom, 20));
-
-                        double mouseX = e.getX();
-                        double mouseY = e.getY();
-
-                        offsetX = (offsetX + mouseX) * (zoom / oldZoom) - mouseX;
-                        offsetY = (offsetY + mouseY) * (zoom / oldZoom) - mouseY;
-
-                        int x = (int) ((e.getX() + offsetX) / zoom);
-                        int y = (int) ((e.getY() + offsetY) / zoom);
-
-                        p.mouseScroll(e, x, y);
+                            int x = camera.screenToWorldX(e.getX());
+                            int y = camera.screenToWorldY(e.getY());
+                            p.mouseScroll(e, x, y);
+                        }
                     }
                 });
 
@@ -249,8 +245,8 @@ public class MainRenderer extends Thread {
 
                     @Override
                     public void mouseMoved(MouseEvent e) {
-                        int x = (int) ((e.getX() + offsetX) / zoom);
-                        int y = (int) ((e.getY() + offsetY) / zoom);
+                        int x = camera.screenToWorldX(e.getX());
+                        int y = camera.screenToWorldY(e.getY());
 
                         if(panel instanceof RenderPanel panel1) {
                             if (panel1.isEscMenu()) handleMenuMove(e, x, y);
@@ -364,7 +360,7 @@ public class MainRenderer extends Thread {
         int dy = 0;
         int speed = 5;
 
-        speed += (int) (zoom / 0.95); //damit schneller wenn näher
+        speed += (int) (camera.getZoom() / 0.95); //damit schneller wenn näher
 
         if(keysPressed.contains(KeyEvent.VK_SHIFT)) speed += 7;
 
@@ -377,16 +373,15 @@ public class MainRenderer extends Thread {
     }
 
     public void move(int xMove, int yMove) {
-        offsetX += xMove;
-        offsetY += yMove;
-
-        clampOffsets();
+        camera.move(xMove, yMove);
     }
 
     private void renderMenu() {
         menuPanel.setFrame(renderMap(map));
     }
 
+
+    //Optimize pls
     private BufferedImage renderMap(BufferedImage map) {
         BufferedImage frameBuffer = new BufferedImage(
                 map.getWidth(),
@@ -396,34 +391,39 @@ public class MainRenderer extends Thread {
 
         Graphics2D g = frameBuffer.createGraphics();
 
-        g.drawImage(map, 0, 0, null);
 
+       //AffineTransform old = g.getTransform();
+       //g.transform(camera.getTransform());
+
+        g.drawImage(map, 0, 0, null);
         g.drawImage(visualBorderOverlay, 0, 0, null);
 
+        //g.setTransform(old);
         g.dispose();
 
         return frameBuffer;
     }
 
-    //TODO: fix everything
+    //TODO: works more or less (apply to buttons and panels
     public AffineTransform getViewportTransform() {
-        AffineTransform at = new AffineTransform();
-
-        if (!inMenu) {
-            //at.translate(-offsetX, -offsetY);
-            //at.scale(zoom, zoom);
-            at.translate(0, 0);
-            at.scale(1, 1);
-        } else {
-            //TODO: check this ig
-            //double menuZoom = getMinZoom();
-
-            //double centeredX = (menuPanel.getWidth() - map.getWidth()) / 2.0;
-            //double centeredY = (menuPanel.getHeight() - map.getHeight()) / 2.0;
-
-            at.translate(0, 0);
-            at.scale(1, 1);
+        if (inMenu || renderPanel.isEscMenu()) {
+            return new AffineTransform();
         }
+
+        double panelWidth = renderPanel.getWidth();
+        double panelHeight = renderPanel.getHeight();
+        double mapWidth = map.getWidth();
+        double mapHeight = map.getHeight();
+
+        double scale = Math.min(panelWidth / mapWidth, panelHeight / mapHeight);
+
+        double dx = (panelWidth - mapWidth * scale) / 2.0;
+        double dy = (panelHeight - mapHeight * scale) / 2.0;
+
+        AffineTransform at = new AffineTransform();
+        at.translate(dx, dy);
+        at.scale(scale, scale);
+
         return at;
     }
 
@@ -438,30 +438,6 @@ public class MainRenderer extends Thread {
     //    g.dispose();
     //    renderPanel.setFrame(frame);
     //}
-
-    //TODO: damit man nciht beim zoomen so kurz raus und wieder rein gebuggt wird halt die neuen offsets übergeben, dann die geclampten zurückgeben lassen und dann erst setzen
-    public void clampOffsets() {
-        int panelWidth = renderPanel.getWidth();
-        int panelHeight = renderPanel.getHeight();
-
-        int mapWidth = map.getWidth();
-        int mapHeight = map.getHeight();
-
-        double scaledWidth = mapWidth * zoom;
-        double scaledHeight = mapHeight * zoom;
-
-        if (scaledWidth <= panelWidth) {
-            offsetX = -(panelWidth - scaledWidth) / 2;
-        } else {
-            offsetX = Math.max(0, Math.min(offsetX, scaledWidth - panelWidth));
-        }
-
-        if (scaledHeight <= panelHeight) {
-            offsetY = -(panelHeight - scaledHeight) / 2;
-        } else {
-            offsetY = Math.max(0, Math.min(offsetY, scaledHeight - panelHeight));
-        }
-    }
 
     public void shutdown() {
         if(!BOB.getInstance().save()) System.out.println("Failed to safe before shutdown...");
@@ -536,6 +512,11 @@ public class MainRenderer extends Thread {
 
     public void setMap(BufferedImage map) {
         this.map = map;
+        if(camera == null) camera = new Camera(map.getWidth(), map.getHeight());
+
+        if(renderPanel != null) {
+            camera.setViewportSize(renderPanel.getWidth(), renderPanel.getHeight());
+        }
     }
 
     public MenuPanel getMenuPanel() {
@@ -552,5 +533,17 @@ public class MainRenderer extends Thread {
 
     public JFrame getFrame() {
         return frame;
+    }
+
+    public Camera getCamera() {
+        return camera;
+    }
+
+    public BufferedImage getVisualBorderOverlay() {
+        return visualBorderOverlay;
+    }
+
+    public BufferedImage getMap() {
+        return map;
     }
 }

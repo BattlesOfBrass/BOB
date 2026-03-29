@@ -10,6 +10,8 @@ import de.idiotischer.bob.troop.TroopDrawer;
 import de.idiotischer.bob.troop.TroopManager;
 
 import javax.swing.*;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
@@ -38,6 +40,22 @@ public class RenderPanel extends JPanel implements Panel {
         this.requestFocusInWindow();
         this.setIgnoreRepaint(true); // TODO: check if it causes bugs or fixes window flicker on windows
         this.setPreferredSize(new Dimension(frame.getWidth(), frame.getHeight()));
+
+        //makes it worse lolol0ol
+        //this.addAncestorListener(new AncestorListener() {
+        //    @Override
+        //    public void ancestorAdded(AncestorEvent event) {
+        //        renderer.getCamera().setViewportSize(getWidth(), getHeight());
+        //        renderer.getCamera().zoomToMin();
+        //    }
+
+        //    @Override
+        //    public void ancestorRemoved(AncestorEvent event) {}
+
+        //    @Override
+        //    public void ancestorMoved(AncestorEvent event) {}
+        //});
+
     }
 
     public void setFrame(BufferedImage frame) {
@@ -52,40 +70,30 @@ public class RenderPanel extends JPanel implements Panel {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-
-        if (frame == null) return;
+        if (renderer.getMap() == null) return;
 
         Graphics2D g2 = (Graphics2D) g;
 
-        handleZoom(g2); //map vor antialiasing rendern
+        AffineTransform screenTransform = g2.getTransform();
 
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2.transform(renderer.getCamera().getTransform());
 
-        handleDragOverlay(g2);
-
-        //wegen z als letztes
-        menu.paint(g);
-
-        if(escMenu) {
-            escOverlay.paint(g);
+        g2.drawImage(renderer.getMap(), 0, 0, null);
+        if (renderer.getVisualBorderOverlay() != null) {
+            g2.drawImage(renderer.getVisualBorderOverlay(), 0, 0, null);
         }
 
         drawTroops(g2);
-    }
 
-    private void handleZoom(Graphics2D g2) {
-        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-                RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+        g2.setTransform(screenTransform);
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        AffineTransform oldTransform = g2.getTransform();
+        handleDragOverlay(g2);
+        menu.paint(g);
 
-        g2.translate(-renderer.getOffsetX(), -renderer.getOffsetY());
-
-        g2.scale(renderer.getZoom(), renderer.getZoom());
-
-        g2.drawImage(frame, 0, 0,null);
-
-        g2.setTransform(oldTransform);
+        if (escMenu) {
+            escOverlay.paint(g);
+        }
     }
 
     public void drawTroops(Graphics2D g2) {

@@ -36,7 +36,7 @@ public class ScenarioSceneLoader {
             SwingUtilities.invokeLater(() -> {
                 if( BOB.getInstance().getMainRenderer().getGamePanel() == null) return;
                 BOB.getInstance().getMainRenderer().getGamePanel().setFrame(scenario.getMapImage());
-                BOB.getInstance().getMainRenderer().setZoom(BOB.getInstance().getMainRenderer().getMinZoom());
+                BOB.getInstance().getMainRenderer().getCamera().zoomToMin();
             });
         }
     }
