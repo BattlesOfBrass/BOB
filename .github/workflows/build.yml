@@ -1,4 +1,4 @@
-name: Build JARs
+name: Build Native Executables
 
 on:
   workflow_dispatch:
@@ -8,12 +8,24 @@ env:
 
 jobs:
   build:
-    name: Build
-    runs-on: ubuntu-latest
+    name: Build (${{ matrix.platform }})
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux
+          - os: windows-latest
+            platform: windows
 
     steps:
+      # ── Checkout ──────────────────────────────────────────────────────────────
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       # ── Java ──────────────────────────────────────────────────────────────────
       - name: Set up JDK 21
@@ -22,8 +34,9 @@ jobs:
           java-version: "21"
           distribution: "temurin"
 
-      # ── Make Gradle wrapper executable ───────────────────────────────────────
+      # ── Make Gradle wrapper executable (Linux only) ───────────────────────────
       - name: Make gradlew executable
+        if: runner.os == 'Linux'
         run: chmod +x ./gradlew
 
       # ── Gradle cache ──────────────────────────────────────────────────────────
@@ -44,22 +57,55 @@ jobs:
           restore-keys: |
             gradle-deps-${{ runner.os }}-
 
-      # ── Build ─────────────────────────────────────────────────────────────────
-      - name: Build main JAR (incl. shared)
-        run: ./gradlew shadowJar --no-daemon
+      # ── Convert PNG → ICO for Windows (ImageMagick is pre-installed) ──────────
+      - name: Convert icon to ICO (Windows only)
+        if: runner.os == 'Windows'
+        run: |
+          magick "assets/logo/BOB Logo Large.png" `
+            -define icon:auto-resize="256,128,64,48,32,16" `
+            "assets/logo/BOB Logo.ico"
 
-      - name: Build server JAR (incl. shared)
-        run: ./gradlew :server:shadowJar --no-daemon
+      # ── Download appimagetool (Linux only) ────────────────────────────────────
+      - name: Download appimagetool (Linux only)
+        if: runner.os == 'Linux'
+        run: |
+          wget -q https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage \
+            -O /usr/local/bin/appimagetool
+          chmod +x /usr/local/bin/appimagetool
+          # appimagetool itself is an AppImage — extract it so it runs without FUSE
+          appimagetool --appimage-extract > /dev/null
+          mv squashfs-root /opt/appimagetool-extracted
+          ln -sf /opt/appimagetool-extracted/AppRun /usr/local/bin/appimagetool
+
+      # ── Build everything ──────────────────────────────────────────────────────
+      - name: Build
+        run: ./gradlew build --no-daemon
 
       # ── Upload artifacts ──────────────────────────────────────────────────────
-      - name: Upload main JAR
+      - name: Upload main (Linux AppImage)
+        if: runner.os == 'Linux'
         uses: actions/upload-artifact@v4
         with:
-          name: BOB-main
-          path: build/libs/BOB-main.jar
+          name: BOB-main-linux
+          path: build/appimage/*.AppImage
 
-      - name: Upload server JAR
+      - name: Upload server (Linux AppImage)
+        if: runner.os == 'Linux'
         uses: actions/upload-artifact@v4
         with:
-          name: BOB-server
-          path: server/build/libs/BOB-server-*.jar
+          name: BOB-server-linux
+          path: server/build/appimage/*.AppImage
+
+      - name: Upload main (Windows)
+        if: runner.os == 'Windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: BOB-main-windows
+          path: build/jpackage/BOB/
+
+      - name: Upload server (Windows)
+        if: runner.os == 'Windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: BOB-server-windows
+          path: server/build/jpackage/BOB-server/
