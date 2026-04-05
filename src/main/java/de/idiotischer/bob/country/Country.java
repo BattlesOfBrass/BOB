@@ -1,6 +1,7 @@
 package de.idiotischer.bob.country;
 
 import de.idiotischer.bob.BOB;
+import de.idiotischer.bob.player.Player;
 import de.idiotischer.bob.util.FileUtil;
 
 import javax.imageio.ImageIO;
@@ -119,6 +120,10 @@ public class Country {
     public static Country fromPixel(int x, int y) {
         Color color = null;//color getten
         return BOB.getInstance().getCountryManager().getCountries().stream().filter(country -> country.countryColor().equals(color)).findFirst().orElse(null);
+    }
+
+    public Player getPlayer() {
+        return null;
     }
 
     @Override

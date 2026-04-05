@@ -4,10 +4,6 @@ import org.jetbrains.annotations.ApiStatus;
 
 import java.awt.geom.AffineTransform;
 
-//TODO: some smaller bugs are:
-// - going in esc menu than resizing doesnt clamp the thing right
-// - goign in esc than resizing doesnt keep the right location (offset a tiny bit)
-// - soemtimes we blackscreen again when pressing start even though i though i fixed it
 public class Camera {
 
     private double x = 0;
