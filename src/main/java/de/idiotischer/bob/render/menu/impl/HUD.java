@@ -1,33 +1,31 @@
 package de.idiotischer.bob.render.menu.impl;
 
 import de.idiotischer.bob.BOB;
-import de.idiotischer.bob.render.MainRenderer;
-import de.idiotischer.bob.render.menu.Menu;
-
+import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseEvent;
 
-public class HUD implements Menu {
+public class HUD extends JPanel {
+    private final JLabel countryLabel;
 
-    private final MainRenderer renderer;
+    public HUD() {
+        this.setOpaque(false);
+        this.setLayout(new FlowLayout(FlowLayout.LEFT));
 
-    public HUD(MainRenderer renderer) {
-        this.renderer = renderer;
+        countryLabel = new JLabel("Current country: ---");
+        countryLabel.setForeground(Color.GREEN);
+        countryLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 14));
+
+        this.add(countryLabel);
+    }
+
+    public void updateHUD() {
+        String name = BOB.getInstance().getPlayer().country().countryName();
+        countryLabel.setText("Current country: " + name);
     }
 
     @Override
     public void paint(Graphics g) {
-        Graphics2D g2 = (Graphics2D) g;
-
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-        g.setColor(Color.GREEN);
-        g.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
-        g.drawString("Current country: " + BOB.getInstance().getPlayer().country().countryName(),15,15);
-    }
-
-    @Override
-    public void mouseClick(MouseEvent e, int x, int y) {
-
+        super.paint(g);
+        updateHUD();
     }
 }

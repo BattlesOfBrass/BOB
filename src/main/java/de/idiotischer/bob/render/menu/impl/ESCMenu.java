@@ -1,59 +1,39 @@
 package de.idiotischer.bob.render.menu.impl;
 
 import de.idiotischer.bob.BOB;
-import de.idiotischer.bob.render.menu.Menu;
-import de.idiotischer.bob.render.menu.components.button.ButtonComp;
+import de.idiotischer.bob.render.menu.components.button.BOBButton;
 
+import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseEvent;
-import java.util.ArrayList;
-import java.util.List;
 
-public class ESCMenu implements Menu {
-
-    ButtonComp continueButton = new ButtonComp("Continue", Color.WHITE, Color.DARK_GRAY,true,0,100,150,50, 16,16, 15, Color.DARK_GRAY.brighter(), Color.BLACK, true,(b) -> {
-        System.out.println("clicked continue");
-        BOB.getInstance().getMainRenderer().getGamePanel().setEscMenu(false);
-    });
-
-    ButtonComp menu = new ButtonComp("Main Menu", Color.WHITE, Color.DARK_GRAY,true,0,-100,150,50, 16,16, 15, Color.DARK_GRAY.brighter(), Color.BLACK, true,(b) -> {
-        System.out.println("clicked mm");
-        BOB.getInstance().getMainRenderer().setMainMenu(true);
-    });
-
-    ButtonComp settings = new ButtonComp("Settings", Color.WHITE, Color.DARK_GRAY,true,0,0,150,50, 16,16, 15, Color.DARK_GRAY.brighter(), Color.BLACK, true,(b) -> {
-        System.out.println("clicked settings");
-    });
-
-    List<ButtonComp> buttons = new ArrayList<>();
+public class ESCMenu extends JPanel {
 
     public ESCMenu() {
-        buttons.add(continueButton);
-        buttons.add(menu);
-        buttons.add(settings);
+        this.setOpaque(false);
+
+        this.setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridwidth = GridBagConstraints.REMAINDER;
+        gbc.insets = new Insets(10, 0, 10, 0);
+
+        JButton continueBtn = createButton("Continue");
+        continueBtn.addActionListener(e -> BOB.getInstance().getMainRenderer().getGamePanel().setEscMenu(false));
+
+        JButton menuBtn = createButton("Main Menu");
+        menuBtn.addActionListener(e -> BOB.getInstance().getMainRenderer().setMainMenu(true));
+
+        JButton settingsBtn = createButton("Settings");
+
+        this.add(continueBtn, gbc);
+        this.add(settingsBtn, gbc);
+        this.add(menuBtn, gbc);
     }
 
-    @Override
-    public void paint(Graphics g) {
-        Graphics2D g2 = (Graphics2D) g;
-
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-        buttons.forEach(b -> b.paint(g2));
-    }
-
-    @Override
-    public void mouseClick(MouseEvent e, int x, int y) {
-        buttons.forEach(b ->b.mouseClick(e, x, y));
-    }
-
-    @Override
-    public void mouseMove(MouseEvent e, int x, int y) {
-        buttons.forEach(b ->b.mouseMove(e, x, y));
-    }
-
-    @Override
-    public void mouseRelease(MouseEvent e, int x, int y) {
-        buttons.forEach(b ->b.mouseRelease(e, x, y));
+    private JButton createButton(String text) {
+        //JButton btn = new JButton(text);
+        JButton btn = new BOBButton(text, Color.WHITE, Color.BLACK, Color.DARK_GRAY.darker(),Color.GRAY,16, 5);
+        btn.setPreferredSize(new Dimension(150, 50));
+        btn.setFocusable(false);
+        return btn;
     }
 }

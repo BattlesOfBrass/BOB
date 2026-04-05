@@ -2,268 +2,167 @@ package de.idiotischer.bob.render.menu.impl.select;
 
 import de.idiotischer.bob.BOB;
 import de.idiotischer.bob.country.Country;
-import de.idiotischer.bob.render.menu.Component;
-import de.idiotischer.bob.render.menu.components.ScrollContainer;
-import de.idiotischer.bob.render.menu.components.button.*;
-import de.idiotischer.bob.render.menu.components.button.ButtonGroup;
+import de.idiotischer.bob.render.menu.components.ModernScrollBarUI;
+import de.idiotischer.bob.render.menu.components.button.BOBButton;
+import de.idiotischer.bob.render.menu.components.button.BOBImageButton;
 import de.idiotischer.bob.scenario.Scenario;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseWheelEvent;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
+public class CountrySelectMenu extends JPanel {
 
-//TODO: maybe add a select by clickign on map or smth
-//TODO: add "view other" menu wich show the scroller with all buttons (looks better)
-public class CountrySelectMenu extends SelectMenu {
-
-    private final ScrollContainer scroller;
-    private Scenario selectedScenario;
+    private final Scenario scenario;
     private Country selectedCountry;
+    private final JPanel featuredPanel;
+    private final JPanel listPanel;
+    private final ButtonGroup group = new ButtonGroup();
 
-    private ButtonRow row;
+    private final int layoutScaleX = 850;
+    private final int layoutScaleY = 500;
 
-    private final List<IButtonComp> iButtonComps = new ArrayList<>();
-    private final List<Component> other = new ArrayList<>();
+    public CountrySelectMenu(Scenario scenario) {
+        this.scenario = scenario;
+        this.setOpaque(false);
+        this.setLayout(null);
+        this.setPreferredSize(new Dimension(layoutScaleX, layoutScaleY));
 
-    private final ButtonGroup buttonGroup;
+        featuredPanel = new JPanel(new GridLayout(1, 6, 15, 0));
+        featuredPanel.setOpaque(false);
+        featuredPanel.setBounds(40, 40, layoutScaleX - 80, 180);
 
-    private final ButtonComp startButton = new ButtonComp(
-            "Start", Color.WHITE, Color.DARK_GRAY.darker(), true,
-            320, -208, 95, 28,
-            16, 16, 15,
-            Color.DARK_GRAY.brighter(), Color.BLACK,
-            true, (b) -> {
+        listPanel = new JPanel(new FlowLayout(FlowLayout.LEFT/*CENTER*/, 10, 10));
+        listPanel.setOpaque(false);
 
-        if (selectedScenario == null || selectedCountry == null) return;
+        JScrollPane scroller = new JScrollPane(listPanel);
+        scroller.setOpaque(false);
+        scroller.getViewport().setOpaque(false);
+        scroller.setBorder(null);
 
-        BOB.getInstance().getScenarioSceneLoader().load(selectedScenario, true);
-        BOB.getInstance().getPlayer().country(selectedCountry);
-    });
+        scroller.getHorizontalScrollBar().setUI(new ModernScrollBarUI());
+        scroller.getHorizontalScrollBar().setPreferredSize(new Dimension(0, 14));
+        scroller.getHorizontalScrollBar().setOpaque(false);
 
-    private final ButtonComp backMenuButton = new ButtonComp(
-            "Back to Menu", Color.WHITE, Color.DARK_GRAY.darker(), true,
-            0, -210, 138, 28,
-            16, 16, 15,
-            Color.DARK_GRAY.brighter(), Color.BLACK,
-            true, (b) -> {
-        BOB.getInstance().getMainRenderer().getMenuPanel().setInScenarioSelect(false);
-    });
+        scroller.setBounds(40, 280, layoutScaleX - 80, 100);
 
-    private final ButtonComp backButton = new ButtonComp(
-            "Scenario", Color.WHITE, Color.DARK_GRAY.darker(), true,
-            -320, -208, 120, 28,
-            16, 16, 15,
-            Color.DARK_GRAY.brighter(), Color.BLACK,
-            true, (b) -> {
-        if (selectedScenario == null) return;
+        int bottomY = layoutScaleY - 60;
 
-        BOB.getInstance().getMainRenderer().getMenuPanel()
-                .setScenarioSelectMenu(new ScenarioSelectMenu(selectedScenario, parent, layoutScaleX, layoutScaleY));
-    });
+        JButton backBtn = createButton("Back", 120, 40);
+        backBtn.setBounds(40, bottomY, 120, 40);
+        backBtn.addActionListener(e ->
+                BOB.getInstance().getMainRenderer().getMenuPanel()
+                        .setScenarioSelectMenu(new ScenarioSelectMenu(scenario))
+        );
 
-    public CountrySelectMenu(Scenario selected, JPanel panel, int layoutScaleX, int layoutScaleY) {
-        super(panel, layoutScaleX, layoutScaleY);
-
-        this.selectedScenario = selected;
-
-        scroller = new ScrollContainer(panel, new Color(200, 200, 200, 180), true, true);
-
-        int x = parent.getWidth() / 2 - (layoutScaleX / 2) + 20;
-        int y = parent.getHeight() / 2 - (layoutScaleY / 2) + 20;
-        int width = layoutScaleX - 40;
-        int height = layoutScaleY - 40;
-
-        scroller.setBounds(new Rectangle(x, y, width, height-250));
-        scroller.setCenteredYOffset(-115);
-
-        other.add(startButton);
-        other.add(backMenuButton);
-        other.add(backButton);
-
-        buttonGroup = new ButtonGroup((pair) -> {
-            IButtonComp btn = pair.left();
-            if (btn == null) return;
-
-            String id = btn.getId();
-            if (id == null || id.isEmpty()) return;
-
-            selectedCountry = BOB.getInstance().getCountryManager().getCountry(id);
+        JButton startBtn = createButton("Start Game", 140, 40);
+        startBtn.setBounds(layoutScaleX - 180, bottomY, 140, 40);
+        startBtn.addActionListener(e -> {
+            if (selectedCountry != null) {
+                BOB.getInstance().getScenarioSceneLoader().load(scenario, true);
+                BOB.getInstance().getPlayer().country(selectedCountry);
+            }
         });
+
+        this.add(featuredPanel);
+        this.add(scroller);
+        this.add(backBtn);
+        this.add(startBtn);
 
         reload();
     }
 
-    public void reload() {
-        iButtonComps.clear();
+    private void reload() {
+        featuredPanel.removeAll();
+        listPanel.removeAll();
 
-        for (int i = 0; i < 6; i++) {
-            iButtonComps.add(createButton());
+        List<Country> featured = BOB.getInstance().getCountryManager().getOnSelectScreen();
+        List<Country> all = BOB.getInstance().getCountryManager().getCountries();
+
+        if (selectedCountry == null && !featured.isEmpty()) {
+            selectedCountry = featured.get(ThreadLocalRandom.current().nextInt(featured.size()));
         }
 
-        reloadRow();
-        reloadScroll();
-    }
-
-    public void reloadScroll() {
-        List<Country> cs = new ArrayList<>(BOB.getInstance().getCountryManager().getCountries());
-        cs.removeAll(BOB.getInstance().getCountryManager().getOnSelectScreen());
-
-        List<ButtonComp> buttons = new ArrayList<>();
-        for (Country s : cs) {
-            //TODO: make it so i dont need to trial and error with these values (bs but gonna leave this todo in anyways)
-            ButtonComp b = new ButtonComp(
-                    s.getAbbreviation(),
-                    s.countryName(),
+        for (Country c : featured) {
+            BOBImageButton btn = new BOBImageButton(
+                    c.getAbbreviation(),
+                    c.countryName().length() > 9 ? c.getAbbreviation() : c.countryName(),
+                    c.getFlagImage(),
                     Color.WHITE,
-                    Color.BLACK,
-                    false,
-                    25, 0,
-                    300, 40,
-                    16, 16,
-                    3, Color.LIGHT_GRAY,
                     Color.DARK_GRAY,
-                    false, buttonGroup, (ignored) -> {});
+                    Color.DARK_GRAY.darker(),
+                    Color.LIGHT_GRAY,
+                    16,
+                    5
+            );
 
-            b.setPanel(parent);
-            buttons.add(b);
+            btn.setPreferredSize(new Dimension(130, 160));
+            btn.setFocusable(false);
+
+            configureButton(btn, c);
+
+            if (c.equals(selectedCountry)) btn.setSelected(true);
+            featuredPanel.add(btn);
         }
 
-        scroller.setChildren(new ArrayList<>(buttons));
-    }
+        for (Country c : all) {
+            if (featured.contains(c)) continue;
 
-    public void reloadRow() {
-        List<Country> cs = BOB.getInstance().getCountryManager().getOnSelectScreen();
+            BOBButton btn = createButton(c.getAbbreviation(), 100, 40);
 
-        int limit = Math.min(iButtonComps.size(), cs.size());
+            configureButton(btn, c);
 
-        for (int i = 0; i < limit; i++) {
-            IButtonComp btn = iButtonComps.get(i);
-            Country c = cs.get(i);
-
-            if (!(btn instanceof ImageButtonComp comp)) continue;
-
-            if(c == null) continue;
-
-            comp.setId(c.getAbbreviation());
-
-            //eh nur placeholder
-            if(c.countryName().length() > 11) comp.setText(c.getAbbreviation());
-            else comp.setText(c.countryName());
-
-            if (c.getFlagImage() != null) {
-                comp.setImage(c.getFlagImage());
-            } else {
-                comp.setImage(null);
-            }
+            if (c.equals(selectedCountry)) btn.setSelected(true);
+            listPanel.add(btn);
         }
 
-        IButtonComp btn = iButtonComps.get(ThreadLocalRandom.current().nextInt(iButtonComps.size()));
-
-        buttonGroup.select(btn);
-
-        buttonGroup.set(iButtonComps);
-
-        if (row == null) row = new ButtonRow(this.parent, Color.WHITE, true);
-
-        row.setSpacing(10);
-
-        row.setChildren(iButtonComps);
+        revalidate();
+        //repaint();
     }
 
-    public IButtonComp createButton() {
-        ImageButtonComp b = new ImageButtonComp(
-                "",
-                "",
-                Color.WHITE,
-                Color.BLACK,
-                false,
-                -335, 85,
-                120, 200,
-                16, 16,
-                3, Color.LIGHT_GRAY,
-                null,
-                true,
-                buttonGroup,
-                (ignored) -> {}
-        );
-
-        b.setUseImgHeight(false);
-        b.setImgHeight(70);
-        b.setImgWidth(110);
-        b.setImgOffsetX(5);
-        b.setImgOffsetY(5);
-
-        b.setPanel(parent);
-        return b;
-    }
-
-    @Override
-    public void paint(Graphics g) {
-        super.paint(g);
-
-        Graphics2D g2 = (Graphics2D) g;
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-        int x = parent.getWidth() / 2 - (layoutScaleX / 2);
-        int y = parent.getHeight() / 2 - (layoutScaleY / 2);
-
-        g2.setStroke(new BasicStroke(8));
-        g2.setColor(Color.DARK_GRAY.darker());
-
-        int yMod = -235;
-
-        g2.drawLine(x,y - yMod,x + layoutScaleX,y - yMod);
-
-        row.paint(g2);
-
-        scroller.paint(g);
-
-        other.forEach(component -> {
-            if (component instanceof IButtonComp c) {
-                c.setPanel(parent);
-                c.paint(g);
+    private void configureButton(AbstractButton btn, Country c) {
+        group.add(btn);
+        btn.addActionListener(e -> {
+            java.util.Enumeration<AbstractButton> en = group.getElements();
+            while (en.hasMoreElements()) {
+                en.nextElement().setSelected(false);
             }
+
+            selectedCountry = c;
+            btn.setSelected(true);
+            //repaint();
         });
     }
 
-    @Override
-    public void mouseClick(MouseEvent e, int x, int y) {
-        row.mouseClick(e, x, y);
-        scroller.mouseClick(e, x, y);
-        other.forEach(component -> component.mouseClick(e, x, y));
+    private BOBButton createButton(String text, int width, int height) {
+        BOBButton btn = new BOBButton(
+                text,
+                Color.WHITE,
+                Color.BLACK,
+                Color.DARK_GRAY.darker(),
+                Color.LIGHT_GRAY,
+                16,
+                5
+        );
+        btn.setPreferredSize(new Dimension(width, height));
+        btn.setFocusable(false);
+        return btn;
     }
 
     @Override
-    public void mouseRelease(MouseEvent e, int x, int y) {
-        row.mouseRelease(e, x, y);
-        scroller.mouseRelease(e, x, y);
-        other.forEach(component -> component.mouseRelease(e, x, y));
-    }
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-    @Override
-    public void mouseMove(MouseEvent e, int x, int y) {
-        row.mouseMove(e, x, y);
-        scroller.mouseMove(e, x, y);
-        other.forEach(component -> component.mouseMove(e, x, y));
-    }
+        g2.setColor(Color.DARK_GRAY);
+        g2.fillRoundRect(4, 4, getWidth() - 8, getHeight() - 8, 30, 30);
 
-    @Override
-    public void mouseScroll(MouseWheelEvent e, int x, int y) {
-        row.mouseScroll(e, x, y);
-        scroller.mouseScroll(e, x, y);
-        other.forEach(component -> component.mouseScroll(e, x, y));
-    }
+        g2.setStroke(new BasicStroke(8));
+        g2.setColor(Color.DARK_GRAY.darker());
+        g2.drawRoundRect(4, 4, getWidth() - 8, getHeight() - 8, 30, 30);
 
-    @Override
-    public void keyPress(KeyEvent e) {
-        if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-            BOB.getInstance().getMainRenderer().getMenuPanel().setInScenarioSelect(false);
-        }
+        g2.dispose();
     }
 }

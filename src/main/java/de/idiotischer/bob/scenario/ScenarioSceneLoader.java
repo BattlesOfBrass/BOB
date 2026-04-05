@@ -1,6 +1,7 @@
 package de.idiotischer.bob.scenario;
 
 import de.idiotischer.bob.BOB;
+import de.idiotischer.bob.render.menu.impl.select.ScenarioSelectMenu;
 
 import javax.swing.*;
 import java.awt.*;
@@ -27,7 +28,8 @@ public class ScenarioSceneLoader {
         if(switchMM) {
             BOB.getInstance().getMainRenderer().getGamePanel().setEscMenu(false);
             BOB.getInstance().getMainRenderer().setMainMenu(false);
-            BOB.getInstance().getMainRenderer().getMenuPanel().setInScenarioSelect(false);
+            BOB.getInstance().getMainRenderer().getMenuPanel().setScenarioSelect(false);
+            BOB.getInstance().getMainRenderer().getMenuPanel().setScenarioSelectMenu(new ScenarioSelectMenu(scenario));
         }
 
         if(currentScenario.getMapImage() != null) {
@@ -35,7 +37,7 @@ public class ScenarioSceneLoader {
 
             SwingUtilities.invokeLater(() -> {
                 if( BOB.getInstance().getMainRenderer().getGamePanel() == null) return;
-                BOB.getInstance().getMainRenderer().getGamePanel().setFrame(scenario.getMapImage());
+                BOB.getInstance().getMainRenderer().setMap(scenario.getMapImage());
                 BOB.getInstance().getMainRenderer().getCamera().zoomToMin();
             });
         }

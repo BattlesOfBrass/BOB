@@ -76,7 +76,7 @@ public class StateManager {
     }
 
     public State getStateAt(int x, int y) {
-        List<Point> points = FloodFill.getPossiblePos(BOB.getInstance().getMainRenderer().getGamePanel().getFrame(), x, y);
+        List<Point> points = FloodFill.getPossiblePos(BOB.getInstance().getMainRenderer().getMap(), x, y);
         Map<Point, State> statePoints = getStateSet().stream().collect(Collectors.toMap(s -> new Point(s.getX(), s.getY()), s -> s));
 
         Optional<Point> point = points.stream().filter(statePoints::containsKey).findFirst();

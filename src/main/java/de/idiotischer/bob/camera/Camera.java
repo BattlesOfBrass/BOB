@@ -1,5 +1,7 @@
 package de.idiotischer.bob.camera;
 
+import org.jetbrains.annotations.ApiStatus;
+
 import java.awt.geom.AffineTransform;
 
 //TODO: some smaller bugs are:
@@ -30,10 +32,10 @@ public class Camera {
     //    clamp();
     //}
 
-    public void move(double dx, double dy) {
+    public void move(double dx, double dy, boolean clamp) {
         x += dx;
         y += dy;
-        clamp();
+        if(clamp) clamp();
     }
 
     public void setPosition(double x, double y) {
@@ -103,24 +105,48 @@ public class Camera {
         double scaledWidth = mapWidth * zoom;
         double scaledHeight = mapHeight * zoom;
 
-        if (scaledWidth < viewportWidth) {
-            x = (scaledWidth - viewportWidth) / 2.0;
-        } else {
+        if (scaledWidth > viewportWidth) {
             x = Math.max(0, Math.min(x, scaledWidth - viewportWidth));
+        } else {
+            x = (scaledWidth - viewportWidth) / 2.0;
         }
 
-        if (scaledHeight < viewportHeight) {
-            y = (scaledHeight - viewportHeight) / 2.0;
-        } else {
+        if (scaledHeight > viewportHeight) {
             y = Math.max(0, Math.min(y, scaledHeight - viewportHeight));
+        } else {
+            y = (scaledHeight - viewportHeight) / 2.0;
         }
     }
+
+    //    public void clampOffsets() {
+    //        int panelWidth = renderPanel.getWidth();
+    //        int panelHeight = renderPanel.getHeight();
+    //
+    //        int mapWidth = map.getWidth();
+    //        int mapHeight = map.getHeight();
+    //
+    //        double scaledWidth = mapWidth * zoom;
+    //        double scaledHeight = mapHeight * zoom;
+    //
+    //        if (scaledWidth <= panelWidth) {
+    //            offsetX = -(panelWidth - scaledWidth) / 2;
+    //        } else {
+    //            offsetX = Math.max(0, Math.min(offsetX, scaledWidth - panelWidth));
+    //        }
+    //
+    //        if (scaledHeight <= panelHeight) {
+    //            offsetY = -(panelHeight - scaledHeight) / 2;
+    //        } else {
+    //            offsetY = Math.max(0, Math.min(offsetY, scaledHeight - panelHeight));
+    //        }
+    //    }
 
     public double getMinZoom() {
         if (viewportWidth <= 0 || viewportHeight <= 0) return 1.0;
         return Math.min((double) viewportWidth / mapWidth, (double) viewportHeight / mapHeight);
     }
 
+    @ApiStatus.Obsolete
     public void forceFit() {
         this.zoom = getMinZoom();
         this.x = 0;
@@ -131,6 +157,7 @@ public class Camera {
 
     public AffineTransform getTransform() {
         AffineTransform at = new AffineTransform();
+        //at.translate(-Math.round(x), -Math.round(y));
         at.translate(-x, -y);
         at.scale(zoom, zoom);
         return at;

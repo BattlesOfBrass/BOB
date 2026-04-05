@@ -1,177 +1,103 @@
 package de.idiotischer.bob.render;
 
 import de.idiotischer.bob.BOB;
-import de.idiotischer.bob.render.menu.Menu;
 import de.idiotischer.bob.render.menu.Panel;
 import de.idiotischer.bob.render.menu.impl.select.ScenarioSelectMenu;
 import de.idiotischer.bob.render.menu.impl.StartMenu;
-import de.idiotischer.bob.render.menu.impl.select.SelectMenu;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.List;
 
 public class MenuPanel extends JPanel implements Panel {
 
     private BufferedImage frame;
     private final MainRenderer renderer;
 
-    private final int layoutScaleX = 800;
-    private final int layoutScaleY = 400;
+    private final StartMenu startMenu;
+    private JPanel currentActiveMenu;
 
     private boolean scenarioSelect = false;
 
-    private SelectMenu selectMenu;
-    private final StartMenu startMenu;
-
-    private final List<Menu> menuList = new ArrayList<>();
-
-    boolean wasSelectBefore = false;
-
     public MenuPanel(BufferedImage map, MainRenderer renderer) {
         setFrame(map);
-
         this.renderer = renderer;
 
-        this.selectMenu = new ScenarioSelectMenu(BOB.getInstance().getScenarioSceneLoader().getCurrentScenario(),this, layoutScaleX, layoutScaleY); //Oder später eben countryselect
-        this.startMenu = new StartMenu(this);
+        this.setLayout(new GridBagLayout());
 
-        this.menuList.add(selectMenu);
-        this.menuList.add(startMenu);
+        this.startMenu = new StartMenu();
+        this.currentActiveMenu = new ScenarioSelectMenu(BOB.getInstance().getScenarioSceneLoader().getCurrentScenario());
+
+        this.add(startMenu);
+        this.add(currentActiveMenu);
 
         this.setBackground(Color.BLACK);
         this.setFocusable(true);
         this.requestFocusInWindow();
-        this.setIgnoreRepaint(true); // TODO: check if it causes bugs or fixes window flicker on windows
         this.setPreferredSize(new Dimension(frame.getWidth(), frame.getHeight()));
+
+        setInScenarioSelect(false);
+    }
+
+
+    public void setScenarioSelectMenu(JPanel newMenu) {
+        if (this.currentActiveMenu != null) {
+            this.remove(this.currentActiveMenu);
+        }
+
+        this.currentActiveMenu = newMenu;
+        this.add(currentActiveMenu);
+
+        this.currentActiveMenu.setVisible(scenarioSelect);
+
+        this.revalidate();
+        //this.repaint();
     }
 
     public void setInScenarioSelect(boolean b) {
         this.scenarioSelect = b;
-    }
 
-    public void setFrame(BufferedImage frame) {
-        this.frame = frame;
+        this.startMenu.setVisible(!b);
+        if (currentActiveMenu != null) {
+            currentActiveMenu.setVisible(b);
+        }
+
+        if (b) {
+            this.requestFocusInWindow();
+        }
+
+        this.revalidate();
+        //this.repaint();
     }
 
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-
-        JButton button = new JButton();
-        button.paintComponents(g);
-
         Graphics2D g2 = (Graphics2D) g;
 
-        g.drawImage(frame, 0, 0, getWidth(), getHeight(),this);
-        //for a while we will use th eold method again, but: use this cause the other line scales it to the whole screen which would be an inconsistency between game and menu
-        //handleZoom(g2);
+        g.drawImage(frame, 0, 0, getWidth(), getHeight(), this);
+
         g.setColor(new Color(255, 255, 255, 70));
-        g.fillRect(0,0, getWidth(), getHeight());
+        g.fillRect(0, 0, getWidth(), getHeight());
 
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-        if(scenarioSelect) {
-            if(!wasSelectBefore) {
-                this.selectMenu =  new ScenarioSelectMenu(BOB.getInstance().getScenarioSceneLoader().getCurrentScenario(),this, layoutScaleX, layoutScaleY);
-
-                reloadMenuList();
-            }
-
-            selectMenu.paint(g2);
-            wasSelectBefore = true;
-        } else {
-            wasSelectBefore = false;
-            startMenu.paint(g2);
-        }
     }
 
-    public void reloadMenuList() {
-        menuList.clear();
-
-        menuList.add(selectMenu);
-        menuList.add(startMenu);
-    }
-
-
-    @Override
-    public void mouseScroll(MouseWheelEvent e, int x, int y) {
-        //menuList.forEach(p -> p.mouseScroll(e, x, y));
-        if(scenarioSelect) {
-            selectMenu.mouseScroll(e, x, y);
-        } else {
-            startMenu.mouseScroll(e, x, y);
-        }
-    }
-
-    @Override
-    public void mouseClick(MouseEvent e, int x, int y) {
-        //menuList.forEach(p -> p.mouseClick(e, x, y));
-
-        if(scenarioSelect) {
-            selectMenu.mouseClick(e, x, y);
-        } else {
-            startMenu.mouseClick(e, x, y);
-        }
-    }
-
-    @Override
-    public void mouseRelease(MouseEvent e, int x, int y) {
-        //menuList.forEach(p -> p.mouseRelease(e, x, y));
-
-        if(scenarioSelect) {
-            selectMenu.mouseRelease(e, x, y);
-        } else {
-            startMenu.mouseRelease(e, x, y);
-        }
-    }
-
-    @Override
-    public void mouseMove(MouseEvent e, int x, int y) {
-        //menuList.forEach(p -> p.mouseMove(e, x, y));
-
-        if(scenarioSelect) {
-            selectMenu.mouseMove(e, x, y);
-        } else {
-            startMenu.mouseMove(e, x, y);
-        }
-    }
+    @Override public void mouseScroll(MouseWheelEvent e, int x, int y) {}
+    @Override public void mouseClick(MouseEvent e, int x, int y) {}
+    @Override public void mouseRelease(MouseEvent e, int x, int y) {}
+    @Override public void mouseMove(MouseEvent e, int x, int y) {}
 
     @Override
     public void keyPress(KeyEvent e) {
-        //menuList.forEach(p -> p.keyPress(e));
-
-        if(scenarioSelect) {
-            selectMenu.keyPress(e);
-        } else {
-            startMenu.keyPress(e);
+        if (e.getKeyCode() == KeyEvent.VK_ESCAPE && scenarioSelect) {
+            setInScenarioSelect(false);
         }
     }
 
-    @Override
-    public void keyRelease(KeyEvent e) {
-        //menuList.forEach(p -> p.keyRelease(e));
+    @Override public void keyRelease(KeyEvent e) {}
 
-        if(scenarioSelect) {
-            selectMenu.keyRelease(e);
-        } else {
-            startMenu.keyRelease(e);
-        }
-    }
-
-    public void setScenarioSelect(boolean scenarioSelect) {
-        this.scenarioSelect = scenarioSelect;
-    }
-
-    public void setWasSelectBefore(boolean wasSelectBefore) {
-        this.wasSelectBefore = wasSelectBefore;
-    }
-
-    public void setScenarioSelectMenu(SelectMenu scenarioSelectMenu) {
-        this.selectMenu = scenarioSelectMenu;
-    }
+    public void setFrame(BufferedImage frame) { this.frame = frame; }
+    public void setScenarioSelect(boolean scenarioSelect) { setInScenarioSelect(scenarioSelect); }
 }

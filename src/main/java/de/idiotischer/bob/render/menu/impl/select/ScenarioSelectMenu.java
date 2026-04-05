@@ -1,219 +1,143 @@
 package de.idiotischer.bob.render.menu.impl.select;
 
 import de.idiotischer.bob.BOB;
-import de.idiotischer.bob.render.menu.Component;
-import de.idiotischer.bob.render.menu.components.button.ButtonComp;
-import de.idiotischer.bob.render.menu.components.ScrollContainer;
-import de.idiotischer.bob.render.menu.components.button.ButtonGroup;
-import de.idiotischer.bob.render.menu.components.button.IButtonComp;
+import de.idiotischer.bob.render.menu.components.ModernScrollBarUI;
+import de.idiotischer.bob.render.menu.components.button.BOBButton;
 import de.idiotischer.bob.scenario.Scenario;
 import de.idiotischer.bob.util.ImageUtil;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseWheelEvent;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.awt.image.BufferedImage;
 
-public class ScenarioSelectMenu extends SelectMenu {
+public class ScenarioSelectMenu extends JPanel {
 
-    private Set<Scenario> scenarios;
-    private final ScrollContainer scroller;
+    private final int layoutScaleX = 850;
+    private final int layoutScaleY = 500;
     private Scenario selectedScenario;
+    private final JPanel listPanel;
 
-    private final ButtonGroup scrollGroup = new ButtonGroup((pair) -> {
-        IButtonComp newButton = pair.left();
-        String id = newButton.getId();
+    public ScenarioSelectMenu(Scenario selected) {
+        this.selectedScenario = selected;
+        this.setOpaque(false);
+        this.setLayout(null);
+        this.setPreferredSize(new Dimension(layoutScaleX, layoutScaleY));
 
-        if(id.isEmpty()) return;
+        listPanel = new JPanel();
+        listPanel.setLayout(new BoxLayout(listPanel, BoxLayout.Y_AXIS));
+        listPanel.setOpaque(false);
 
-        Scenario scenario = BOB.getInstance().getScenarioManager().getScenario(id);
+        JScrollPane scroller = new JScrollPane(listPanel);
+        scroller.setOpaque(false);
+        scroller.getViewport().setOpaque(false);
+        scroller.setBorder(null);
+        scroller.getVerticalScrollBar().setUI(new ModernScrollBarUI());
+        scroller.getVerticalScrollBar().setPreferredSize(new Dimension(10, 0));
 
-        if(scenario == null) return;
+        scroller.setBounds(40, 40, 350, 360);
+        this.add(scroller);
 
-        selectedScenario = scenario;
-    });
+        int bottomY = layoutScaleY - 60;
 
-    private final ButtonComp nextMenuButton = new ButtonComp("Next", Color.WHITE, Color.DARK_GRAY.darker(),true,320,-208,95,28, 16,16, 15, Color.DARK_GRAY.brighter(), Color.BLACK, true, (b) -> {
-        if(selectedScenario == null) return;
+        JButton backBtn = createButton("Back to Menu", 180, 40);
+        backBtn.setBounds(40, bottomY, 180, 40);
+        backBtn.addActionListener(e -> BOB.getInstance().getMainRenderer().getMenuPanel().setInScenarioSelect(false));
+        this.add(backBtn);
 
-        //BOB.getInstance().getScenarioSceneLoader().load(selectedScenario, true);
-        BOB.getInstance().getMainRenderer().getMenuPanel().setScenarioSelectMenu(new CountrySelectMenu(selectedScenario, parent,layoutScaleX,layoutScaleY));
-    });
+        JButton placeholderBtn = createButton("Placeholder", 140, 40);
+        placeholderBtn.setBounds(355, bottomY, 140, 40);
+        this.add(placeholderBtn);
 
-    private final ButtonComp backMenuButton = new ButtonComp("Back to Menu", Color.WHITE, Color.DARK_GRAY.darker(),true,0,-210,138,28, 16,16, 15, Color.DARK_GRAY.brighter(), Color.BLACK, true, (b) -> {
-        BOB.getInstance().getMainRenderer().getMenuPanel().setInScenarioSelect(false);
-    });
-
-    private final ButtonComp buttonSoThatItLooksBetter = new ButtonComp("Placeholder", Color.WHITE, Color.DARK_GRAY.darker(),true,-320,-208,120,28, 16,16, 15, Color.DARK_GRAY.brighter(), Color.BLACK, true, (b) -> {
-        System.out.println("clicked placeholder");
-    });
-
-    List<Component> components = new ArrayList<>();
-
-    public ScenarioSelectMenu(Scenario selected, JPanel panel, int layoutScaleX, int layoutScaleY) {
-        super(panel, layoutScaleX, layoutScaleY);
-
-        scroller = new ScrollContainer(panel, new Color(200, 200, 200, 180), true);
-
-        selectedScenario = selected;
-
-        reload();
-
-        int x = parent.getWidth() / 2 - (layoutScaleX / 2) + 20;
-        int y = parent.getHeight() / 2 - (layoutScaleY / 2) + 20;
-        int width = layoutScaleX - 40;
-        int height = layoutScaleY - 40;
-
-        scroller.setBounds(new Rectangle(x, y, width, height));
-
-        components.add(scroller);
-        //button muss drüber deswegen nach scroller
-        components.add(nextMenuButton);
-        components.add(backMenuButton);
-        components.add(buttonSoThatItLooksBetter);
-    }
-
-    public int getLayoutScaleX() {
-        return layoutScaleX;
-    }
-
-    public int getLayoutScaleY() {
-        return layoutScaleY;
-    }
-
-    public JPanel getParent() {
-        return parent;
-    }
-
-    @Override
-    public void paint(Graphics g) {
-        super.paint(g);
-
-        g.setColor(Color.DARK_GRAY);
-
-        Graphics2D g2 = (Graphics2D) g;
-        //center logic so für alles übernehmen
-        int x = parent.getWidth() / 2 - (layoutScaleX / 2);
-        int y = parent.getHeight() / 2 - (layoutScaleY / 2);
-
-        g2.setStroke(new BasicStroke(16));
-
-        components.forEach(component -> {
-            if(component instanceof ButtonComp c) {
-                c.setPanel(parent);
-                c.paint(g);}
-        });
-
-        components.forEach(component -> {
-            if(!(component instanceof ButtonComp)) {component.paint(g);}
-        });
-
-        drawImageFrame(g2);
-    }
-
-    public void drawImageFrame(Graphics2D g2) {
-        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-        int heightShrink = 40;
-
-        Rectangle bounds = scroller.getActualBounds();
-
-        int x = scroller.isCentered() ? (scroller.getPanel().getWidth() - bounds.width) / 2 : bounds.x;
-        int y = scroller.isCentered() ? (scroller.getPanel().getHeight() - bounds.height) / 2 : bounds.y;
-
-        int imgFrameWidth = 350;
-        int frameX = x + bounds.width - imgFrameWidth - 2;
-        int bufferX = heightShrink / 2;
-
-        int xMove = 30;
-
-        g2.setColor(Color.DARK_GRAY.darker());
-
-        g2.setStroke(new BasicStroke(3)); //thickness of the img frame
-        g2.drawRoundRect(
-                frameX - bufferX - xMove,
-                y + (heightShrink / 2),
-                imgFrameWidth,
-                bounds.height - heightShrink,
-                24,
-                24
-        );
-
-        if(selectedScenario == null) return;
-        if(selectedScenario.getMapImage() == null) return;
-
-        int width = selectedScenario.getMapImage().getWidth() / 4;
-        int height = selectedScenario.getMapImage().getHeight() / 4;
-
-        g2.setStroke(new BasicStroke(5)); //thickness of the img frame
-        g2.drawRoundRect(x + 405 - xMove, y + 40, width, height, 24, 24);
-
-        g2.drawImage(ImageUtil.makeRoundedCorner(selectedScenario.getMapImage(), 100), x + 405 - xMove, y + 40, width,height,null);
-
-    }
-
-
-    @Override
-    public void keyPress(KeyEvent e) {
-        if(e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-            BOB.getInstance().getMainRenderer().getMenuPanel().setInScenarioSelect(false);
-        }
-    }
-
-    @Override
-    public void mouseClick(MouseEvent e, int x, int y) {
-        components.forEach(component -> component.mouseClick(e, x, y));
-    }
-
-    @Override
-    public void mouseRelease(MouseEvent e, int x, int y) {
-        components.forEach(component -> component.mouseRelease(e, x, y));
-    }
-
-    @Override
-    public void mouseMove(MouseEvent e, int x, int y) {
-        components.forEach(component -> component.mouseMove(e, x, y));
-    }
-
-    @Override
-    public void mouseScroll(MouseWheelEvent e, int x, int y) {
-        components.forEach(component -> component.mouseScroll(e, x, y));
-    }
-
-    public void reload() {
-        this.scenarios = BOB.getInstance().getScenarioManager().getScenarios();
-        scrollGroup.clear();
-
-        List<ButtonComp> buttons = new ArrayList<>();
-        for (Scenario s : scenarios) {
-            //TODO: make it so i dont need to trial and error with these values (bs but gonna leave this todo in anyways)
-            ButtonComp b = new ButtonComp(
-                    s.getAbbreviation(),
-                    s.getName(),
-                    Color.WHITE,
-                    Color.BLACK,
-                    false,
-                    25, 0,
-                    300, 40,
-                    16, 16,
-                    3, Color.LIGHT_GRAY,
-                    Color.DARK_GRAY,
-                    false, scrollGroup, (ignored) -> {});
-            b.setPanel(parent);
-            buttons.add(b);
-
-            if (s.equals(selectedScenario)) {
-                scrollGroup.select(b);
+        JButton nextBtn = createButton("Next", 120, 40);
+        nextBtn.setBounds(layoutScaleX - 160, bottomY, 120, 40);
+        nextBtn.addActionListener(e -> {
+            if (selectedScenario != null) {
+                BOB.getInstance().getMainRenderer().getMenuPanel().setScenarioSelectMenu(new CountrySelectMenu(selectedScenario));
             }
-        }
+        });
+        this.add(nextBtn);
 
-        scroller.setChildren(new ArrayList<>(buttons));
+        reloadList();
     }
 
-    public Set<Scenario> getScenarios() {
-        return scenarios;
+    private void reloadList() {
+        listPanel.removeAll();
+        ButtonGroup group = new ButtonGroup();
+
+        for (Scenario s : BOB.getInstance().getScenarioManager().getScenarios()) {
+            BOBButton sBtn = (BOBButton) createButton(s.getName(), 320, 50);
+
+            sBtn.setMaximumSize(new Dimension(320, 50));
+            sBtn.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+            if (selectedScenario != null && s.getName().equals(selectedScenario.getName())) {
+                sBtn.setSelected(true);
+            }
+
+            sBtn.addActionListener(e -> {
+                java.util.Enumeration<AbstractButton> en = group.getElements();
+                while (en.hasMoreElements()) {
+                    en.nextElement().setSelected(false);
+                }
+
+                selectedScenario = s;
+                sBtn.setSelected(true);
+
+                //repaint();
+            });
+
+            group.add(sBtn);
+            listPanel.add(sBtn);
+            listPanel.add(Box.createVerticalStrut(10));
+        }
+        listPanel.revalidate();
+        //listPanel.repaint();
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        g2.setColor(Color.DARK_GRAY);
+        g2.fillRoundRect(4, 4, getWidth() - 8, getHeight() - 8, 30, 30);
+
+        g2.setStroke(new BasicStroke(8));
+        g2.setColor(Color.DARK_GRAY.darker());
+        g2.drawRoundRect(4, 4, getWidth() - 8, getHeight() - 8, 30, 30);
+
+        if (selectedScenario != null && selectedScenario.getMapImage() != null) {
+            int imgFrameWidth = 400;
+            int imgFrameX = layoutScaleX - imgFrameWidth - 40;
+
+            g2.setStroke(new BasicStroke(4));
+            g2.setColor(Color.DARK_GRAY.darker());
+            g2.drawRoundRect(imgFrameX, 40, imgFrameWidth, 360, 24, 24);
+
+            BufferedImage mapImg = selectedScenario.getMapImage();
+            int drawW = imgFrameWidth - 20;
+            int drawH = (int)(drawW * ((double)mapImg.getHeight() / mapImg.getWidth()));
+
+            if(drawH > 340) drawH = 340;
+
+            g2.setStroke(new BasicStroke(5));
+            g2.drawRoundRect(imgFrameX + 10, 50, drawW, drawH, 24, 24);
+            g2.drawImage(ImageUtil.makeRoundedCorner(mapImg, 100), imgFrameX + 10, 50, drawW, drawH, null);
+        }
+    }
+
+    private JButton createButton(String text, int width, int height) {
+        BOBButton btn = new BOBButton(text,
+                Color.WHITE,
+                Color.BLACK,
+                Color.DARK_GRAY.darker(),
+                Color.LIGHT_GRAY,
+                16,
+                5
+        );
+        btn.setPreferredSize(new Dimension(width, height));
+        btn.setFocusable(false);
+        return btn;
     }
 }

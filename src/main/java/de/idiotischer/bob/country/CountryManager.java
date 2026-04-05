@@ -48,7 +48,7 @@ public class CountryManager {
                     selectScreen = countryElement.get("selectScreen").getAsBoolean();
                 }
 
-                String[] colorStrings = countryElement.get("color").getAsString().split(";");
+                String[] colorStrings = countryElement.get("color").getAsString().split("[;,]");
 
                 Color color = new Color(Integer.parseInt(colorStrings[0]), Integer.parseInt(colorStrings[1]), Integer.parseInt(colorStrings[2]));
 
@@ -72,6 +72,7 @@ public class CountryManager {
         return country;
     }
 
+    @Deprecated(forRemoval = true)
     public Country colorToCountry(int red, int green, int blue) {
         return Country.fromColor(new Color(red, green, blue));
     }
