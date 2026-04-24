@@ -1,0 +1,962 @@
+{
+  "memel": {
+    "name": "Memel",
+    "locations": "644,114",
+    "controller": "LIT",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "koenigsberg": {
+    "name": "koenigsberg",
+    "locations": "641,117",
+    "controller": "RUS",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "allenstein": {
+    "name": "Allenstein",
+    "locations": "637,121",
+    "controller": "POL",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "danzig": {
+    "name": "Danzig",
+    "locations": "632,119",
+    "controller": "POL",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "gdynia": {
+    "name": "Gdynia",
+    "locations": "631,121",
+    "controller": "POL",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "hinterpommern": {
+    "name": "Hinterpommern",
+    "locations": "627,120",
+    "controller": "POL",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "pommern": {
+    "name": "Pommern",
+    "locations": "623,123",
+    "controller": "POL",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "stettin": {
+    "name": "Stettin",
+    "locations": "619,121",
+    "controller": "POL",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "vorpommern": {
+    "name": "Vorpommern",
+    "locations": "612,120",
+    "controller": "GER",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "ostmark": {
+    "name": "Ostmark",
+    "locations": "621,128",
+    "controller": "POL",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "sachsen": {
+    "name": "Sachsen",
+    "locations": "613,133",
+    "controller": "GER",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "sachsen-anhalt": {
+    "name": "Sachsen-Anhalt",
+    "locations": "608,129",
+    "controller": "GER",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "brandenburg": {
+    "name": "Brandenburg",
+    "locations": "614,127",
+    "controller": "GER",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "Posen": {
+    "name": "Posen",
+    "locations": "628,126",
+    "controller": "POL",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "oberschlesien": {
+    "name": "Oberschlesien",
+    "locations": "624,133",
+    "controller": "POL",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "schleswig": {
+    "name": "Schleswig-Holstein",
+    "locations": "602,120",
+    "controller": "GER",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "nordschleswig": {
+    "name": "Nordschleswig",
+    "locations": "600,115",
+    "controller": "DEN",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "niederschlesien": {
+    "name": "Niederschlesien",
+    "locations": "629,135",
+    "controller": "POL",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "kattowitz": {
+    "name": "Kattowitz",
+    "locations": "634,136",
+    "controller": "POL",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "franken": {
+    "name": "Franken",
+    "locations": "605,138",
+    "controller": "GER",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "bayern": {
+    "name": "Bayern",
+    "locations": "610,144",
+    "controller": "GER",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "schwaben": {
+    "name": "Schwaben",
+    "locations": "603,146",
+    "controller": "GER",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "baden": {
+    "name": "Baden",
+    "locations": "595,143",
+    "controller": "GER",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "wuerttemberg": {
+    "name": "Württemberg",
+    "locations": "600,143",
+    "controller": "GER",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "thueringen": {
+    "name": "Thüringen",
+    "locations": "604,134",
+    "controller": "GER",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "hessen": {
+    "name": "Hessen",
+    "locations": "597,135",
+    "controller": "GER",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "nordrhein-westfalen": {
+    "name": "Nordrhein-Westfalen",
+    "locations": "593,131",
+    "controller": "GER",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "rheinland-pfalz": {
+    "name": "Rheinland-Pfalz",
+    "locations": "592,137",
+    "controller": "GER",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "saarland": {
+    "name": "Saarland",
+    "locations": "591,140",
+    "controller": "GER",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "eupen-malmedy": {
+    "name": "Eupen-Malmedy",
+    "locations": "588,135",
+    "controller": "BEL",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "elsass-lothringen": {
+    "name": "Elsass-Lothringen",
+    "locations": "591,144",
+    "controller": "FRA",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "hannover": {
+    "name": "Hannover",
+    "locations": "603,127",
+    "controller": "GER",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "weser-ems": {
+    "name": "Weser-Ems",
+    "locations": "596,124",
+    "controller": "GER",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "luxembourg": {
+    "name": "Luxemburg",
+    "locations": "587,139",
+    "controller": "LUX",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "pol-upper": {
+    "name": "Poland Upper",
+    "locations": "638,125",
+    "controller": "POL",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "pol-lower": {
+    "name": "Poland Lower",
+    "locations": "640,129",
+    "controller": "POL",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "carpathian-foothills": {
+    "name": "Carpathian foothills",
+    "locations": "645,137",
+    "controller": "POL",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "lublin": {
+    "name": "Lublin",
+    "locations": "649,132",
+    "controller": "POL",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "podlascia": {
+    "name": "Podlascia",
+    "locations": "648,124",
+    "controller": "POL",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "heiligkreuz": {
+    "name": "Swietokrzyskie Voivodeship",
+    "locations": "640,134",
+    "controller": "POL",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "rinkobing": {
+    "name": "Rinkobing",
+    "locations": "598,110",
+    "controller": "DEN",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "aarhus": {
+    "name": "Aarhus",
+    "locations": "602,111",
+    "controller": "DEN",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "north-jutland": {
+    "name": "North-Jutland",
+    "locations": "603,106",
+    "controller": "DEN",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "zealand": {
+    "name": "Zealand",
+    "locations": "608,113",
+    "controller": "DEN",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "storstrom": {
+    "name": "Storstrom",
+    "locations": "607,115",
+    "controller": "DEN",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "sudauen": {
+    "name": "Sudavija",
+    "locations": "648,117",
+    "controller": "LIT",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "niederlitauen": {
+    "name": "Zemaitija",
+    "locations": "646,112",
+    "controller": "LIT",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "oberlitauen": {
+    "name": "Aukstaitija",
+    "locations": "651,114",
+    "controller": "LIT",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "oberlitauen-2-forremoval": {
+    "name": "Aukstaitija-2",
+    "locations": "655,115",
+    "controller": "LIT",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "gelderland": {
+    "name": "Gelderland",
+    "locations": "587,127",
+    "controller": "NET",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "friesland": {
+    "name": "Friesland",
+    "locations": "590,124",
+    "controller": "NET",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "nord-brabant": {
+    "name": "Nord-Brabant",
+    "locations": "586,131",
+    "controller": "NET",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "Zeeland": {
+    "name": "Zeeland",
+    "locations": "580,130",
+    "controller": "NET",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "utrecht": {
+    "name": "Utrecht",
+    "locations": "583,129",
+    "controller": "NET",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "antwerp": {
+    "name": "Antwerp",
+    "locations": "585,133",
+    "controller": "BEL",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "namur": {
+    "name": "Namur",
+    "locations": "585,137",
+    "controller": "BEL",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "hanaut": {
+    "name": "Hanaut",
+    "locations": "581,136",
+    "controller": "BEL",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "flanders": {
+    "name": "Flanderen",
+    "locations": "579,133",
+    "controller": "BEL",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "upper-sudeten": {
+    "name": "Upper Sudeten",
+    "locations": "619,135",
+    "controller": "CZE",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "lower-sudeten": {
+    "name": "Lower Sudeten",
+    "locations": [ "617,141", "613,139" ],
+    "controller": "CZE",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "bohemia": {
+    "name": "Bohemia",
+    "locations": "619,139",
+    "controller": "CZE",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "ostrava": {
+    "name": "Ostrava",
+    "locations": "631,140",
+    "controller": "CZE",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "moravia": {
+    "name": "Moravia",
+    "locations": "628,141",
+    "controller": "CZE",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "czech-silesia": {
+    "name": "Czech-Silesia",
+    "locations": "633,139",
+    "controller": "CZE",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "west-slovakia": {
+    "name": "West-Slovakia",
+    "locations": "632,144",
+    "controller": "SVK",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "middle-slovakia": {
+    "name": "Middle-Slovakia",
+    "locations": "637,142",
+    "controller": "SVK",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "east-slovakia": {
+    "name": "East-Slovakia",
+    "locations": "643,142",
+    "controller": "SVK",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "toeri": {
+    "name": "Töri",
+    "locations": "600,151",
+    "controller": "SWI",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "luzern": {
+    "name": "Luzern",
+    "locations": "597,152",
+    "controller": "SWI",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "bern": {
+    "name": "Bern",
+    "locations": "594,150",
+    "controller": "SWI",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "jura": {
+    "name": "Jura",
+    "locations": "590,152",
+    "controller": "SWI",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "tessin": {
+    "name": "Tessin",
+    "locations": "599,154",
+    "controller": "SWI",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "leman": {
+    "name": "Leman",
+    "locations": "592,155",
+    "controller": "SWI",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "upper-corse":  {
+    "name": "Upper-Corse",
+    "locations": "599,171",
+    "controller": "FRA",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "lower-corse":  {
+    "name": "Lower-Corse",
+    "locations": "599,173",
+    "controller": "FRA",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "calais": {
+    "name": "Calais",
+    "locations": "576,136",
+    "controller": "FRA",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "champagne": {
+    "name": "Champagne",
+    "locations": "581,142",
+    "controller": "FRA",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "lorraine": {
+    "name": "Lorraine",
+    "locations": "586,143",
+    "controller": "FRA",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "picardy": {
+    "name": "Normandy",
+    "locations": "576,140",
+    "controller": "FRA",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "normandy": {
+    "name": "Normandy",
+    "locations": "566,143",
+    "controller": "FRA",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "paris": {
+    "name": "Paris",
+    "locations": "574,144",
+    "controller": "FRA",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "comte": {
+    "name": "Comte",
+    "locations": "588,150",
+    "controller": "FRA",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "auvergne": {
+    "name": "Auvergne",
+    "locations": "577,156",
+    "controller": "FRA",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "rhone-alps": {
+    "name": "Rhone-Alps",
+    "locations": "584,157",
+    "controller": "FRA",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "provence-alps": {
+    "name": "Provence-Alps",
+    "locations": "586,165",
+    "controller": "FRA",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "limousin": {
+    "name": "Limousin",
+    "locations": "570,157",
+    "controller": "FRA",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "burgundy": {
+    "name": "Burgundy",
+    "locations": "581,149",
+    "controller": "FRA",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "centre-val-de-loire": {
+    "name": "Centre-Val-de-Loire",
+    "locations": "572,150",
+    "controller": "FRA",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "pays-de-loire": {
+    "name": "Pays-de-Loire",
+    "locations": "562,150",
+    "controller": "FRA",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "britany": {
+    "name": "Britany",
+    "locations": "556,147",
+    "controller": "FRA",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "poitou-charentes": {
+    "name": "Poitou-Charentes",
+    "locations": "564,155",
+    "controller": "FRA",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "aquitaine": {
+    "name": "Aquitaine",
+    "locations": [ "560,162", "565,161", "562,166" ], //die 2 letzten nur für aquitaine in modern day so, in ww2 dann halt theoretisch nur 1 aquitaine der rest separat
+    "controller": "FRA",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "languedoc-R": {
+    "name": "Languedoc-R",
+    "locations": "575,166",
+    "controller": "FRA",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "midi-pyrenees": {
+    "name": "Midi-Pyrenees",
+    "locations": "568,165",
+    "controller": "FRA",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "tirol": {
+    "name": "Tirol",
+    "locations": "608,150",
+    "controller": "AUS",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "steiermark": {
+    "name": "Steiermark",
+    "locations": "622,149",
+    "controller": "AUS",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "nieder-oesterreich": {
+    "name": "Nieder-Österreich",
+    "locations": "624,145",
+    "controller": "AUS",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "burgenland": {
+    "name": "Burgenland",
+    "locations": "627,148",
+    "controller": "AUS",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "ober-oesterreich": {
+    "name": "Ober-Österreich",
+    "locations": "617,145",
+    "controller": "AUS",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "salzburg": {
+    "name": "Salzburg",
+    "locations": "615,150",
+    "controller": "AUS",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "western-transdanubia": {
+    "name": "Western-Transdanubia",
+    "locations": "628,150",
+    "controller": "HUN",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "southern-great-plain": {
+    "name": "Southern-Great-Plain",
+    "locations": "639,153",
+    "controller": "HUN",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "northern-great-plain": {
+    "name": "Northern-Great-Plain",
+    "locations": "642,148",
+    "controller": "HUN",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "central-transdanubia": {
+    "name": "Central-Transdanubia",
+    "locations": "633,152",
+    "controller": "HUN",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "piemont": {
+    "name": "Piemont",
+    "locations": "595,160",
+    "controller": "ITA",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "lombardy": {
+    "name": "Lombardy",
+    "locations": "603,158",
+    "controller": "ITA",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "south-tirol": {
+    "name": "South-Tirol",
+    "locations": "608,153",
+    "controller": "ITA",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "trentino": {
+    "name": "Trentino",
+    "locations": "606,155",
+    "controller": "ITA",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "emilia-romagna": {
+    "name": "Emilia-Romagna",
+    "locations": "606,163",
+    "controller": "ITA",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "tuscany": {
+    "name": "Tuscany",
+    "locations": "608,168",
+    "controller": "ITA",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "latium": {
+    "name": "Latium",
+    "locations": "613,172",
+    "controller": "ITA",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "marken-abruzzen": {
+    "name": "Marken-Abruzzen",
+    "locations": "615,168",
+    "controller": "ITA",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "campania": {
+    "name": "Campania",
+    "locations": "620,177",
+    "controller": "ITA",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "puglia": {
+    "name": "Puglia",
+    "locations": "630,179",
+    "controller": "ITA",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "calabria": {
+    "name": "Calabria",
+    "locations": "627,186",
+    "controller": "ITA",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "sicily": {
+    "name": "Sicily",
+    "locations": "619,193",
+    "controller": "ITA",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "veneto": {
+    "name": "Veneto",
+    "locations": "609,157",
+    "controller": "ITA",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "friuli-venezia": {
+    "name": "Friuli-Venezia",
+    "locations": "613,155",
+    "controller": "ITA",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "upper-sardinia": {
+    "name": "Upper-Sardinia",
+    "locations": "598,180",
+    "controller": "ITA",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "lower-sardinia": {
+    "name": "Lower-Sardinia",
+    "locations": "598,184",
+    "controller": "ITA",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  }
+}

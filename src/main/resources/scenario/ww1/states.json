@@ -1,0 +1,266 @@
+{
+  "memel": {
+    "name": "Memel",
+    "locations": "644,114",
+    "controller": "GER",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "koenigsberg": {
+    "name": "koenigsberg",
+    "locations": "641,117",
+    "controller": "GER",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "allenstein": {
+    "name": "Allenstein",
+    "locations": "637,121",
+    "controller": "GER",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "danzig": {
+    "name": "Danzig",
+    "locations": "632,119",
+    "controller": "GER",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "gdynia": {
+    "name": "Gdynia",
+    "locations": "631,121",
+    "controller": "GER",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "hinterpommern": {
+    "name": "Hinterpommern",
+    "locations": "627,120",
+    "controller": "GER",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "pommern": {
+    "name": "Pommern",
+    "locations": "623,123",
+    "controller": "GER",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "stettin": {
+    "name": "Stettin",
+    "locations": "619,121",
+    "controller": "GER",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "vorpommern": {
+    "name": "Vorpommern",
+    "locations": "612,120",
+    "controller": "GER",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "ostmark": {
+    "name": "Ostmark",
+    "locations": "621,128",
+    "controller": "GER",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "sachsen": {
+    "name": "Sachsen",
+    "locations": "613,133",
+    "controller": "GER",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "sachsen-anhalt": {
+    "name": "Sachsen-Anhalt",
+    "locations": "608,129",
+    "controller": "GER",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "brandenburg": {
+    "name": "Brandenburg",
+    "locations": "614,127",
+    "controller": "GER",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "Posen": {
+    "name": "Posen",
+    "locations": "628,126",
+    "controller": "GER",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "oberschlesien": {
+    "name": "Oberschlesien",
+    "locations": "624,133",
+    "controller": "GER",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "schleswig": {
+    "name": "Schleswig-Holstein",
+    "locations": "602,120",
+    "controller": "GER",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "nordschleswig": {
+    "name": "Nordschleswig",
+    "locations": "600,115",
+    "controller": "GER",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "niederschlesien": {
+    "name": "Niederschlesien",
+    "locations": "629,135",
+    "controller": "GER",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "kattowitz": {
+    "name": "Kattowitz",
+    "locations": "634,136",
+    "controller": "GER",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "franken": {
+    "name": "Franken",
+    "locations": "605,138",
+    "controller": "GER",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "bayern": {
+    "name": "Bayern",
+    "locations": "610,144",
+    "controller": "GER",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "schwaben": {
+    "name": "Schwaben",
+    "locations": "603,146",
+    "controller": "GER",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "baden": {
+    "name": "Baden",
+    "locations": "595,143",
+    "controller": "GER",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "wuerttemberg": {
+    "name": "Württemberg",
+    "locations": "600,143",
+    "controller": "GER",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "thueringen": {
+    "name": "Thüringen",
+    "locations": "604,134",
+    "controller": "GER",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "hessen": {
+    "name": "Hessen",
+    "locations": "597,135",
+    "controller": "GER",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "nordrhein-westfalen": {
+    "name": "Nordrhein-Westfalen",
+    "locations": "593,131",
+    "controller": "GER",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "rheinland-pfalz": {
+    "name": "Rheinland-Pfalz",
+    "locations": "592,137",
+    "controller": "GER",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "saarland": {
+    "name": "Saarland",
+    "locations": "591,140",
+    "controller": "GER",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "eupen-malmedy": {
+    "name": "Eupen-Malmedy",
+    "locations": "588,135",
+    "controller": "BEL",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "elsass-lothringen": {
+    "name": "Elsass-Lothringen",
+    "locations": "591,144",
+    "controller": "FRA",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "hannover": {
+    "name": "Hannover",
+    "locations": "603,127",
+    "controller": "GER",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "weser-ems": {
+    "name": "Weser-Ems",
+    "locations": "596,124",
+    "controller": "GER",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  }
+}

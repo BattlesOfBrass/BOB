@@ -6,10 +6,10 @@ build/
 .kotlindd
 
 #compiled jar started stuff
-config/
-icons/
-mapBase/
-scenario/
+./config/
+./icons/
+./mapBase/
+./scenario/
 
 temp/
 
