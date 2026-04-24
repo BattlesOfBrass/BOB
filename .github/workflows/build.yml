@@ -1,0 +1,65 @@
+name: Build JARs
+
+on:
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ── Java ──────────────────────────────────────────────────────────────────
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: "21"
+          distribution: "temurin"
+
+      # ── Make Gradle wrapper executable ───────────────────────────────────────
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      # ── Gradle cache ──────────────────────────────────────────────────────────
+      - name: Cache Gradle wrapper
+        uses: actions/cache@v4
+        with:
+          path: ~/.gradle/wrapper
+          key: gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: gradle-wrapper-
+
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/jdks
+          key: gradle-deps-${{ runner.os }}-${{ hashFiles('**/*.gradle.kts', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            gradle-deps-${{ runner.os }}-
+
+      # ── Build ─────────────────────────────────────────────────────────────────
+      - name: Build main JAR (incl. shared)
+        run: ./gradlew shadowJar --no-daemon
+
+      - name: Build server JAR (incl. shared)
+        run: ./gradlew :server:shadowJar --no-daemon
+
+      # ── Upload artifacts ──────────────────────────────────────────────────────
+      - name: Upload main JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: BOB-main
+          path: build/libs/BOB-main-*.jar
+
+      - name: Upload server JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: BOB-server
+          path: server/build/libs/BOB-server-*.jar
