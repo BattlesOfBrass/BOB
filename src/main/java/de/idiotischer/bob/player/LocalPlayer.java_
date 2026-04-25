@@ -9,15 +9,17 @@ import java.util.List;
 import java.util.UUID;
 
 public class LocalPlayer implements Player {
+    private final UUID uuid;
     private Country country;
 
-    public LocalPlayer(Country country) {
+    public LocalPlayer(Country country, UUID uuid) {
         this.country = country;
+        this.uuid = uuid;
     }
 
     @Override
     public UUID uuid() {
-        return null;
+        return uuid;
     }
 
     @Override

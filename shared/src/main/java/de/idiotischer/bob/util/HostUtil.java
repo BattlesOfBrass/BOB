@@ -15,6 +15,7 @@ public class HostUtil {
 
     private boolean useSpecifications = false;
     private boolean multiplayerEnabled = false;
+    private boolean coop = false;
 
     public HostUtil() {
         reload();
@@ -34,6 +35,10 @@ public class HostUtil {
                     if (obj.has("remoteHost") && !obj.get("remoteHost").isJsonNull()) {
                         host = obj.get("remoteHost").getAsString();
                     }
+                }
+
+                if (obj.has("coop") && !obj.get("coop").isJsonNull()) {
+                    coop = obj.get("coop").getAsBoolean();
                 }
 
                 if (entry.getKey().equals("local")) {
@@ -71,5 +76,9 @@ public class HostUtil {
 
     public int getRemotePort() {
         return remotePort;
+    }
+
+    public boolean isCoop() {
+        return coop;
     }
 }

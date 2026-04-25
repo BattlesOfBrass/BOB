@@ -335,14 +335,20 @@ public class MainRenderer extends Thread {
     }
 
     private void handleCountryMenu(int x, int y) {
-        if (renderPanel.isPaused()) return;
+        if (renderPanel.isPaused()) {
+            renderPanel.getHud().visible(false);
+            return;
+        }
         if (x < 0 || y < 0 || x >= logicMap.getWidth() || y >= logicMap.getHeight()) {
             renderPanel.getHud().visible(false);
             return;
         }
 
         Color oldColor = new Color(logicMap.getRGB(x, y), true);
-        if (oldColor.getAlpha() == 0) return;
+        if (oldColor.getAlpha() == 0) {
+            renderPanel.getHud().visible(false);
+            return;
+        }
 
         if (BOB.getInstance().getScenarioSceneLoader().getTakenColors().contains(oldColor)) {
             renderPanel.getHud().visible(false);

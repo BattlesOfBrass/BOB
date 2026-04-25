@@ -1,7 +1,11 @@
 {
   "POL": {
     "name": "Poland",
+<<<<<<< HEAD
     "color": "197;92;106",
+=======
+    "color": "198;92;107",
+>>>>>>> b570dab ([+] added player stuff)
     "capital": "",
     "ideology": "democratic",
     "leader": "",
@@ -29,10 +33,17 @@
   },
   "GER": {
     "name": "Germany",
+<<<<<<< HEAD
     "color": "102;102;102",
     "capital": "",
     "ideology": "none_aligned",
     "leader": "Wilhelm II",
+=======
+    "color": "74;73;78",
+    "capital": "",
+    "ideology": "none_aligned",
+    "leader": "",
+>>>>>>> b570dab ([+] added player stuff)
     "startingDivisions": {
       "motorized": 12,
       "cavalry": 6

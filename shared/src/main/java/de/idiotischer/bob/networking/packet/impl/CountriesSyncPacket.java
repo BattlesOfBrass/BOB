@@ -1,12 +1,14 @@
 package de.idiotischer.bob.networking.packet.impl;
 
 import de.idiotischer.bob.country.Country;
+import de.idiotischer.bob.networking.communication.SendTool;
 import de.idiotischer.bob.networking.packet.Packet;
 import de.idiotischer.bob.state.State;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class CountriesSyncPacket implements Packet {
 
@@ -16,6 +18,10 @@ public class CountriesSyncPacket implements Packet {
 
     public CountriesSyncPacket(List<CountrySyncPacket> packets) {
         this.packets = packets;
+    }
+
+    public static CountriesSyncPacket fromCountries(Set<Country> countries) {
+        return new CountriesSyncPacket(countries.stream().map(CountrySyncPacket::new).toList());
     }
 
     public static CountriesSyncPacket fromCountries(List<Country> countries) {

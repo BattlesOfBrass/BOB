@@ -2,6 +2,9 @@ package de.idiotischer.bob.event;
 
 import de.craftsblock.craftscore.event.CancellableEvent;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.nio.channels.AsynchronousSocketChannel;
 
 public class ClientConnectEvent extends CancellableEvent {

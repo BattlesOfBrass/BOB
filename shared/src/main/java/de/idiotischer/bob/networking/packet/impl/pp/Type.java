@@ -7,5 +7,5 @@ public enum Type {
     COUNTRIES_SYNC,
     SCENARIO_LOAD,
     SCENARIO_SYNC,
-    SCENARIOS
+    PLAYER_CHANGE, SCENARIOS
 }

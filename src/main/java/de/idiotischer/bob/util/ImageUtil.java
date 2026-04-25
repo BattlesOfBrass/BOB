@@ -3,6 +3,7 @@ package de.idiotischer.bob.util;
 import java.awt.*;
 import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
 import java.io.IOException;
 
 public class ImageUtil {
@@ -25,14 +26,31 @@ public class ImageUtil {
         return output;
     }
 
+    private static BufferedImage toIntARGB(BufferedImage img) {
+        if (img.getType() == BufferedImage.TYPE_INT_ARGB) {
+            return img;
+        }
+
+        BufferedImage converted = new BufferedImage(
+                img.getWidth(), img.getHeight(),
+                BufferedImage.TYPE_INT_ARGB
+        );
+
+        converted.getGraphics().drawImage(img, 0, 0, null);
+        return converted;
+    }
+
     public static boolean isSame(BufferedImage img1, BufferedImage img2) {
         if (img1.getWidth() != img2.getWidth() || img1.getHeight() != img2.getHeight()) {
             return false;
         }
 
+        img1 = toIntARGB(img1);
+        img2 = toIntARGB(img2);
+
         return java.util.Arrays.equals(
-                ((java.awt.image.DataBufferInt) img1.getRaster().getDataBuffer()).getData(),
-                ((java.awt.image.DataBufferInt) img2.getRaster().getDataBuffer()).getData()
+                ((DataBufferInt) img1.getRaster().getDataBuffer()).getData(),
+                ((DataBufferInt) img2.getRaster().getDataBuffer()).getData()
         );
     }
 

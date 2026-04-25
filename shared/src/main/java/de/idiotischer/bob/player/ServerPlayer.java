@@ -10,16 +10,18 @@ import java.util.UUID;
 public class ServerPlayer implements Player {
 
     private final InetSocketAddress address;
+    private final UUID uuid;
     private Country country;
 
-    public ServerPlayer(InetSocketAddress address, Country country) {
+    public ServerPlayer(InetSocketAddress address, Country country, UUID uuid) {
         this.country = country;
         this.address = address;
+        this.uuid = uuid;
     }
 
     @Override
     public UUID uuid() {
-        return null;
+        return uuid;
     }
 
     @Override

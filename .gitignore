@@ -5,18 +5,22 @@ build/
 !**/src/test/**/build/
 .kotlindd
 
+<<<<<<< HEAD
 #compiled jar started stuff
 ./config/
 ./icons/
 ./mapBase/
 ./scenario/
 
+=======
+>>>>>>> b570dab ([+] added player stuff)
 temp/
 
 .idea
 
-#dont push anything from run except the start.sh
+#dont push anything from run except the start.sh AND the jar
 /run/*
+!/run/BOB-main.jaR
 !/run/start.sh
 
 ### IntelliJ IDEA ###

@@ -5,6 +5,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonReader;
 import de.idiotischer.bob.Server;
 import de.idiotischer.bob.SharedCore;
+import de.idiotischer.bob.networking.packet.impl.CountriesSyncPacket;
+import de.idiotischer.bob.networking.packet.impl.StatesSyncPacket;
 import de.idiotischer.bob.state.State;
 
 import java.awt.*;
@@ -65,6 +67,9 @@ public class ServerCountryManager implements CountryResolver {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        //TODO: make this send sync packets without crashing the client (liek statemanager)
+        //Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), CountriesSyncPacket.fromCountries(countrySet));
     }
 
     public Set<Country> getPuppets() {

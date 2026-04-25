@@ -201,4 +201,8 @@ public class ServerSocket {
     public Set<AsynchronousSocketChannel> getClients() {
         return Collections.unmodifiableSet(clients);
     }
+
+    public HostUtil getHostUtil() {
+        return hostUtil;
+    }
 }

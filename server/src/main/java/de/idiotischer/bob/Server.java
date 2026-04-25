@@ -3,6 +3,7 @@ package de.idiotischer.bob;
 import de.idiotischer.bob.country.ServerCountryManager;
 import de.idiotischer.bob.listener.ServerPacketListener;
 import de.idiotischer.bob.networking.communication.SendTool;
+import de.idiotischer.bob.player.ServerPlayerManager;
 import de.idiotischer.bob.scenario.Scenario;
 import de.idiotischer.bob.scenario.ServerScenarioManager;
 import de.idiotischer.bob.scenario.ServerScenarioSceneLoader;
@@ -25,6 +26,7 @@ public class Server {
     private MapTracker mapTracker;
     private ServerStateManager stateManager;
     private StateValidator stateValidator = new StateValidator();
+    private ServerPlayerManager playerManager;
 
     public static void main(String[] args) {
         new Server(false);
@@ -54,11 +56,12 @@ public class Server {
 
         this.mapTracker = new MapTracker();
 
+        this.playerManager = new ServerPlayerManager();
+
         this.scenarioManager = new ServerScenarioManager();
         this.scenarioManager.reload();
 
         this.scenarioLoader = new ServerScenarioSceneLoader();
-
 
         this.countryManager = new ServerCountryManager();
         this.stateManager = new ServerStateManager();
