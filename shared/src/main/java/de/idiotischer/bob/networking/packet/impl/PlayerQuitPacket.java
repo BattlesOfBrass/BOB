@@ -10,6 +10,8 @@ public class PlayerQuitPacket implements Packet {
 
     private UUID uuid;
 
+    public PlayerQuitPacket() {}
+
     public PlayerQuitPacket(UUID uuid) {
         this.uuid = uuid;
     }

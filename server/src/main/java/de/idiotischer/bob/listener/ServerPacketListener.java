@@ -81,8 +81,6 @@ public class ServerPacketListener implements ListenerAdapter {
                     }
                 }
             }
-        } else if(event.getPacket() instanceof ClientConnectEvent pack) {
-            Server.getInstance().getScenarioSceneLoader().loadFor(pack.getChannel());
         }
     }
 

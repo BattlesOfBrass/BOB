@@ -11,8 +11,10 @@ import java.util.UUID;
 
 public class PlayerJoinPacket implements Packet {
 
-    private final InetSocketAddress address;
+    private InetSocketAddress address;
     private UUID uuid;
+
+    public PlayerJoinPacket() {}
 
     public PlayerJoinPacket(UUID uuid, InetSocketAddress address) {
         this.uuid = uuid;
@@ -28,6 +30,10 @@ public class PlayerJoinPacket implements Packet {
     @Override
     public void read(ByteBuffer buffer) {
         uuid = BufferUtil.of(buffer).getUuid();
+
+        String[] s = BufferUtil.of(buffer).getUtf().split(";");
+
+        address = new InetSocketAddress(s[0],Integer.parseInt(s[1]));
     }
 
     public UUID getUuid() {

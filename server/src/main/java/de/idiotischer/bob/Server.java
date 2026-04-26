@@ -121,4 +121,8 @@ public class Server {
     public StateValidator getStateValidator() {
         return stateValidator;
     }
+
+    public ServerPlayerManager getPlayerManager() {
+        return playerManager;
+    }
 }

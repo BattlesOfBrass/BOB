@@ -1,20 +1,18 @@
 package de.idiotischer.bob.player;
 
+import de.idiotischer.bob.BOB;
 import de.idiotischer.bob.Server;
 import de.idiotischer.bob.country.Country;
 import de.idiotischer.bob.country.CountryResolver;
-import de.idiotischer.bob.networking.packet.impl.PlayerChangedCountryPacket;
-import de.idiotischer.bob.networking.packet.impl.PlayerJoinPacket;
-import de.idiotischer.bob.networking.packet.impl.PlayerQuitPacket;
 import de.idiotischer.bob.networking.packet.impl.pp.RequestPacket;
 import de.idiotischer.bob.networking.packet.impl.pp.Type;
 import de.idiotischer.bob.util.UUIDUtil;
 import it.unimi.dsi.fastutil.Pair;
 import org.jetbrains.annotations.NotNull;
 
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 public class PlayerManager implements PlayerResolver {
@@ -71,7 +69,15 @@ public class PlayerManager implements PlayerResolver {
     }
 
     public void addPlayer(Player player) {
-        players.removeIf(p -> player.uuid().equals(player.uuid()));
+        AtomicBoolean newP = new AtomicBoolean(true);
+        players.removeIf(p -> {
+            newP.set(false);
+            return player.uuid().equals(player.uuid());
+        });
+
+        if(newP.get()) {
+            if(BOB.getInstance().isDebug()) System.out.println("adding player " + player.uuid());
+        }
 
         players.add(player);
     }
@@ -86,8 +92,35 @@ public class PlayerManager implements PlayerResolver {
         players.remove(player);
     }
 
+    public void removeAllPlayers() {
+        players.clear();
+    }
+
+    public void removeExceptAddress(@NotNull  InetSocketAddress address) {
+        players.removeIf(p -> {
+            if(BOB.getInstance().isDebug()) System.out.println("removed this");
+            return !address.equals(p.address());
+        });
+    }
+
     public boolean hasPlayer(Country c) {
         return players.stream().anyMatch(p -> p.country() != null && p.country().equals(c));
+    }
+
+    public boolean hasPlayer(InetSocketAddress address) {
+        return players.stream().anyMatch(p -> p.address() != null && p.address().equals(address));
+    }
+
+    public Player getPlayer(InetSocketAddress address) {
+        return players.stream().filter(p -> p.address() != null && p.address().equals(address)).findFirst().orElse(null);
+    }
+
+    public Player getPlayer(UUID uuid) {
+        return players.stream().filter(p -> p.uuid() != null && p.uuid().equals(uuid)).findFirst().orElse(null);
+    }
+
+    public boolean hasPlayer(UUID uuid) {
+        return players.stream().anyMatch(p -> p.uuid() != null && p.uuid().equals(uuid));
     }
 
     public String constructChange(Player player, Country country) {

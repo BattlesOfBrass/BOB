@@ -12,6 +12,10 @@ public class PlayerChangedCountryPacket implements Packet {
     private UUID uuid;
     private String countryAbbreviation;
 
+    public PlayerChangedCountryPacket() {
+
+    }
+
     public PlayerChangedCountryPacket(UUID uuid, String countryAbbreviation) {
         this.uuid = uuid;
         this.countryAbbreviation = countryAbbreviation;
@@ -23,7 +27,6 @@ public class PlayerChangedCountryPacket implements Packet {
 
         buf.putUuid(uuid);
         buf.putUtf(countryAbbreviation);
-
     }
 
     @Override

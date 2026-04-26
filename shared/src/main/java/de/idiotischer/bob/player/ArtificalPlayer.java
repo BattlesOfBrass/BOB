@@ -15,6 +15,11 @@ public class ArtificalPlayer implements Player {
     }
 
     @Override
+    public void uuid(UUID uuid) {
+
+    }
+
+    @Override
     public Country country() {
         return null;
     }

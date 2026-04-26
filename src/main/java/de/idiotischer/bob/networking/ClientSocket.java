@@ -2,6 +2,7 @@ package de.idiotischer.bob.networking;
 
 import de.idiotischer.bob.BOB;
 import de.idiotischer.bob.networking.packet.impl.PingPacket;
+import de.idiotischer.bob.util.AddressUtil;
 import de.idiotischer.bob.util.HostUtil;
 
 import java.io.IOException;
@@ -122,14 +123,19 @@ public class ClientSocket {
                 handleDisconnect();
             }
 
-            private void handleDisconnect() {
-                BOB.getInstance().setHost(false);
-                try {
-                    channel.close();
-                } catch (Exception ignored) {}
-                System.out.println("Disconnected from server.");
-            }
         });
+    }
+
+    private void handleDisconnect() {
+        if(!channel.isOpen()) return;
+
+        BOB.getInstance().setHost(false);
+        BOB.getInstance().getPlayerManager().removeExceptAddress(AddressUtil.getThisAddress(channel));
+        try {
+            channel.close();
+        } catch (Exception ignored) {}
+
+        if(BOB.getInstance().isDebug()) System.out.println("Disconnected from server.");
     }
 
     public void loadDetails() {
@@ -154,8 +160,8 @@ public class ClientSocket {
 
     public void shutdown() {
         try {
+            handleDisconnect();
             workerGroup.shutdownNow();
-            channel.close();
         } catch (IOException e) {
             e.printStackTrace();
         }

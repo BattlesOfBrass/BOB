@@ -35,6 +35,9 @@ public class PacketRegistry {
         registerPacket(CountriesSyncPacket.class, 6);
         registerPacket(StateSyncPacket.class, 7);
         registerPacket(StatesSyncPacket.class, 8);
+        registerPacket(PlayerQuitPacket.class, 9);
+        registerPacket(PlayerJoinPacket.class, 10);
+        registerPacket(PlayerChangedCountryPacket.class, 11);
     }
 
     public void registerPacket(Class<? extends Packet> packet, int id) {

@@ -1,6 +1,8 @@
 package de.idiotischer.bob;
 
 import de.idiotischer.bob.event.ClientConnectEvent;
+import de.idiotischer.bob.player.Player;
+import de.idiotischer.bob.util.AddressUtil;
 import de.idiotischer.bob.util.HostUtil;
 
 import java.io.IOException;
@@ -75,22 +77,26 @@ public class ServerSocket {
                         return;
                     }
 
-                    clients.add(clientChannel);
-
                     ClientConnectEvent event = new ClientConnectEvent(clientChannel);
 
                     Server.getInstance().getCore().getListenerRegistry().call(event);
 
                     if(event.isCancelled()) {
-                        clients.remove(clientChannel);
+                        //clients.remove(clientChannel);
                         clientChannel.close();
                     }
+
+                    clients.add(clientChannel);
+
+                    Player p = Server.getInstance().getPlayerManager().createPlayer(AddressUtil.getRemoteAddress(clientChannel));
+                    Server.getInstance().getPlayerManager().addPlayer(p);
 
                     System.out.println("New client connected: " + remoteAddress);
 
                     if (channel.isOpen()) {
                         channel.accept(null, this);
                     }
+
                     readFromClient(clientChannel);
 
                 } catch (Exception e) {

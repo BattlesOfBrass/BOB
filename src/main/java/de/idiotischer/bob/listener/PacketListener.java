@@ -9,6 +9,7 @@ import de.idiotischer.bob.country.Country;
 import de.idiotischer.bob.networking.packet.PacketRegistry;
 import de.idiotischer.bob.networking.packet.impl.*;
 import de.idiotischer.bob.networking.packet.impl.pp.ReplyPacket;
+import de.idiotischer.bob.player.Player;
 import de.idiotischer.bob.scenario.Scenario;
 import de.idiotischer.bob.scenario.ScenarioManager;
 import de.idiotischer.bob.state.State;
@@ -21,6 +22,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -123,6 +125,21 @@ public class PacketListener implements ListenerAdapter {
                 }
                 case ERROR -> {}
             }
+        } else if(event.getPacket() instanceof PlayerJoinPacket pack) {
+            if(BOB.getInstance().getPlayerManager().hasPlayer(pack.getUuid())) return;
+
+            if(BOB.getInstance().getPlayerManager().hasPlayer(pack.getAddress())) {
+                //für local sync
+                BOB.getInstance().getPlayerManager().getPlayer(pack.getAddress()).uuid(pack.getUuid());
+            }
+
+            Player p = BOB.getInstance().getPlayerManager().createPlayer(pack.getUuid(), pack.getAddress());
+
+            BOB.getInstance().getPlayerManager().addPlayer(p);
+        } else if(event.getPacket() instanceof PlayerQuitPacket pack) {
+            BOB.getInstance().getPlayerManager().removePlayer(pack.getUuid());
+        } else if (event.getPacket() instanceof PlayerChangedCountryPacket pack) {
+
         }
     }
 }

@@ -3,6 +3,9 @@ package de.idiotischer.bob.player;
 import de.idiotischer.bob.Server;
 import de.idiotischer.bob.country.Country;
 import de.idiotischer.bob.country.CountryResolver;
+import de.idiotischer.bob.networking.packet.impl.PlayerChangedCountryPacket;
+import de.idiotischer.bob.networking.packet.impl.PlayerJoinPacket;
+import de.idiotischer.bob.networking.packet.impl.PlayerQuitPacket;
 import de.idiotischer.bob.util.UUIDUtil;
 import it.unimi.dsi.fastutil.Pair;
 import org.jetbrains.annotations.NotNull;
@@ -52,7 +55,7 @@ public class ServerPlayerManager implements PlayerResolver {
 
         if(!hasPlayer(country) || Server.getInstance().getServerSocket().getHostUtil().isCoop()) player.country(country);
 
-        //Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new PlayerChangedCountryPacket(player.uuid(),country.getAbbreviation()));
+        Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new PlayerChangedCountryPacket(player.uuid(),country.getAbbreviation()));
     }
 
     public void addPlayer(Player player) {
@@ -60,13 +63,14 @@ public class ServerPlayerManager implements PlayerResolver {
 
         players.add(player);
 
-        //Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new PlayerJoinPacket(player.uuid()));
+        if(Server.getInstance().isDebug()) System.out.println("New player added: " + player.uuid());
+        Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new PlayerJoinPacket(player.uuid(),player.address()));
     }
 
     public void removePlayer(Player player) {
         players.remove(player);
 
-        //Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new PlayerQuitPacket(player.uuid()));
+        Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new PlayerQuitPacket(player.uuid()));
     }
 
     public String constructChange(Player player, Country country) {

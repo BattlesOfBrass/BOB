@@ -13,6 +13,7 @@ public interface Player {
     }
 
     UUID uuid();
+    void uuid(UUID uuid);
 
     Country country();
 

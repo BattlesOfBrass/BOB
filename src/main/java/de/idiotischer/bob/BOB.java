@@ -7,13 +7,12 @@ import de.idiotischer.bob.networking.ClientSocket;
 import de.idiotischer.bob.networking.communication.SendTool;
 import de.idiotischer.bob.player.Player;
 import de.idiotischer.bob.player.PlayerManager;
-import de.idiotischer.bob.player.ServerPlayer;
 import de.idiotischer.bob.render.MainRenderer;
 import de.idiotischer.bob.scenario.ScenarioManager;
 import de.idiotischer.bob.scenario.ScenarioSceneLoader;
 import de.idiotischer.bob.state.StateManager;
 import de.idiotischer.bob.troop.TroopManager;
-import de.idiotischer.bob.util.AdressUtil;
+import de.idiotischer.bob.util.AddressUtil;
 import de.idiotischer.bob.util.FileUtil;
 import de.idiotischer.bob.util.MainConfigUtil;
 import java.net.MalformedURLException;
@@ -79,7 +78,7 @@ public class BOB {
             throw new IllegalStateException("Setup called before countries loaded");
         }
 
-        this.player = playerManager.createPlayer(AdressUtil.getClientAddress(client.getChannel()));
+        this.player = playerManager.createPlayer(AddressUtil.getThisAddress(client.getChannel()));
 
         this.playerManager.addPlayer(player);
 
@@ -101,7 +100,7 @@ public class BOB {
 
         this.sharedCore = new SharedCore();
 
-        sharedCore.getListenerRegistry().register(new PacketListener());
+        this.sharedCore.getListenerRegistry().register(new PacketListener());
 
         this.localServer = new Server(true);
 
