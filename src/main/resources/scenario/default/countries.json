@@ -1,11 +1,7 @@
 {
   "POL": {
     "name": "Poland",
-<<<<<<< HEAD
     "color": "197;92;106",
-=======
-    "color": "198;92;107",
->>>>>>> b570dab ([+] added player stuff)
     "capital": "",
     "ideology": "democratic",
     "leader": "",
@@ -33,17 +29,10 @@
   },
   "GER": {
     "name": "Germany",
-<<<<<<< HEAD
-    "color": "102;102;102",
-    "capital": "",
-    "ideology": "none_aligned",
-    "leader": "Wilhelm II",
-=======
     "color": "74;73;78",
     "capital": "",
     "ideology": "none_aligned",
     "leader": "",
->>>>>>> b570dab ([+] added player stuff)
     "startingDivisions": {
       "motorized": 12,
       "cavalry": 6
@@ -218,6 +207,18 @@
     },
     "base_stability": 60
   },
+  "BOS": {
+    "name": "Bosnia",
+    "color": "223;192;135",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
   "SWE": {
     "name": "Sweden",
     "color": "36;132;247",
@@ -294,7 +295,31 @@
   },
   "SER": {
     "name": "Serbia",
-    "color": "13;70;130",
+    "color": "154;104;103",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "SLO": {
+    "name": "Slovenia",
+    "color": "79;111;150",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "CRO": {
+    "name": "Croatia",
+    "color": "42;45;96",
     "capital": "",
     "ideology": "democratic",
     "leader": "",
@@ -306,7 +331,7 @@
   },
   "MON": {
     "name": "Montenegro",
-    "color": "77;89;105",
+    "color": "240;109;115",
     "capital": "",
     "ideology": "democratic",
     "leader": "",
@@ -319,6 +344,78 @@
   "GRE": {
     "name": "Greece",
     "color": "124;166;212",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "MOL": {
+    "name": "Moldova",
+    "color": "134;110;82",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "TRA": {
+    "name": "Transnistria",
+    "color": "42;22;24",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "UKR": {
+    "name": "Ukraine",
+    "color": "52;88;138",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "BLR": {
+    "name": "Belarus",
+    "color": "199;213;224",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "autocracy",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "SAN": {
+    "name": "San-Marino",
+    "color": "98;176;198",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "startingDivisions": {
+      "motorized": 12,
+      "cavalry": 6
+    },
+    "base_stability": 60
+  },
+  "PAP": {
+    "name": "Papal-States",
+    "color": "196;181;130",
     "capital": "",
     "ideology": "democratic",
     "leader": "",

@@ -98,6 +98,7 @@ public class Camera {
     }
 
     public void clamp() {
+        double snapThreshold = 0.05;
         double scaledWidth = mapWidth * zoom;
         double scaledHeight = mapHeight * zoom;
 
@@ -111,6 +112,10 @@ public class Camera {
             y = Math.max(0, Math.min(y, scaledHeight - viewportHeight));
         } else {
             y = (scaledHeight - viewportHeight) / 2.0;
+        }
+
+        if (Math.abs(zoom - getMinZoom()) < snapThreshold * getMinZoom()) {
+            zoom = getMinZoom();
         }
     }
 

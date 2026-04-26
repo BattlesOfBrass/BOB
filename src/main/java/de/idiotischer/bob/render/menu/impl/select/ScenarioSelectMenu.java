@@ -68,7 +68,7 @@ public class ScenarioSelectMenu extends JPanel {
         listPanel.removeAll();
         ButtonGroup group = new ButtonGroup();
 
-        for (Scenario s : BOB.getInstance().getScenarioManager().getScenarios()) {
+        for (Scenario s : BOB.getInstance().getScenarioManager().getScenariosSorted()) {
             BOBButton sBtn = (BOBButton) createButton(s.getName(), 320, 50);
 
             sBtn.setMaximumSize(new Dimension(320, 50));

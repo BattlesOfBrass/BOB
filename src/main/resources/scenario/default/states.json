@@ -958,5 +958,229 @@
     "population": 1,
     "civ": 1,
     "mil": 1
+  },
+  "crisana": {
+    "name": "Crisana",
+    "locations": "651,150",
+    "controller": "ROM",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "bucovina": {
+    "name": "Bucovina",
+    "locations": "659,146",
+    "controller": "ROM",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "banat": {
+    "name": "Banat",
+    "locations": "647,156",
+    "controller": "ROM",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "oltenia": {
+    "name": "Oltenia",
+    "locations": "652,160",
+    "controller": "ROM",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "transilvania": {
+    "name": "Transilvania",
+    "locations": "658,154",
+    "controller": "ROM",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "muntenia": {
+    "name": "Muntenia",
+    "locations": "661,161",
+    "controller": "ROM",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "muntenia-2": {
+    "name": "Muntenia-2",
+    "locations": "667,158",
+    "controller": "ROM",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "moldova": {
+    "name": "Moldova",
+    "locations": "665,151",
+    "controller": "ROM",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "dobrogea": {
+    "name": "Dobrogea",
+    "locations": "672,161",
+    "controller": "ROM",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "dobrogea-2": {
+    "name": "Dobrogea-2",
+    "locations": "670,164",
+    "controller": "ROM",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "slovenia-west": {
+    "name": "Slovenia-West",
+    "locations": "617,155",
+    "controller": "SLO",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "slovenia-east": {
+    "name": "Slovenia-East",
+    "locations": "622,154",
+    "controller": "SLO",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "istria": {
+    "name": "Istria",
+    "locations": "617,159",
+    "controller": "CRO",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "dalmatia": {
+    "name": "Dalmatia",
+    "locations": "624,164",
+    "controller": "CRO",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "central-croatia": {
+    "name": "Central-Croatia",
+    "locations": "625,156",
+    "controller": "CRO",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "danube-croatia": {
+    "name": "Danube-Croatia",
+    "locations": "633,158",
+    "controller": "CRO",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "herzegovina": {
+    "name": "Herzegovina",
+    "locations": "635,166",
+    "controller": "BOS",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "herceg-bosna": {
+    "name": "Herceg-Bosna",
+    "locations": "628,164",
+    "controller": "BOS",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "bosanska-krajina": {
+    "name": "Bosanska-Krajina",
+    "locations": "630,161",
+    "controller": "BOS",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "bosna": {
+    "name": "Bosna",
+    "locations": "634,162",
+    "controller": "BOS",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "montenegro-west": {
+    "name": "Montenegro-West",
+    "locations": "636,171",
+    "controller": "MON",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "montenegro-east": {
+    "name": "Montenegro-East",
+    "locations": "638,169",
+    "controller": "MON",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "belgrade": {
+    "name": "Belgrade",
+    "locations": "641,159",
+    "controller": "SER",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "backa": {
+    "name": "Backa",
+    "locations": "638,157",
+    "controller": "SER",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "north-banat": {
+    "name": "North-Banat",
+    "locations": "642,156",
+    "controller": "SER",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "sumadija": {
+    "name": "Sumadija",
+    "locations": "642,163",
+    "controller": "SER",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "zlatibor": {
+    "name": "Zlatibor",
+    "locations": "639,166",
+    "controller": "SER",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "east-serbia": {
+    "name": "East-Serbia",
+    "locations": "647,164",
+    "controller": "SER",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
   }
 }
