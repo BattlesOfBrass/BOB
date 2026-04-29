@@ -42,7 +42,9 @@ public class StartMenu extends JPanel implements Menu {
         });
 
         JButton multiplayerBtn = createButton("Multiplayer");
-        //multiplayerBtn.setEnabled(false);
+        startBtn.addActionListener(e -> {
+            BOB.getInstance().getMainRenderer().getMenuPanel().setInMultiplayerMenu(true);
+        });
 
         JButton settingsBtn = createButton("Settings");
 

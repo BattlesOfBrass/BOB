@@ -324,12 +324,9 @@ public class MainRenderer extends Thread {
             return;
         }
 
-        SwingUtilities.invokeLater(() -> {
-            //FloodFill.fillAll(logicMap, state.getPoints(), player.country().countryColor());
-            BOB.getInstance().getStateManager().recolorState(state, player.country().countryColor());
-        });
+        if(BOB.getInstance().getPlayer().country() == null) return;
 
-        //syncBuffers();
+        state.setControllerClient(BOB.getInstance().getClient().getChannel(), BOB.getInstance().getPlayer().country());
 
         renderPanel.repaint();
     }

@@ -68,8 +68,9 @@ public class State {
     }
 
     //TODO: these method names are dumb xD
-    public void setController(Country controller) {
+    public void setControllerFinish(Country controller, boolean debug) {
         this.controller = controller;
+        if(debug) System.out.println("got controller sync on: " + abbreviation);
     }
 
     //später mils etc auch?

@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 public class PacketListener implements ListenerAdapter {
@@ -105,7 +104,7 @@ public class PacketListener implements ListenerAdapter {
 
             BOB.getInstance().getStateManager().registerState(state);
         } else if(event.getPacket() instanceof ReplyPacket pack) {
-            switch (pack.getRequestType()) {
+            switch (pack.getReplyType()) {
                 case STATE_CHANGE -> {
                     String s = pack.getMessage();
 
@@ -121,7 +120,10 @@ public class PacketListener implements ListenerAdapter {
 
                     if(country == null) return;
 
-                    state.setController(country);
+                    Color c = country.countryColor() == null ? Color.WHITE : country.countryColor() ;
+
+                    state.setControllerFinish(country, BOB.getInstance().isDebug());
+                    StateManager.recolorState(state, c);
                 }
                 case ERROR -> {}
             }
@@ -139,7 +141,15 @@ public class PacketListener implements ListenerAdapter {
         } else if(event.getPacket() instanceof PlayerQuitPacket pack) {
             BOB.getInstance().getPlayerManager().removePlayer(pack.getUuid());
         } else if (event.getPacket() instanceof PlayerChangedCountryPacket pack) {
+            UUID uuid = pack.getUuid();
+            String abbreviation = pack.getCountryAbbreviation();
 
+            Player player = BOB.getInstance().getPlayerManager().getPlayer(uuid);
+            Country country = BOB.getInstance().getCountryManager().byAbbreviation(abbreviation);
+
+            if(player == null || country == null) return;
+
+            player.country(country);
         }
     }
 }

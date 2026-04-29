@@ -7,6 +7,7 @@ import de.idiotischer.bob.SharedCore;
 import de.idiotischer.bob.networking.packet.codec.PacketDecoder;
 import de.idiotischer.bob.networking.packet.codec.PacketEncoder;
 import de.idiotischer.bob.networking.packet.impl.*;
+import de.idiotischer.bob.networking.packet.impl.pp.ReplyPacket;
 import de.idiotischer.bob.networking.packet.impl.pp.RequestPacket;
 import org.jetbrains.annotations.NotNull;
 
@@ -29,15 +30,16 @@ public class PacketRegistry {
         registerPacket(PingPacket.class, 0);
         registerPacket(PongPacket.class, 1);
         registerPacket(RequestPacket.class, 2);
-        registerPacket(ScenarioSyncPacket.class, 3);
-        registerPacket(ScenariosSyncPacket.class, 4);
-        registerPacket(CountrySyncPacket.class, 5);
-        registerPacket(CountriesSyncPacket.class, 6);
-        registerPacket(StateSyncPacket.class, 7);
-        registerPacket(StatesSyncPacket.class, 8);
-        registerPacket(PlayerQuitPacket.class, 9);
-        registerPacket(PlayerJoinPacket.class, 10);
-        registerPacket(PlayerChangedCountryPacket.class, 11);
+        registerPacket(ReplyPacket.class, 3);
+        registerPacket(ScenarioSyncPacket.class, 4);
+        registerPacket(ScenariosSyncPacket.class, 5);
+        registerPacket(CountrySyncPacket.class, 6);
+        registerPacket(CountriesSyncPacket.class, 7);
+        registerPacket(StateSyncPacket.class, 8);
+        registerPacket(StatesSyncPacket.class, 9);
+        registerPacket(PlayerQuitPacket.class, 10);
+        registerPacket(PlayerJoinPacket.class, 11);
+        registerPacket(PlayerChangedCountryPacket.class, 12);
     }
 
     public void registerPacket(Class<? extends Packet> packet, int id) {
@@ -94,9 +96,7 @@ public class PacketRegistry {
         }
 
         @Override
-        public void write(@NotNull BufferUtil buffer) {
-
-        }
+        public void write(@NotNull BufferUtil buffer) {}
     }
 
     public static class PacketSendEvent extends CancellableEvent implements BufferWritable {

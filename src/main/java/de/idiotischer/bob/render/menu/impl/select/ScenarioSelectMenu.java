@@ -11,6 +11,8 @@ import de.idiotischer.bob.util.ImageUtil;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 
 public class ScenarioSelectMenu extends JPanel {
@@ -56,7 +58,12 @@ public class ScenarioSelectMenu extends JPanel {
         nextBtn.setBounds(layoutScaleX - 160, bottomY, 120, 40);
         nextBtn.addActionListener(e -> {
             if (selectedScenario != null) {
-                BOB.getInstance().getMainRenderer().getMenuPanel().setScenarioSelectMenu(new CountrySelectMenu(selectedScenario));
+                BOB.getInstance().getMainRenderer().getMenuPanel().setScenarioSelectMenu(new CountrySelectMenu(selectedScenario, (menu) -> {
+                    if (menu.getSelectedCountry() != null) {
+                        BOB.getInstance().getScenarioSceneLoader().requestScenarioLoad(menu.getScenario());
+                        BOB.getInstance().getPlayer().country(menu.getSelectedCountry());
+                    }
+                }));
             }
         });
         this.add(nextBtn);

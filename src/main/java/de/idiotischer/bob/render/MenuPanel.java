@@ -2,6 +2,7 @@ package de.idiotischer.bob.render;
 
 import de.idiotischer.bob.BOB;
 import de.idiotischer.bob.render.menu.Panel;
+import de.idiotischer.bob.render.menu.impl.MultiplayerMenu;
 import de.idiotischer.bob.render.menu.impl.select.ScenarioSelectMenu;
 import de.idiotischer.bob.render.menu.impl.StartMenu;
 
@@ -11,6 +12,7 @@ import java.awt.event.*;
 import java.awt.image.BufferedImage;
 
 public class MenuPanel extends JPanel implements Panel {
+    private final MultiplayerMenu mpMenu;
     private final StartMenu startMenu;
     private JPanel currentActiveMenu;
 
@@ -19,9 +21,11 @@ public class MenuPanel extends JPanel implements Panel {
     public MenuPanel(BufferedImage map, MainRenderer renderer) {
         this.setLayout(new GridBagLayout());
 
+        this.mpMenu = new MultiplayerMenu();
         this.startMenu = new StartMenu();
         this.currentActiveMenu = new ScenarioSelectMenu(BOB.getInstance().getScenarioSceneLoader().getCurrentScenario());
 
+        this.add(mpMenu);
         this.add(startMenu);
         this.add(currentActiveMenu);
 
@@ -98,6 +102,4 @@ public class MenuPanel extends JPanel implements Panel {
     }
 
     @Override public void keyRelease(KeyEvent e) {}
-
-    public void setScenarioSelect(boolean scenarioSelect) { setInScenarioSelect(scenarioSelect); }
 }

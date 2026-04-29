@@ -36,4 +36,12 @@ public class PlayerChangedCountryPacket implements Packet {
         uuid = buf.getUuid();
         countryAbbreviation = buf.getUtf();
     }
+
+    public UUID getUuid() {
+        return uuid;
+    }
+
+    public String getCountryAbbreviation() {
+        return countryAbbreviation;
+    }
 }

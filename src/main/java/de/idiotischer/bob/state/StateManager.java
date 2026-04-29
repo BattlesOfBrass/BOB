@@ -58,7 +58,7 @@ public class StateManager implements StateResolver {
         if(switchMM) {
             BOB.getInstance().getMainRenderer().getGamePanel().setEscMenu(false);
             BOB.getInstance().getMainRenderer().setMainMenu(false);
-            BOB.getInstance().getMainRenderer().getMenuPanel().setScenarioSelect(false);
+            BOB.getInstance().getMainRenderer().getMenuPanel().setInScenarioSelect(false);
             BOB.getInstance().getMainRenderer().getMenuPanel().setScenarioSelectMenu(new ScenarioSelectMenu(BOB.getInstance().getScenarioSceneLoader().getCurrentScenario()));
         }
 
@@ -151,7 +151,6 @@ public class StateManager implements StateResolver {
 
         SwingUtilities.invokeLater(() -> {
             recolorState(state);
-            //FloodFill.fillAll(BOB.getInstance().getMainRenderer().getLogicMap(), state.getPoints(), state.getController().countryColor());
         });
     }
 
@@ -159,7 +158,40 @@ public class StateManager implements StateResolver {
         if(newOwner == null) return;
         SwingUtilities.invokeLater(() -> {
             recolorState(state);
-            //FloodFill.fillAll(BOB.getInstance().getMainRenderer().getLogicMap(), state.getPoints(), newOwner.countryColor());
+        });
+    }
+
+    public Set<State> getStateSet() {
+        return Collections.unmodifiableSet(stateSet);
+    }
+
+    public static void recolorState(State state) {
+        List<Color> taken = BOB.getInstance().getScenarioSceneLoader().getTakenColors();
+
+        state.getPoints().forEach(pos -> {
+            //PosUtil.getPossibleBDPos(taken, BOB.getInstance().getMainRenderer().getLogicMap(), pos.x, pos.y).forEach(px -> {
+            //    BOB.getInstance().getMainRenderer().getVisualBorderOverlay().setRGB(px.x,px.y, state.getController().countryColor().darker().getRGB());
+            //});
+            PosUtil.getPossiblePos(taken, BOB.getInstance().getMainRenderer().getLogicMap(), pos.x, pos.y).forEach(px -> {
+                BOB.getInstance().getMainRenderer().getLogicMap().setRGB(px.x,px.y, state.getController().countryColor().getRGB());
+            });
+
+            BOB.getInstance().getMainRenderer().getLogicMap().setRGB(pos.x,pos.y, state.getController().countryColor().getRGB());
+            BOB.getInstance().getMainRenderer().syncBuffers();
+        });
+    }
+
+    public static void recolorState(State state, Color color) {
+        List<Color> taken = BOB.getInstance().getScenarioSceneLoader().getTakenColors();
+
+        state.getPoints().forEach(pos -> {
+            PosUtil.getPossiblePos(taken, BOB.getInstance().getMainRenderer().getLogicMap(), pos.x, pos.y).forEach(px -> {
+                BOB.getInstance().getMainRenderer().getLogicMap().setRGB(px.x,px.y, color.getRGB());
+            });
+
+            BOB.getInstance().getMainRenderer().getLogicMap().setRGB(pos.x,pos.y, color.getRGB());
+
+            BOB.getInstance().getMainRenderer().syncBuffers();
         });
     }
 
@@ -184,37 +216,6 @@ public class StateManager implements StateResolver {
 
     //    return result;
     //}
-
-    public Set<State> getStateSet() {
-        return Collections.unmodifiableSet(stateSet);
-    }
-
-    public static void recolorState(State state) {
-        List<Color> taken = BOB.getInstance().getScenarioSceneLoader().getTakenColors();
-
-        state.getPoints().forEach(pos -> {
-            PosUtil.getPossiblePos(taken, BOB.getInstance().getMainRenderer().getLogicMap(), pos.x, pos.y).forEach(px -> {
-                BOB.getInstance().getMainRenderer().getLogicMap().setRGB(px.x,px.y, state.getController().countryColor().getRGB());
-            });
-
-            BOB.getInstance().getMainRenderer().getLogicMap().setRGB(pos.x,pos.y, state.getController().countryColor().getRGB());
-            BOB.getInstance().getMainRenderer().syncBuffers();
-        });
-    }
-
-    public static void recolorState(State state, Color color) {
-        List<Color> taken = BOB.getInstance().getScenarioSceneLoader().getTakenColors();
-
-        state.getPoints().forEach(pos -> {
-            PosUtil.getPossiblePos(taken, BOB.getInstance().getMainRenderer().getLogicMap(), pos.x, pos.y).forEach(px -> {
-                BOB.getInstance().getMainRenderer().getLogicMap().setRGB(px.x,px.y, color.getRGB());
-            });
-
-            BOB.getInstance().getMainRenderer().getLogicMap().setRGB(pos.x,pos.y, color.getRGB());
-
-            BOB.getInstance().getMainRenderer().syncBuffers();
-        });
-    }
 
     @Override
     public State byAbbreviation(String abbreviation) {

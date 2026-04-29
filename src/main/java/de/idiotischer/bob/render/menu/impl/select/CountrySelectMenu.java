@@ -9,8 +9,10 @@ import de.idiotischer.bob.scenario.Scenario;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.Consumer;
 
 public class CountrySelectMenu extends JPanel {
 
@@ -23,7 +25,7 @@ public class CountrySelectMenu extends JPanel {
     private final int layoutScaleX = 850;
     private final int layoutScaleY = 500;
 
-    public CountrySelectMenu(Scenario scenario) {
+    public CountrySelectMenu(Scenario scenario, Consumer<CountrySelectMenu> action) {
         this.scenario = scenario;
         this.setOpaque(false);
         this.setLayout(null);
@@ -60,10 +62,7 @@ public class CountrySelectMenu extends JPanel {
         JButton startBtn = createButton("Start Game", 140, 40);
         startBtn.setBounds(layoutScaleX - 180, bottomY, 140, 40);
         startBtn.addActionListener(e -> {
-            if (selectedCountry != null) {
-                BOB.getInstance().getScenarioSceneLoader().requestScenarioLoad(scenario);
-                BOB.getInstance().getPlayer().country(selectedCountry);
-            }
+            action.accept(this);
         });
 
         this.add(featuredPanel);
@@ -165,5 +164,13 @@ public class CountrySelectMenu extends JPanel {
         g2.drawRoundRect(4, 4, getWidth() - 8, getHeight() - 8, 30, 30);
 
         g2.dispose();
+    }
+
+    public Scenario getScenario() {
+        return scenario;
+    }
+
+    public Country getSelectedCountry() {
+        return selectedCountry;
     }
 }

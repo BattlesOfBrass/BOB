@@ -8,29 +8,29 @@ import java.nio.ByteBuffer;
 public class ReplyPacket implements de.idiotischer.bob.networking.packet.Packet {
 
     private String message = "";
-    private Type requestType;
+    private Type replyType;
 
     public ReplyPacket() {
     }
 
-    public ReplyPacket(Type requestType) {
-        this.requestType = requestType;
+    public ReplyPacket(Type replyType) {
+        this.replyType = replyType;
     }
 
-    public ReplyPacket(Type requestType, String message) {
-        this.requestType = requestType;
+    public ReplyPacket(Type replyType, String message) {
+        this.replyType = replyType;
         this.message = message;
     }
 
-    public Type getRequestType() {
-        return requestType;
+    public Type getReplyType() {
+        return replyType;
     }
 
     @Override
     public void write(ByteBuffer buffer) {
         BufferUtil util = BufferUtil.of(buffer);
         util.putUtf(message);
-        util.putUtf(requestType.name());
+        util.putUtf(replyType.name());
     }
 
     @Override
@@ -41,9 +41,9 @@ public class ReplyPacket implements de.idiotischer.bob.networking.packet.Packet 
         String name = bufferUtil.getUtf();
 
         try {
-            this.requestType = Type.valueOf(name);
+            this.replyType = Type.valueOf(name);
         } catch (IllegalArgumentException e) {
-            this.requestType = Type.ERROR;
+            this.replyType = Type.ERROR;
         }
     }
 

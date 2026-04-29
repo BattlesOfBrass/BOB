@@ -8,6 +8,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.Objects;
 
+//TODO: only decode if packet comes from server (for safety reasons)
 public class PacketDecoder implements Coder<Packet, ByteBuffer> {
 
     private final PacketRegistry registry;

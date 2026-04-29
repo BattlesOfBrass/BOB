@@ -58,7 +58,7 @@ public class PacketEncoder implements Coder<ByteBuffer, Packet> {
             } catch (java.nio.BufferOverflowException e) {
                 if (currentSize > Integer.MAX_VALUE / 2) {
                     if (currentSize == Integer.MAX_VALUE) {
-                        throw new RuntimeException("Packet is literally too large for memory.");
+                        throw new RuntimeException("Packet is lwk too large for memory.");
                     }
                     currentSize = Integer.MAX_VALUE;
                 } else {

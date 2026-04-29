@@ -46,9 +46,6 @@ public class PosUtil {
             int currentRGB = surface.getRGB(px, py);
             //if (currentRGB != oldRGB) continue;
             if (unusables.stream().anyMatch(unusable -> unusable.getRGB() == currentRGB)) {
-
-
-
                 continue;
             }
 
@@ -63,7 +60,7 @@ public class PosUtil {
         return posList;
     }
 
-    public static Pair<java.util.List<Point>,java.util.List<Point>> getPossibleBorderPos(List<Color> unusables, BufferedImage surface, int x, int y, StateResolver stateResolver) {
+    public static java.util.List<Point> getPossibleBDPos(List<Color> unusables, BufferedImage surface, int x, int y) {
         if (lastUsed == null && !cachedPoints.isEmpty()/*&& !StateManager.getStateAt(x,y bzw den state als lokales objekt)*/)
             cachedPoints.clear();
         if (cachedPoints.isEmpty()) {/* am ende füllen */}
@@ -71,14 +68,9 @@ public class PosUtil {
         int width = surface.getWidth();
         int height = surface.getHeight();
 
-        State origin = stateResolver.fromPos(x, y);
-
         boolean[][] visited = new boolean[width][height];
         Stack<int[]> stack = new Stack<>();
-        List<Point> bdPosList = new ArrayList<>();
-        List<Point> innerBDPosList = new ArrayList<>();
-
-        if(origin == null) return Pair.of(bdPosList,innerBDPosList);
+        List<Point> posList = new ArrayList<>();
 
         int oldRGB = surface.getRGB(x, y);
         stack.push(new int[]{x, y});
@@ -95,27 +87,67 @@ public class PosUtil {
             int currentRGB = surface.getRGB(px, py);
             //if (currentRGB != oldRGB) continue;
             if (unusables.stream().anyMatch(unusable -> unusable.getRGB() == currentRGB)) {
-                //TODO: omptimize the constructions of the if statemebnt
-                State up = stateResolver.fromPos(px, py + 1);
-                State down = stateResolver.fromPos(px, py + 1);
-                State left = stateResolver.fromPos(px - 1, py);
-                State right = stateResolver.fromPos(px + 1, py);
-
-                if(up != null || down != null || left != null || right != null) {
-                    innerBDPosList.add(new Point(px, py));
-                } else {
-                    bdPosList.add(new Point(px, py));
-                }
-
-                stack.push(new int[]{px + 1, py});
-                stack.push(new int[]{px - 1, py});
-                stack.push(new int[]{px, py + 1});
-                stack.push(new int[]{px, py - 1});
+                posList.add(new Point(px, py));
+                continue;
             }
+
+            stack.push(new int[]{px + 1, py});
+            stack.push(new int[]{px - 1, py});
+            stack.push(new int[]{px, py + 1});
+            stack.push(new int[]{px, py - 1});
         }
 
-        return Pair.of(bdPosList, innerBDPosList);
+        return posList;
     }
+
+    public static java.util.List<Point> getPossibleOuterBDPos(List<Color> unusables, StateResolver r, BufferedImage surface, int x, int y) {
+        if (lastUsed == null && !cachedPoints.isEmpty()/*&& !StateManager.getStateAt(x,y bzw den state als lokales objekt)*/)
+            cachedPoints.clear();
+        if (cachedPoints.isEmpty()) {/* am ende füllen */}
+
+        int width = surface.getWidth();
+        int height = surface.getHeight();
+
+        boolean[][] visited = new boolean[width][height];
+        Stack<int[]> stack = new Stack<>();
+        List<Point> posList = new ArrayList<>();
+
+        int oldRGB = surface.getRGB(x, y);
+        stack.push(new int[]{x, y});
+
+        while (!stack.isEmpty()) {
+            int[] point = stack.pop();
+            int px = point[0], py = point[1];
+
+            if (px < 0 || py < 0 || px >= width || py >= height) continue;
+
+            if (visited[px][py]) continue;
+            visited[px][py] = true;
+
+            int currentRGB = surface.getRGB(px, py);
+            //if (currentRGB != oldRGB) continue;
+            if (unusables.stream().anyMatch(unusable -> unusable.getRGB() == currentRGB)) {
+                State s1 = r.fromPos(px + 1, py);
+                State s2 = r.fromPos(px - 1, py);
+                State s3 = r.fromPos(px, py + 1);
+                State s4 = r.fromPos(px, py - 1);
+
+                if(s4 != null || s1 != null || s2 != null || s3 != null) {
+                    posList.add(new Point(px, py));
+                }
+                continue;
+            }
+
+            stack.push(new int[]{px + 1, py});
+            stack.push(new int[]{px - 1, py});
+            stack.push(new int[]{px, py + 1});
+            stack.push(new int[]{px, py - 1});
+        }
+
+        return posList;
+    }
+
+
 
     public static boolean different(int rgb, int oldRGB, List<Color> takenColors) {
         /*maybe für coolore border hier dann nochmal denselben check instanziieren*/
