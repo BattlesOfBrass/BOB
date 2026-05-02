@@ -12,62 +12,78 @@ import java.awt.event.*;
 import java.awt.image.BufferedImage;
 
 public class MenuPanel extends JPanel implements Panel {
+
     private final MultiplayerMenu mpMenu;
     private final StartMenu startMenu;
-    private JPanel currentActiveMenu;
+    private JPanel scenarioMenu;
 
-    private boolean scenarioSelect = false;
+    private final CardLayout layout;
+    private MenuState currentState;
 
     public MenuPanel(BufferedImage map, MainRenderer renderer) {
-        this.setLayout(new GridBagLayout());
+        this.layout = new CardLayout();
+        this.setLayout(layout);
 
         this.mpMenu = new MultiplayerMenu();
         this.startMenu = new StartMenu();
-        this.currentActiveMenu = new ScenarioSelectMenu(BOB.getInstance().getScenarioSceneLoader().getCurrentScenario());
+        this.scenarioMenu = wrap(new ScenarioSelectMenu(
+                BOB.getInstance().getScenarioSceneLoader().getCurrentScenario()
+        ));
 
-        this.add(mpMenu);
-        this.add(startMenu);
-        this.add(currentActiveMenu);
+        this.add(wrap(startMenu), "START");
+        this.add(scenarioMenu, "SCENARIO");
+        this.add(wrap(mpMenu), "MP");
 
         this.setBackground(Color.BLACK);
         this.setFocusable(true);
         this.requestFocusInWindow();
-        this.setPreferredSize(new Dimension(getFrame().getWidth(), getFrame().getHeight()));
 
-        setInScenarioSelect(false);
+        this.currentState = MenuState.START;
+        updateMenuVisibility();
     }
 
+    private JPanel wrap(JPanel panel) {
+        JPanel wrapper = new JPanel(new GridBagLayout());
+        wrapper.setOpaque(false);
+        wrapper.add(panel);
+        return wrapper;
+    }
 
-    //TODO: so boolean zeug bulletproof machen sonst desync bugs
+    public enum MenuState {
+        START,
+        SCENARIO_SELECT,
+        MULTIPLAYER
+    }
+
+    private void updateMenuVisibility() {
+        switch (currentState) {
+            case START -> layout.show(this, "START");
+            case SCENARIO_SELECT -> layout.show(this, "SCENARIO");
+            case MULTIPLAYER -> layout.show(this, "MP");
+        }
+
+        revalidate();
+        repaint();
+
+        doLayout();
+    }
+
     public void setScenarioSelectMenu(JPanel newMenu) {
-        if (this.currentActiveMenu != null) {
-            this.remove(this.currentActiveMenu);
-        }
+        this.remove(scenarioMenu);
+        this.scenarioMenu = wrap(newMenu);
 
-        this.currentActiveMenu = newMenu;
-        this.add(currentActiveMenu);
-
-        this.currentActiveMenu.setVisible(scenarioSelect);
-
-        this.revalidate();
-        //this.repaint();
+        this.add(scenarioMenu, "SCENARIO");
+        updateMenuVisibility();
     }
 
-    //TODO: so boolean zeug bulletproof machen sonst desync bugs
     public void setInScenarioSelect(boolean b) {
-        this.scenarioSelect = b;
+        currentState = b ? MenuState.SCENARIO_SELECT : MenuState.START;
+        updateMenuVisibility();
+    }
 
-        this.startMenu.setVisible(!b);
-        if (currentActiveMenu != null) {
-            currentActiveMenu.setVisible(b);
-        }
-
-        if (b) {
-            this.requestFocusInWindow();
-        }
-
-        this.revalidate();
-        //this.repaint();
+    public void setInMultiplayerMenu(boolean b) {
+        currentState = b ? MenuState.MULTIPLAYER : MenuState.START;
+        updateMenuVisibility();
     }
 
     public BufferedImage getFrame() {
@@ -89,17 +105,11 @@ public class MenuPanel extends JPanel implements Panel {
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
     }
 
-    @Override public void mouseScroll(MouseWheelEvent e, int x, int y) {}
-    @Override public void mouseClick(MouseEvent e, int x, int y) {}
-    @Override public void mouseRelease(MouseEvent e, int x, int y) {}
-    @Override public void mouseMove(MouseEvent e, int x, int y) {}
-
     @Override
-    public void keyPress(KeyEvent e) {
-        if (e.getKeyCode() == KeyEvent.VK_ESCAPE && scenarioSelect) {
-            setInScenarioSelect(false);
+    protected void processKeyEvent(KeyEvent e) {
+        if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+            currentState = MenuState.START;
+            updateMenuVisibility();
         }
     }
-
-    @Override public void keyRelease(KeyEvent e) {}
 }

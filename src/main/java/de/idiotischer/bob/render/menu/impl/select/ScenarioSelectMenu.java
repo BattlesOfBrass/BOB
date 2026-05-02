@@ -156,4 +156,5 @@ public class ScenarioSelectMenu extends JPanel {
         btn.setFocusable(false);
         return btn;
     }
+
 }

@@ -3,6 +3,7 @@ package de.idiotischer.bob.render.menu.impl;
 import de.idiotischer.bob.BOB;
 import de.idiotischer.bob.render.menu.Menu;
 import de.idiotischer.bob.render.menu.components.button.BOBButton;
+import de.idiotischer.bob.render.menu.impl.select.ScenarioSelectMenu;
 
 import javax.swing.*;
 import java.awt.*;
@@ -42,7 +43,7 @@ public class StartMenu extends JPanel implements Menu {
         });
 
         JButton multiplayerBtn = createButton("Multiplayer");
-        startBtn.addActionListener(e -> {
+        multiplayerBtn.addActionListener(e -> {
             BOB.getInstance().getMainRenderer().getMenuPanel().setInMultiplayerMenu(true);
         });
 

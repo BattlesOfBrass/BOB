@@ -79,7 +79,7 @@ public class ClientSocket {
             @Override
             public void completed(Integer bytesRead, ByteBuffer attachment) {
                 if (bytesRead == -1) {
-                    handleDisconnect();
+                    handleDisconnect(true);
                     return;
                 }
 
@@ -120,22 +120,44 @@ public class ClientSocket {
                     exc.printStackTrace();
                 }
 
-                handleDisconnect();
+                handleDisconnect(true);
             }
 
         });
     }
 
-    private void handleDisconnect() {
-        if(!channel.isOpen()) return;
+    private void handleDisconnect(boolean reconnect) {
+        if (channel == null) return;
 
-        BOB.getInstance().setHost(false);
-        BOB.getInstance().getPlayerManager().removeExceptAddress(AddressUtil.getThisAddress(channel));
         try {
-            channel.close();
+            if (channel.isOpen()) {
+                BOB.getInstance().setHost(false);
+                BOB.getInstance().getPlayerManager()
+                        .removeExceptAddress(AddressUtil.getThisAddress(channel));
+
+                channel.close();
+            }
         } catch (Exception ignored) {}
 
-        if(BOB.getInstance().isDebug()) System.out.println("Disconnected from server.");
+        if (BOB.getInstance().isDebug()) {
+            System.out.println("Disconnected from server.");
+        }
+
+        if(reconnect) {
+            try {
+                if (BOB.getInstance().isDebug()) System.out.println("Switching top local");
+
+                var server = BOB.getInstance().getLocalServer().getServerSocket();
+
+                if (server != null) {
+                    if(server.getChannel().isOpen()) return;
+                    //server.start();
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public void loadDetails() {
@@ -160,7 +182,7 @@ public class ClientSocket {
 
     public void shutdown() {
         try {
-            handleDisconnect();
+            handleDisconnect(false);
             workerGroup.shutdownNow();
         } catch (IOException e) {
             e.printStackTrace();
