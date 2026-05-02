@@ -29,6 +29,17 @@ public class ServerSocket {
     public ServerSocket(boolean local) {
         this.local = local;
 
+        start();
+
+        //TODO: vor production removen
+        //try {
+        //    Thread.sleep(400000);
+        //} catch (InterruptedException e) {
+        //    throw new RuntimeException(e);
+        //}
+    }
+
+    public void start() {
         loadDetails();
 
         try {
@@ -44,13 +55,6 @@ public class ServerSocket {
         } catch(Exception e) {
             e.printStackTrace();
         }
-
-        //TODO: vor production removen
-        //try {
-        //    Thread.sleep(400000);
-        //} catch (InterruptedException e) {
-        //    throw new RuntimeException(e);
-        //}
     }
 
     public void setLocal(boolean local) {

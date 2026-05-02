@@ -23,6 +23,10 @@ public class ClientSocket {
     public ClientSocket() {
         loadDetails();
 
+        start(new InetSocketAddress(hostUtil.getHost(), hostUtil.getRemotePort()));
+    }
+
+    public void start(InetSocketAddress address) {
         if(!hostUtil.isMultiplayerEnabled()) return;
 
         try {
@@ -36,11 +40,14 @@ public class ClientSocket {
         //channel.setOption(StandardSocketOptions.TCP_NODELAY, true);
         int port = hostUtil.getLocalPort();
 
-        while (true) {
+        boolean bound = false;
+
+        for (int i = 0; i < 100; i++) {
             try {
                 if (hostUtil.isUseSpecifications()) {
                     channel.bind(new InetSocketAddress("localhost", port));
                 }
+                bound = true;
                 break;
             } catch (BindException e) {
                 port++;
@@ -50,7 +57,12 @@ public class ClientSocket {
             }
         }
 
-        channel.connect(new InetSocketAddress(hostUtil.getHost(), hostUtil.getRemotePort()), null, new CompletionHandler<Void, Void>() {
+        if (!bound) {
+            System.err.println("Failed to bind socket after 100 attempts. Exiting...");
+            System.exit(1);
+        }
+
+        channel.connect(address, null, new CompletionHandler<Void, Void>() {
             @Override
             public void completed(Void result, Void attachment) {
                 System.out.println("Connected to server!");
@@ -150,14 +162,24 @@ public class ClientSocket {
                 var server = BOB.getInstance().getLocalServer().getServerSocket();
 
                 if (server != null) {
-                    if(server.getChannel().isOpen()) return;
-                    //server.start();
+                    if(server.getChannel().isOpen()){
+                        //server.shutdown(); //sicherheitshalber
+                        //return;
+                    } else server.start();
+
+                    shutdown();
+                    start(AddressUtil.getThisAddress(server.getChannel()));
                 }
 
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
+    }
+
+    public void reconnect(InetSocketAddress address) {
+        shutdown();
+        start(address);
     }
 
     public void loadDetails() {
