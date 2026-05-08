@@ -23,7 +23,7 @@ public class Scenario {
     private final List<Color> takenColors = new ArrayList<>();
     private final String abbreviation;
     private final boolean server;
-    private List<Color> borderColors = new  ArrayList<>();
+    private final List<Color> borderColors = new  ArrayList<>();
 
     public Scenario(boolean server, String abbreviation, String name, Path dir) {
         this.server = server;

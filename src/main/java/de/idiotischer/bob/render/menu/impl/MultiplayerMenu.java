@@ -5,6 +5,8 @@ import de.idiotischer.bob.render.MenuPanel;
 import de.idiotischer.bob.render.menu.components.ModernTextField;
 import de.idiotischer.bob.render.menu.components.OnlyNumberFilter;
 import de.idiotischer.bob.render.menu.components.button.BOBButton;
+import de.idiotischer.bob.render.menu.impl.select.CountrySelectMenu;
+import de.idiotischer.bob.render.menu.impl.select.ScenarioSelectMenu;
 import de.idiotischer.bob.util.AddressUtil;
 
 import javax.swing.*;
@@ -75,7 +77,22 @@ public class MultiplayerMenu extends JPanel {
             BOB.getInstance().getClient().reconnect(address, b -> {
                 //hier dann später countryselect öffnen (braucht erst noch anpassungen)
                 BOB.getInstance().getScenarioSceneLoader().requestCurrent().thenAccept(scenario -> {
-                    BOB.getInstance().getPlayer().country(BOB.getInstance().getCountryManager().getRandom());
+                    CountrySelectMenu menu = new CountrySelectMenu("Join", scenario, b1 -> {
+                        BOB.getInstance().getMainRenderer().getMenuPanel().setScenarioSelectMenu(new ScenarioSelectMenu(b1.getScenario()));
+                        BOB.getInstance().getMainRenderer().getMenuPanel().setInScenarioSelect(false);
+                        BOB.getInstance().getMainRenderer().getMenuPanel().setInMultiplayerMenu(true);
+                    }, (b1) -> {
+                        if (scenario != null) {
+                            BOB.getInstance().getScenarioSceneLoader().requestScenarioLoad(scenario);
+                            BOB.getInstance().getPlayer().country(b1.getSelectedCountry());
+                        }
+                    });
+
+                    BOB.getInstance().getStateManager().setSwitchMM(false);
+                    BOB.getInstance().getMainRenderer().getMenuPanel().setScenarioSelectMenu(menu);
+                    BOB.getInstance().getMainRenderer().getMenuPanel().setInScenarioSelect(true);
+
+                    //BOB.getInstance().getScenarioSceneLoader().load(scenario, false);
                 });
             });
         });

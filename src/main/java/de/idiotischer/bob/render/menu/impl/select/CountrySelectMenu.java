@@ -25,7 +25,7 @@ public class CountrySelectMenu extends JPanel {
     private final int layoutScaleX = 850;
     private final int layoutScaleY = 500;
 
-    public CountrySelectMenu(Scenario scenario, Consumer<CountrySelectMenu> action) {
+    public CountrySelectMenu(String label, Scenario scenario, Consumer<CountrySelectMenu> action1, Consumer<CountrySelectMenu> action) {
         this.scenario = scenario;
         this.setOpaque(false);
         this.setLayout(null);
@@ -54,12 +54,9 @@ public class CountrySelectMenu extends JPanel {
 
         JButton backBtn = createButton("Back", 120, 40);
         backBtn.setBounds(40, bottomY, 120, 40);
-        backBtn.addActionListener(e ->
-                BOB.getInstance().getMainRenderer().getMenuPanel()
-                        .setScenarioSelectMenu(new ScenarioSelectMenu(scenario))
-        );
+        backBtn.addActionListener(e -> action1.accept(this));
 
-        JButton startBtn = createButton("Start Game", 140, 40);
+        JButton startBtn = createButton(label, 140, 40);
         startBtn.setBounds(layoutScaleX - 180, bottomY, 140, 40);
         startBtn.addActionListener(e -> {
             action.accept(this);

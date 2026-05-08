@@ -58,7 +58,10 @@ public class ScenarioSelectMenu extends JPanel {
         nextBtn.setBounds(layoutScaleX - 160, bottomY, 120, 40);
         nextBtn.addActionListener(e -> {
             if (selectedScenario != null) {
-                BOB.getInstance().getMainRenderer().getMenuPanel().setScenarioSelectMenu(new CountrySelectMenu(selectedScenario, (menu) -> {
+                BOB.getInstance().getMainRenderer().getMenuPanel().setScenarioSelectMenu(new CountrySelectMenu("Start Game", selectedScenario, (b1) -> {
+                    BOB.getInstance().getMainRenderer().getMenuPanel()
+                            .setScenarioSelectMenu(new ScenarioSelectMenu(b1.getScenario()));
+                }, (menu) -> {
                     if (menu.getSelectedCountry() != null) {
                         BOB.getInstance().getScenarioSceneLoader().requestScenarioLoad(menu.getScenario());
                         BOB.getInstance().getPlayer().country(menu.getSelectedCountry());
