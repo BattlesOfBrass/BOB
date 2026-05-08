@@ -1,6 +1,7 @@
 package de.idiotischer.bob.networking;
 
 import de.idiotischer.bob.BOB;
+import de.idiotischer.bob.ServerSocket;
 import de.idiotischer.bob.networking.packet.impl.PingPacket;
 import de.idiotischer.bob.util.AddressUtil;
 import de.idiotischer.bob.util.HostUtil;
@@ -13,83 +14,147 @@ import java.nio.channels.AsynchronousChannelGroup;
 import java.nio.channels.AsynchronousCloseException;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.CompletionHandler;
+import java.util.function.Consumer;
 
 public class ClientSocket {
+
     private AsynchronousChannelGroup workerGroup;
     private AsynchronousSocketChannel channel;
 
     private final HostUtil hostUtil = new HostUtil();
 
+    private volatile boolean connected = false;
+    private volatile boolean reconnecting = false;
+
     public ClientSocket() {
         loadDetails();
+
+        try {
+            workerGroup = AsynchronousChannelGroup.withFixedThreadPool(3, Thread::new);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         start(new InetSocketAddress(hostUtil.getHost(), hostUtil.getRemotePort()));
     }
 
     public void start(InetSocketAddress address) {
-        if(!hostUtil.isMultiplayerEnabled()) return;
+        start(address, null);
+    }
 
-        try {
-            workerGroup = AsynchronousChannelGroup.withFixedThreadPool(3, Thread::new);
-            channel = AsynchronousSocketChannel.open(workerGroup);
-        } catch(IOException e) {
-            e.printStackTrace();
+    public void start(InetSocketAddress address,
+                      Consumer<Boolean> callback) {
+
+        if (!hostUtil.isMultiplayerEnabled()) {
+            if (callback != null) {
+                callback.accept(false);
+            }
+            return;
         }
 
-        //channel.setOption(StandardSocketOptions.SO_KEEPALIVE, true);
-        //channel.setOption(StandardSocketOptions.TCP_NODELAY, true);
+        try {
+            channel = AsynchronousSocketChannel.open(workerGroup);
+        } catch (IOException e) {
+
+            e.printStackTrace();
+
+            if (callback != null) {
+                callback.accept(false);
+            }
+
+            return;
+        }
+
         int port = hostUtil.getLocalPort();
 
         boolean bound = false;
 
         for (int i = 0; i < 100; i++) {
+
             try {
+
                 if (hostUtil.isUseSpecifications()) {
-                    channel.bind(new InetSocketAddress("localhost", port));
+                    channel.bind(
+                            new InetSocketAddress("localhost", port)
+                    );
                 }
+
                 bound = true;
                 break;
+
             } catch (BindException e) {
+
                 port++;
+
             } catch (Exception e) {
+
                 e.printStackTrace();
                 break;
             }
         }
 
         if (!bound) {
-            System.err.println("Failed to bind socket after 100 attempts. Exiting...");
-            System.exit(1);
+            System.err.println("Failed to bind socket after 100 attempts.");
+
+            if (callback != null) {
+                callback.accept(false);
+            }
+
+            return;
         }
 
-        channel.connect(address, null, new CompletionHandler<Void, Void>() {
+        System.out.println("Connecting to " + address);
+
+        channel.connect(address, null, new CompletionHandler<>() {
+
             @Override
-            public void completed(Void result, Void attachment) {
+            public void completed(Void result, Object attachment) {
+
+                connected = true;
+                reconnecting = false;
+
                 System.out.println("Connected to server!");
+
+                BOB.getInstance()
+                        .getSendTool()
+                        .send(channel, new PingPacket());
+
+                if (callback != null) {
+                    callback.accept(true);
+                }
+
                 listen();
             }
 
             @Override
-            public void failed(Throwable exc, Void attachment) {
-                if(exc.getMessage().contains("Connection refused")) return;
-                if(exc.getMessage().contains("Connection reset by peer")) return;
+            public void failed(Throwable exc, Object attachment) {
 
-                exc.printStackTrace();
+                connected = false;
+
+                System.out.println(
+                        "Connection failed: " + exc
+                );
+
+                if (callback != null) {
+                    callback.accept(false);
+                }
             }
         });
-
-        BOB.getInstance().getSendTool().send(channel, new PingPacket());
-        //MOM.getInstance().getSendTool().sendTo(channel, new PingPacket());
     }
 
     public void listen() {
-        if (channel == null || !channel.isOpen()) return;
+
+        if (channel == null || !channel.isOpen()) {
+            return;
+        }
 
         ByteBuffer buffer = ByteBuffer.allocate(8192);
 
         channel.read(buffer, buffer, new CompletionHandler<>() {
+
             @Override
             public void completed(Integer bytesRead, ByteBuffer attachment) {
+
                 if (bytesRead == -1) {
                     handleDisconnect(true);
                     return;
@@ -98,10 +163,14 @@ public class ClientSocket {
                 attachment.flip();
 
                 while (attachment.hasRemaining()) {
+
                     attachment.mark();
 
-                    Object packet = BOB.getInstance().getSharedCore().getRegistry()
-                            .getDecoder().code(attachment, channel);
+                    Object packet = BOB.getInstance()
+                            .getSharedCore()
+                            .getRegistry()
+                            .getDecoder()
+                            .code(attachment, channel);
 
                     if (packet == null) {
                         attachment.reset();
@@ -112,74 +181,152 @@ public class ClientSocket {
                 attachment.compact();
 
                 if (attachment.position() == attachment.capacity()) {
-                    ByteBuffer expanded = ByteBuffer.allocate(attachment.capacity() * 2);
+
+                    ByteBuffer expanded =
+                            ByteBuffer.allocate(attachment.capacity() * 2);
+
                     attachment.flip();
                     expanded.put(attachment);
+
                     attachment = expanded;
                 }
 
-                channel.read(attachment, attachment, this);
+                if (channel != null && channel.isOpen()) {
+                    channel.read(attachment, attachment, this);
+                }
             }
 
             @Override
             public void failed(Throwable exc, ByteBuffer attachment) {
+
                 if (exc instanceof AsynchronousCloseException) {
                     return;
                 }
 
                 String msg = exc.getMessage();
-                if (msg == null || (!msg.contains("Connection reset") && !msg.contains("closed"))) {
+
+                if (msg == null
+                        || (!msg.contains("Connection reset")
+                        && !msg.contains("closed"))) {
+
                     exc.printStackTrace();
                 }
 
                 handleDisconnect(true);
             }
-
         });
     }
 
     private void handleDisconnect(boolean reconnect) {
-        if (channel == null) return;
 
-        try {
-            if (channel.isOpen()) {
-                BOB.getInstance().setHost(false);
-                BOB.getInstance().getPlayerManager()
-                        .removeExceptAddress(AddressUtil.getThisAddress(channel));
+        connected = false;
 
-                channel.close();
+        if (channel != null) {
+            try {
+
+                if (channel.isOpen()) {
+
+                    BOB.getInstance().setHost(false);
+
+                    BOB.getInstance()
+                            .getPlayerManager()
+                            .removeExceptAddress(
+                                    AddressUtil.getThisAddress(channel)
+                            );
+
+                    channel.close();
+                }
+
+            } catch (Exception ignored) {
             }
-        } catch (Exception ignored) {}
+        }
 
         if (BOB.getInstance().isDebug()) {
             System.out.println("Disconnected from server.");
         }
 
-        if(reconnect) {
-            try {
-                if (BOB.getInstance().isDebug()) System.out.println("Switching top local");
+        if (!reconnect || reconnecting) {
+            return;
+        }
 
-                var server = BOB.getInstance().getLocalServer().getServerSocket();
+        reconnecting = true;
 
-                if (server != null) {
-                    if(server.getChannel().isOpen()){
-                        //server.shutdown(); //sicherheitshalber
-                        //return;
-                    } else server.start();
+        try {
 
-                    shutdown();
-                    start(AddressUtil.getThisAddress(server.getChannel()));
-                }
-
-            } catch (Exception e) {
-                e.printStackTrace();
+            if (BOB.getInstance().isDebug()) {
+                System.out.println("Switching to local server");
             }
+
+            var server =
+                    BOB.getInstance()
+                            .getLocalServer()
+                            .getServerSocket();
+
+            if (server == null) {
+                reconnecting = false;
+                return;
+            }
+
+            if (!server.getChannel().isOpen()) {
+                server.start();
+
+                try {
+                    Thread.sleep(200);
+                } catch (InterruptedException ignored) {
+                }
+            }
+
+            reconnect(AddressUtil.getThisAddress(server.getChannel()), null);
+
+        } catch (Exception e) {
+            reconnecting = false;
+            e.printStackTrace();
         }
     }
 
-    public void reconnect(InetSocketAddress address) {
-        shutdown();
-        start(address);
+    public void reconnect(InetSocketAddress address,
+                          Consumer<Boolean> callback) {
+        closeCurrentChannel();
+
+        start(address, callback);
+    }
+
+    private void closeCurrentChannel() {
+
+        connected = false;
+
+        if (channel == null) {
+            return;
+        }
+
+        try {
+
+            if (channel.isOpen()) {
+                channel.close();
+            }
+
+        } catch (Exception ignored) {
+        }
+    }
+
+    public void shutdown() {
+
+        connected = false;
+        reconnecting = false;
+
+        closeCurrentChannel();
+
+        try {
+
+            if (workerGroup != null
+                    && !workerGroup.isShutdown()) {
+
+                workerGroup.shutdownNow();
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void loadDetails() {
@@ -202,12 +349,7 @@ public class ClientSocket {
         return channel;
     }
 
-    public void shutdown() {
-        try {
-            handleDisconnect(false);
-            workerGroup.shutdownNow();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public boolean isConnected() {
+        return connected;
     }
 }

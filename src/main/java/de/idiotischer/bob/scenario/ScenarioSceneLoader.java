@@ -16,6 +16,7 @@ public class ScenarioSceneLoader {
 
     private Scenario currentScenario = null;
     private CompletableFuture<Void> awaitingFuture;
+    private CompletableFuture<Scenario> requestFuture;
 
     public CompletableFuture<Void> requestScenarioLoad(Scenario scenario) {
         awaitingFuture = new CompletableFuture<>();
@@ -23,6 +24,14 @@ public class ScenarioSceneLoader {
         BOB.getInstance().getSendTool().send(BOB.getInstance().getClient().getChannel(), new RequestPacket(Type.SCENARIO_LOAD, scenario.getAbbreviation()));
 
         return awaitingFuture;
+    }
+
+    public CompletableFuture<Scenario> requestCurrent() {
+        requestFuture = new CompletableFuture<>();
+
+        BOB.getInstance().getSendTool().send(BOB.getInstance().getClient().getChannel(), new RequestPacket(Type.SCENARIO_SYNC,""));
+
+        return requestFuture;
     }
 
     public void load(Scenario scenario, boolean setMap) {
@@ -60,5 +69,11 @@ public class ScenarioSceneLoader {
 
     public CompletableFuture<Void> getAwaitingFuture() {
         return awaitingFuture;
+    }
+
+    public void completeSync(Scenario scenario) {
+        if(requestFuture != null && !requestFuture.isDone()) {
+            requestFuture.complete(scenario);
+        }
     }
 }

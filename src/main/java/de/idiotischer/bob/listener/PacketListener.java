@@ -65,6 +65,8 @@ public class PacketListener implements ListenerAdapter {
 
             if(scenario == null) manager.refreshAddNew(scenario);
 
+            BOB.getInstance().getScenarioSceneLoader().completeSync(scenario);
+
             BOB.getInstance().getScenarioSceneLoader().load(scenario, false);
         } else if(event.getPacket() instanceof CountriesSyncPacket packet) {
             Set<Country> countries = packet.getPackets().stream().map(CountrySyncPacket::getCountry).collect(Collectors.toSet());

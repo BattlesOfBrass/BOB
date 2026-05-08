@@ -40,6 +40,19 @@ public class MenuPanel extends JPanel implements Panel {
 
         this.currentState = MenuState.START;
         updateMenuVisibility();
+
+        getInputMap(WHEN_IN_FOCUSED_WINDOW).put(
+                KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
+                "escape"
+        );
+
+        getActionMap().put("escape", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                currentState = MenuState.START;
+                updateMenuVisibility();
+            }
+        });
     }
 
     private JPanel wrap(JPanel panel) {
@@ -103,13 +116,5 @@ public class MenuPanel extends JPanel implements Panel {
         g.fillRect(0, 0, getWidth(), getHeight());
 
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-    }
-
-    @Override
-    protected void processKeyEvent(KeyEvent e) {
-        if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-            currentState = MenuState.START;
-            updateMenuVisibility();
-        }
     }
 }

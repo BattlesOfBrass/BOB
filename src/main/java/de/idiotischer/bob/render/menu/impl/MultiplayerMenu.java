@@ -1,15 +1,20 @@
 package de.idiotischer.bob.render.menu.impl;
 
 import de.idiotischer.bob.BOB;
+import de.idiotischer.bob.render.MenuPanel;
 import de.idiotischer.bob.render.menu.components.ModernTextField;
 import de.idiotischer.bob.render.menu.components.OnlyNumberFilter;
 import de.idiotischer.bob.render.menu.components.button.BOBButton;
+import de.idiotischer.bob.util.AddressUtil;
 
 import javax.swing.*;
 import javax.swing.text.AbstractDocument;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.event.FocusAdapter;
+import java.awt.event.KeyEvent;
 import java.net.InetSocketAddress;
+import java.util.function.Consumer;
 
 public class MultiplayerMenu extends JPanel {
 
@@ -67,11 +72,29 @@ public class MultiplayerMenu extends JPanel {
 
             InetSocketAddress address = new InetSocketAddress(ip, port);
 
-            BOB.getInstance().getClient().reconnect(address);
+            BOB.getInstance().getClient().reconnect(address, b -> {
+                //hier dann später countryselect öffnen (braucht erst noch anpassungen)
+                BOB.getInstance().getScenarioSceneLoader().requestCurrent().thenAccept(scenario -> {
+                    BOB.getInstance().getPlayer().country(BOB.getInstance().getCountryManager().getRandom());
+                });
+            });
         });
 
         this.add(backBtn);
         this.add(joinBtn);
+
+        getInputMap(WHEN_IN_FOCUSED_WINDOW).put(
+                KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
+                "escape"
+        );
+
+        getActionMap().put("escape", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                BOB.getInstance().getClient().reconnect(AddressUtil.getThisAddress(BOB.getInstance().getLocalServer().getServerSocket().getChannel()),
+                        null);
+            }
+        });
     }
 
     private void addLabeledField(String labelText, JTextField field, int x, int y, int fieldWidth, int fieldHeight) {
@@ -125,5 +148,4 @@ public class MultiplayerMenu extends JPanel {
         btn.setFocusable(false);
         return btn;
     }
-
 }
