@@ -1,6 +1,7 @@
 package de.idiotischer.bob.state;
 
 import de.idiotischer.bob.BOB;
+import de.idiotischer.bob.Server;
 import de.idiotischer.bob.country.Country;
 import de.idiotischer.bob.map.FloodFill;
 import de.idiotischer.bob.networking.packet.impl.pp.RequestPacket;
@@ -14,6 +15,9 @@ import java.awt.image.BufferedImage;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 import static de.idiotischer.bob.util.ImageUtil.deepCopy;
@@ -23,6 +27,9 @@ public class StateManager implements StateResolver {
     private final Set<State> stateSet = new HashSet<>();
     private CompletableFuture<Void> awaitingFuture;
     private boolean switchMM = true;
+    private final Map<State, Set<Point>> cache = new HashMap<>();
+
+    private final ExecutorService cacheExecutor = Executors.newCachedThreadPool();
 
     //MUSS nach CountryManager initialisiert werden sonst BOOM
     public StateManager() {
@@ -33,6 +40,7 @@ public class StateManager implements StateResolver {
         awaitingFuture = new CompletableFuture<>();
 
         stateSet.clear();
+        cache.clear();
 
         BOB.getInstance().getSendTool().send(BOB.getInstance().getClient().getChannel(), new RequestPacket(Type.STATES_SYNC,""));
 
@@ -89,11 +97,38 @@ public class StateManager implements StateResolver {
     }
 
     public State registerState(State state) {
-        stateSet.remove(state);
 
+        cache.remove(state);
+        stateSet.remove(state);
         stateSet.add(state);
+        cache(state,state.getPoints());
 
         return state;
+    }
+
+    private void cache(State state, List<Point> points) {
+        if (cache.containsKey(state)) return;
+
+        cacheExecutor.submit(() -> {
+            if (BOB.getInstance().isDebug()) System.out.println(state.getAbbreviation() + " caching started!");
+
+            Set<Point> pointsSet = Collections.newSetFromMap(new ConcurrentHashMap<>());
+
+            List<Color> takenColors = Server.getInstance().getScenarioSceneLoader().getTakenColors();
+            BufferedImage logicMap = Server.getInstance().getScenarioSceneLoader().getMap();
+
+            points.parallelStream().forEach(basePoint -> {
+                pointsSet.add(basePoint);
+                List<Point> expanded = PosUtil.getPossiblePos(takenColors, logicMap, basePoint.x, basePoint.y);
+                pointsSet.addAll(expanded);
+            });
+
+            synchronized (cache) {
+                cache.put(state, pointsSet);
+            }
+
+            if (BOB.getInstance().isDebug()) System.out.println(state.getAbbreviation() + " caching finished!");
+        });
     }
 
     public List<String> getStates() {
@@ -121,17 +156,10 @@ public class StateManager implements StateResolver {
         for (State state : stateSet) {
             if (state == null || state.getPoints() == null) continue;
 
-            Set<Point> expandedPoints = new HashSet<>();
-
-            for (Point basePoint : state.getPoints()) {
-                List<Point> possible = PosUtil.getPossiblePos(
-                        BOB.getInstance().getScenarioSceneLoader().getTakenColors(),
-                        BOB.getInstance().getMainRenderer().getMap(),
-                        basePoint.x,
-                        basePoint.y
-                );
-
-                expandedPoints.addAll(possible);
+            Set<Point> expandedPoints = cache.get(state);
+            if (expandedPoints == null) {
+                cache(state, state.getPoints());
+                continue;
             }
 
             if (expandedPoints.contains(click)) {

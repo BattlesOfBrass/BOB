@@ -61,6 +61,9 @@ public class BOB {
     }
 
     public BOB() {
+        System.setProperty("app.name", "BOB");
+        Thread.currentThread().setName(System.getProperty("app.name"));
+
         BOB.instance = this;
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> this.client.shutdown()));
@@ -84,7 +87,7 @@ public class BOB {
 
         this.playerManager.changeCountry(player, countries.getRandom());
 
-        this.mapRenderer = new MainRenderer(player);
+        this.mapRenderer = new MainRenderer();
 
         this.debugger = new Debugger();
 

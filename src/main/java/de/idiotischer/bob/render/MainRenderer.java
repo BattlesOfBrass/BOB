@@ -18,8 +18,6 @@ import java.util.List;
 import static de.idiotischer.bob.util.ImageUtil.deepCopy;
 
 public class MainRenderer extends Thread {
-
-    private final Player player;
     private boolean running = true;
 
     private BufferedImage logicMap;
@@ -48,9 +46,8 @@ public class MainRenderer extends Thread {
     private final List<Panel> panels = new ArrayList<>();
     private Camera camera;
 
-    public MainRenderer(Player player) {
+    public MainRenderer() {
         super("Battles of Brass");
-        this.player = player;
     }
 
     @Override

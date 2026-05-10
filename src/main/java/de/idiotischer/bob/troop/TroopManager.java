@@ -7,7 +7,7 @@ import java.util.List;
 
 public class TroopManager {
 
-    private List<TroopStack> troops = new ArrayList<>();
+    private final List<TroopStack> troops = new ArrayList<>();
 
     public List<TroopStack> getEnemy() {
         return List.of();
