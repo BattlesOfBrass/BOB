@@ -17,7 +17,7 @@ jobs:
         with:
           ref: master
           submodules: recursive
-          token: ${{ secrets.REPO_B_TOKEN }}
+          token: ${{ secrets.LISTENER_TOKEN }}
 
       - name: Update submodules
         run: |
