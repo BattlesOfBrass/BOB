@@ -78,7 +78,7 @@ public class BOB {
             throw new IllegalStateException("Setup called before countries loaded");
         }
 
-        this.player = playerManager.createPlayer(AddressUtil.getThisAddress(client.getChannel()));
+        this.player = playerManager.createPlayer(client.getChannel(), AddressUtil.getThisAddress(client.getChannel()));
 
         this.playerManager.addPlayer(player);
 

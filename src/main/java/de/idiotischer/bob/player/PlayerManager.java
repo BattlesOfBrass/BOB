@@ -11,6 +11,7 @@ import it.unimi.dsi.fastutil.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.net.InetSocketAddress;
+import java.nio.channels.AsynchronousSocketChannel;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
@@ -19,7 +20,7 @@ public class PlayerManager implements PlayerResolver {
 
     private final Set<Player> players = new HashSet<>();
 
-    public Player createPlayer(InetSocketAddress address) {
+    public Player createPlayer(AsynchronousSocketChannel channel, InetSocketAddress address) {
         List<InetSocketAddress> addresses = players.stream().map(Player::address).toList();
 
         if(addresses.contains(address)) return resolve(address);
@@ -28,15 +29,15 @@ public class PlayerManager implements PlayerResolver {
                 .map(Player::uuid)
                 .collect(Collectors.toSet());
 
-        return new ServerPlayer(address,null, UUIDUtil.getUnused(used));
+        return new ServerPlayer(address,null, UUIDUtil.getUnused(used), channel);
     }
 
-    public Player createPlayer(UUID uuid, InetSocketAddress address) {
+    public Player createPlayer(AsynchronousSocketChannel channel, UUID uuid, InetSocketAddress address) {
         List<InetSocketAddress> addresses = players.stream().map(Player::address).toList();
 
         if(addresses.contains(address)) return resolve(address);
 
-        return new ServerPlayer(address,null, uuid);
+        return new ServerPlayer(address,null, uuid,channel);
     }
 
 

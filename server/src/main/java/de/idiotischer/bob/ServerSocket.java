@@ -2,6 +2,7 @@ package de.idiotischer.bob;
 
 import de.idiotischer.bob.event.ClientConnectEvent;
 import de.idiotischer.bob.player.Player;
+import de.idiotischer.bob.player.ServerPlayer;
 import de.idiotischer.bob.util.AddressUtil;
 import de.idiotischer.bob.util.HostUtil;
 
@@ -12,15 +13,13 @@ import java.nio.channels.*;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 //server PW adden
 public class ServerSocket {
 
     private AsynchronousChannelGroup workerGroup;
     private AsynchronousServerSocketChannel channel;
-
-    //immer erster ist der peer bzw hoster
-    private final Set<AsynchronousSocketChannel> clients = Collections.synchronizedSet(new HashSet<>());
 
     private HostUtil hostUtil = new HostUtil();
 
@@ -90,9 +89,7 @@ public class ServerSocket {
                         clientChannel.close();
                     }
 
-                    clients.add(clientChannel);
-
-                    Player p = Server.getInstance().getPlayerManager().createPlayer(AddressUtil.getRemoteAddress(clientChannel));
+                    Player p = Server.getInstance().getPlayerManager().createPlayer(clientChannel, AddressUtil.getRemoteAddress(clientChannel));
                     Server.getInstance().getPlayerManager().addPlayer(p);
 
                     System.out.println("New client connected: " + remoteAddress);
@@ -178,7 +175,7 @@ public class ServerSocket {
     }
 
     private void cleanup(AsynchronousSocketChannel clientChannel) {
-        clients.remove(clientChannel);
+        Server.getInstance().getPlayerManager().removePlayer(clientChannel);
         try {
             clientChannel.close();
         } catch (Exception ignored) {}
@@ -187,15 +184,15 @@ public class ServerSocket {
     public void shutdown() {
         try {
             workerGroup.shutdownNow();
-            clients.forEach(client -> {
+            Server.getInstance().getPlayerManager().getPlayers().forEach(client -> {
                 try {
-                    client.close();
+                    client.clientChannel().close();
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
             });
 
-            clients.clear();
+            Server.getInstance().getPlayerManager().clear();
             channel.close();
         } catch (Exception ignored) {}
     }
@@ -209,7 +206,7 @@ public class ServerSocket {
     }
 
     public Set<AsynchronousSocketChannel> getClients() {
-        return Collections.unmodifiableSet(clients);
+        return Server.getInstance().getPlayerManager().getPlayers().stream().map(Player::clientChannel).collect(Collectors.toUnmodifiableSet());
     }
 
     public HostUtil getHostUtil() {

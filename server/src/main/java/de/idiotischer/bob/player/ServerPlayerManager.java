@@ -11,6 +11,7 @@ import it.unimi.dsi.fastutil.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.net.InetSocketAddress;
+import java.nio.channels.AsynchronousSocketChannel;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -18,7 +19,7 @@ public class ServerPlayerManager implements PlayerResolver {
 
     private final Set<Player> players = new HashSet<>();
 
-    public Player createPlayer(InetSocketAddress address) {
+    public Player createPlayer(AsynchronousSocketChannel channel, InetSocketAddress address) {
         List<InetSocketAddress> addresses = players.stream().map(Player::address).toList();
 
         if(addresses.contains(address)) return resolve(address);
@@ -27,15 +28,15 @@ public class ServerPlayerManager implements PlayerResolver {
                 .map(Player::uuid)
                 .collect(Collectors.toSet());
 
-        return new ServerPlayer(address,null, UUIDUtil.getUnused(used));
+        return new ServerPlayer(address,null, UUIDUtil.getUnused(used), channel);
     }
 
-    public Player createPlayer(UUID uuid, InetSocketAddress address) {
+    public Player createPlayer(AsynchronousSocketChannel channel, UUID uuid, InetSocketAddress address) {
         List<InetSocketAddress> addresses = players.stream().map(Player::address).toList();
 
         if(addresses.contains(address)) return resolve(address);
 
-        return new ServerPlayer(address,null, uuid);
+        return new ServerPlayer(address,null, uuid, channel);
     }
 
     public void changeCountry(UUID uuid, Country country) {
@@ -73,6 +74,21 @@ public class ServerPlayerManager implements PlayerResolver {
         Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new PlayerQuitPacket(player.uuid()));
     }
 
+    public Player resolve(@NotNull AsynchronousSocketChannel channel) {
+        return players.stream()
+                .filter(p -> channel.equals(p.clientChannel()))
+                .findFirst()
+                .orElse(null);
+    }
+
+    public void removePlayer(@NotNull AsynchronousSocketChannel channel) {
+        Player player = resolve(channel);
+
+        if(player == null) return;
+
+        removePlayer(player);
+    }
+
     public String constructChange(Player player, Country country) {
         return player.uuid() + ";" + country.getAbbreviation();
     }
@@ -98,5 +114,13 @@ public class ServerPlayerManager implements PlayerResolver {
     @Override
     public Player resolve(@NotNull InetSocketAddress address) {
         return players.stream().filter(p -> address.equals(p.address())).findFirst().orElse(null);
+    }
+
+    public Set<Player> getPlayers() {
+        return players;
+    }
+
+    public void clear() {
+        players.clear();
     }
 }

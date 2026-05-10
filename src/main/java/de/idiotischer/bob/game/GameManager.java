@@ -19,7 +19,7 @@ public class GameManager {
     }
 
     public void completeGameState(GameState gameState) {
-        if(future != null && !future.isDone())future.complete(gameState);
+        if(future != null && !future.isDone()) future.complete(gameState);
     }
 
     public CompletableFuture<GameState> getFuture() {

@@ -4,6 +4,7 @@ import de.idiotischer.bob.country.Country;
 import de.idiotischer.bob.troop.Troop;
 
 import java.net.InetSocketAddress;
+import java.nio.channels.AsynchronousSocketChannel;
 import java.util.List;
 import java.util.UUID;
 
@@ -22,4 +23,6 @@ public interface Player {
     List<Troop> selectedTroops();
 
     InetSocketAddress address();
+
+    AsynchronousSocketChannel clientChannel();
 }

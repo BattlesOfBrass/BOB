@@ -137,7 +137,7 @@ public class PacketListener implements ListenerAdapter {
                 BOB.getInstance().getPlayerManager().getPlayer(pack.getAddress()).uuid(pack.getUuid());
             }
 
-            Player p = BOB.getInstance().getPlayerManager().createPlayer(pack.getUuid(), pack.getAddress());
+            Player p = BOB.getInstance().getPlayerManager().createPlayer(event.getChannel(), pack.getUuid(), pack.getAddress());
 
             BOB.getInstance().getPlayerManager().addPlayer(p);
         } else if(event.getPacket() instanceof PlayerQuitPacket pack) {

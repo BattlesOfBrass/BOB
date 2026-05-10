@@ -4,6 +4,7 @@ import de.idiotischer.bob.country.Country;
 import de.idiotischer.bob.troop.Troop;
 
 import java.net.InetSocketAddress;
+import java.nio.channels.AsynchronousSocketChannel;
 import java.util.List;
 import java.util.UUID;
 
@@ -12,11 +13,13 @@ public class ServerPlayer implements Player {
     private final InetSocketAddress address;
     private UUID uuid;
     private Country country;
+    private AsynchronousSocketChannel clientChannel;
 
-    public ServerPlayer(InetSocketAddress address, Country country, UUID uuid) {
+    public ServerPlayer(InetSocketAddress address, Country country, UUID uuid, AsynchronousSocketChannel clientChannel) {
         this.country = country;
         this.address = address;
         this.uuid = uuid;
+        this.clientChannel = clientChannel;
     }
 
     @Override
@@ -47,5 +50,10 @@ public class ServerPlayer implements Player {
     @Override
     public InetSocketAddress address() {
         return address;
+    }
+
+    @Override
+    public AsynchronousSocketChannel clientChannel() {
+        return clientChannel;
     }
 }
