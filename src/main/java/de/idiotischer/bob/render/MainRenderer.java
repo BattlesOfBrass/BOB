@@ -49,6 +49,7 @@ public class MainRenderer extends Thread {
     private Camera camera;
 
     public MainRenderer(Player player) {
+        super("Battles of Brass");
         this.player = player;
     }
 

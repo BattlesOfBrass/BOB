@@ -23,7 +23,6 @@ public class Server {
     private ServerScenarioManager scenarioManager;
     private ServerCountryManager countryManager;
     private ServerScenarioSceneLoader scenarioLoader;
-    private MapTracker mapTracker;
     private ServerStateManager stateManager;
     private StateValidator stateValidator = new StateValidator();
     private ServerPlayerManager playerManager;
@@ -53,8 +52,6 @@ public class Server {
         this.config = new MainConfigUtil();
 
         this.serverSocket = new ServerSocket(local);
-
-        this.mapTracker = new MapTracker();
 
         this.playerManager = new ServerPlayerManager();
 
@@ -108,10 +105,6 @@ public class Server {
 
     public ServerScenarioSceneLoader getScenarioSceneLoader() {
         return scenarioLoader;
-    }
-
-    public MapTracker getMapTracker() {
-        return mapTracker;
     }
 
     public ServerStateManager getStateManager() {

@@ -4,6 +4,7 @@ import de.idiotischer.bob.country.Country;
 import de.idiotischer.bob.troop.Troop;
 
 import java.net.InetSocketAddress;
+import java.nio.channels.AsynchronousSocketChannel;
 import java.util.List;
 import java.util.UUID;
 
@@ -36,6 +37,11 @@ public class ArtificalPlayer implements Player {
 
     @Override
     public InetSocketAddress address() {
+        return null;
+    }
+
+    @Override
+    public AsynchronousSocketChannel clientChannel() {
         return null;
     }
 }
