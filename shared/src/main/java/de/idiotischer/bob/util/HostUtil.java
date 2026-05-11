@@ -28,9 +28,7 @@ public class HostUtil {
             JsonObject root;
 
             if (Files.exists(FileUtil.getHostConfig())) {
-                try (JsonReader reader = new JsonReader(
-                        Files.newBufferedReader(FileUtil.getHostConfig())
-                )) {
+                try (JsonReader reader = new JsonReader(Files.newBufferedReader(FileUtil.getHostConfig()))) {
                     JsonElement parsed = SharedCore.GSON.fromJson(reader, JsonElement.class);
 
                     if (parsed != null && parsed.isJsonObject()) {
@@ -45,7 +43,7 @@ public class HostUtil {
                 changed = true;
             }
 
-            JsonObject local = root.has("local") && root.get("local").isJsonObject() ? root.getAsJsonObject("local") : new JsonObject();git 
+            JsonObject local = root.has("local") && root.get("local").isJsonObject() ? root.getAsJsonObject("local") : new JsonObject();
             JsonObject remote = root.has("remote") && root.get("remote").isJsonObject() ? root.getAsJsonObject("remote") : new JsonObject();
 
             if (!root.has("local")) {
