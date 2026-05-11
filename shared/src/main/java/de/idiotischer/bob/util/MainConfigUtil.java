@@ -23,9 +23,7 @@ public class MainConfigUtil {
             JsonObject obj;
 
             if (Files.exists(FileUtil.getDefaultConfig())) {
-                try (JsonReader reader = new JsonReader(
-                        Files.newBufferedReader(FileUtil.getDefaultConfig())
-                )) {
+                try (JsonReader reader = new JsonReader(Files.newBufferedReader(FileUtil.getDefaultConfig()))) {
                     JsonElement root = SharedCore.GSON.fromJson(reader, JsonElement.class);
 
                     if (root != null && root.isJsonObject()) {
