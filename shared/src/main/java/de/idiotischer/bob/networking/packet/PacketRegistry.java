@@ -40,6 +40,7 @@ public class PacketRegistry {
         registerPacket(PlayerQuitPacket.class, 10);
         registerPacket(PlayerJoinPacket.class, 11);
         registerPacket(PlayerChangedCountryPacket.class, 12);
+        registerPacket(LoginPacket.class, 13);
     }
 
     public void registerPacket(Class<? extends Packet> packet, int id) {

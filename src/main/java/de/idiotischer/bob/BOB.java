@@ -219,6 +219,10 @@ public class BOB {
         return initialized;
     }
 
+    public MainConfigUtil getConfig() {
+        return config;
+    }
+
     public PlayerManager getPlayerManager() {
         return playerManager;
     }

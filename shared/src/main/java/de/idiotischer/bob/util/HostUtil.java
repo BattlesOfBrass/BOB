@@ -22,37 +22,96 @@ public class HostUtil {
     }
 
     public void reload() {
-        try (JsonReader reader = new JsonReader(Files.newBufferedReader(FileUtil.getHostConfig()))) {
-            JsonElement root = SharedCore.GSON.fromJson(reader, JsonElement.class);
+        boolean changed = false;
 
-            root.getAsJsonObject().entrySet().forEach(entry -> {
-                JsonObject obj = entry.getValue().getAsJsonObject();
+        try {
+            JsonObject root;
 
-                if (entry.getKey().equals("remote")) {
-                    if (obj.has("remotePort") && !obj.get("remotePort").isJsonNull()) {
-                        remotePort = obj.get("remotePort").getAsInt();
-                    }
-                    if (obj.has("remoteHost") && !obj.get("remoteHost").isJsonNull()) {
-                        host = obj.get("remoteHost").getAsString();
+            if (Files.exists(FileUtil.getHostConfig())) {
+                try (JsonReader reader = new JsonReader(
+                        Files.newBufferedReader(FileUtil.getHostConfig())
+                )) {
+                    JsonElement parsed = SharedCore.GSON.fromJson(reader, JsonElement.class);
+
+                    if (parsed != null && parsed.isJsonObject()) {
+                        root = parsed.getAsJsonObject();
+                    } else {
+                        root = new JsonObject();
+                        changed = true;
                     }
                 }
+            } else {
+                root = new JsonObject();
+                changed = true;
+            }
 
-                if (obj.has("coop") && !obj.get("coop").isJsonNull()) {
-                    coop = obj.get("coop").getAsBoolean();
-                }
+            JsonObject local = root.has("local") && root.get("local").isJsonObject() ? root.getAsJsonObject("local") : new JsonObject();git 
+            JsonObject remote = root.has("remote") && root.get("remote").isJsonObject() ? root.getAsJsonObject("remote") : new JsonObject();
 
-                if (entry.getKey().equals("local")) {
-                    if (obj.has("localPort") && !obj.get("localPort").isJsonNull()) {
-                        localPort = obj.get("localPort").getAsInt();
-                    }
-                    if (obj.has("useSpecifications") && !obj.get("useSpecifications").isJsonNull()) {
-                        useSpecifications = obj.get("useSpecifications").getAsBoolean();
-                    }
-                    if (obj.has("multiplayerEnabled") && !obj.get("multiplayerEnabled").isJsonNull()) {
-                        multiplayerEnabled = obj.get("multiplayerEnabled").getAsBoolean();
-                    }
+            if (!root.has("local")) {
+                root.add("local", local);
+                changed = true;
+            }
+
+            if (!root.has("remote")) {
+                root.add("remote", remote);
+                changed = true;
+            }
+
+            if (remote.has("remotePort") && !remote.get("remotePort").isJsonNull()) {
+                remotePort = remote.get("remotePort").getAsInt();
+            } else {
+                remotePort = 2776;
+                remote.addProperty("remotePort", remotePort);
+                changed = true;
+            }
+
+            if (remote.has("remoteHost") && !remote.get("remoteHost").isJsonNull()) {
+                host = remote.get("remoteHost").getAsString();
+            } else {
+                host = "localhost";
+                remote.addProperty("remoteHost", host);
+                changed = true;
+            }
+
+            if (remote.has("coop") && !remote.get("coop").isJsonNull()) {
+                coop = remote.get("coop").getAsBoolean();
+            } else {
+                coop = false;
+                remote.addProperty("coop", coop);
+                changed = true;
+            }
+
+            if (local.has("localPort") && !local.get("localPort").isJsonNull()) {
+                localPort = local.get("localPort").getAsInt();
+            } else {
+                localPort = 3995;
+                local.addProperty("localPort", localPort);
+                changed = true;
+            }
+
+            if (local.has("useSpecifications") && !local.get("useSpecifications").isJsonNull()) {
+                useSpecifications = local.get("useSpecifications").getAsBoolean();
+            } else {
+                useSpecifications = false;
+                local.addProperty("useSpecifications", useSpecifications);
+                changed = true;
+            }
+
+            if (local.has("multiplayerEnabled") && !local.get("multiplayerEnabled").isJsonNull()) {
+                multiplayerEnabled = local.get("multiplayerEnabled").getAsBoolean();
+            } else {
+                multiplayerEnabled = false;
+                local.addProperty("multiplayerEnabled", multiplayerEnabled);
+                changed = true;
+            }
+
+            if (changed) {
+                try (var writer = Files.newBufferedWriter(FileUtil.getHostConfig())) {
+                    SharedCore.GSON.toJson(root, writer);
                 }
-            });
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
         }

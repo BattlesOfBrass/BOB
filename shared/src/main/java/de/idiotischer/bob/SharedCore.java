@@ -1,6 +1,7 @@
 package de.idiotischer.bob;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import de.craftsblock.craftscore.buffer.BufferUtil;
 import de.craftsblock.craftscore.event.ListenerRegistry;
 import de.idiotischer.bob.networking.communication.SendTool;
@@ -17,7 +18,7 @@ public class SharedCore {
     private final ListenerRegistry listenerRegistry = new ListenerRegistry();
     private final SendTool tool = new SendTool(this);
 
-    public static final Gson GSON = new Gson();
+    public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
     public SharedCore() {
         this.registry = new PacketRegistry(this);

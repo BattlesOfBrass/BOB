@@ -74,7 +74,7 @@ public class MultiplayerMenu extends JPanel {
 
             InetSocketAddress address = new InetSocketAddress(ip, port);
 
-            BOB.getInstance().getClient().reconnect(address, b -> {
+            BOB.getInstance().getClient().reconnect(nameField.getText(),"", address, b -> {
                 //hier dann später countryselect öffnen (braucht erst noch anpassungen)
                 BOB.getInstance().getScenarioSceneLoader().requestCurrent().thenAccept(scenario -> {
                     CountrySelectMenu menu = new CountrySelectMenu("Join", scenario, b1 -> {
@@ -108,7 +108,7 @@ public class MultiplayerMenu extends JPanel {
         getActionMap().put("escape", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                BOB.getInstance().getClient().reconnect(AddressUtil.getThisAddress(BOB.getInstance().getLocalServer().getServerSocket().getChannel()),
+                BOB.getInstance().getClient().reconnect("","",AddressUtil.getThisAddress(BOB.getInstance().getLocalServer().getServerSocket().getChannel()),
                         null);
             }
         });

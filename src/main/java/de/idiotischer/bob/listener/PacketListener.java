@@ -17,6 +17,7 @@ import de.idiotischer.bob.state.StateManager;
 import it.unimi.dsi.fastutil.Pair;
 
 import java.awt.*;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;

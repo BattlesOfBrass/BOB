@@ -2,6 +2,8 @@ package de.idiotischer.bob.networking;
 
 import de.idiotischer.bob.BOB;
 import de.idiotischer.bob.ServerSocket;
+import de.idiotischer.bob.auth.Credentials;
+import de.idiotischer.bob.networking.packet.impl.LoginPacket;
 import de.idiotischer.bob.networking.packet.impl.PingPacket;
 import de.idiotischer.bob.util.AddressUtil;
 import de.idiotischer.bob.util.HostUtil;
@@ -14,6 +16,7 @@ import java.nio.channels.AsynchronousChannelGroup;
 import java.nio.channels.AsynchronousCloseException;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.CompletionHandler;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 public class ClientSocket {
@@ -25,6 +28,12 @@ public class ClientSocket {
 
     private volatile boolean connected = false;
     private volatile boolean reconnecting = false;
+    private int reconnectCount = 0;
+    private InetSocketAddress lastAttempted;
+    private final int max_reconnection = 6;
+
+    private long lastAttemptTime = 0L;
+    private final long reconnect_delay = TimeUnit.SECONDS.toMillis(30);
 
     public ClientSocket() {
         loadDetails();
@@ -39,29 +48,48 @@ public class ClientSocket {
     }
 
     public void start(InetSocketAddress address) {
-        start(address, null);
+        start("","",address, null);
     }
 
-    public void start(InetSocketAddress address,
-                      Consumer<Boolean> callback) {
+    public void start(String name, String pw,InetSocketAddress address, Consumer<Boolean> callback) {
+        long currentTime = System.currentTimeMillis();
+
+        if (currentTime - lastAttemptTime > reconnect_delay) {
+            if (reconnectCount >= max_reconnection) {
+                if(BOB.getInstance().isDebug()) System.out.println("Connection CD finished. Resetting limit for " + address);
+            }
+            reconnectCount = 0;
+        }
+
+        if (reconnectCount >= max_reconnection) {
+            long waitRemaining = (reconnect_delay - (currentTime - lastAttemptTime)) / 1000;
+            if(BOB.getInstance().isDebug()) System.out.println("Reconnected too often to " + address + ".");
+            if(BOB.getInstance().isDebug()) System.out.println("Please wait " + Math.max(0, waitRemaining) + "s before trying again.");
+            System.out.println("Can't reconnect anymore! Took too many tries!"); //vorrübergehend als message an den user
+
+            if (callback != null) callback.accept(false);
+            return;
+        }
+
+        if (address.equals(lastAttempted)) {
+            reconnectCount++;
+        } else {
+            reconnectCount = 1;
+            lastAttempted = address;
+        }
+
+        lastAttemptTime = currentTime;
 
         if (!hostUtil.isMultiplayerEnabled()) {
-            if (callback != null) {
-                callback.accept(false);
-            }
+            if (callback != null) callback.accept(false);
             return;
         }
 
         try {
             channel = AsynchronousSocketChannel.open(workerGroup);
         } catch (IOException e) {
-
             e.printStackTrace();
-
-            if (callback != null) {
-                callback.accept(false);
-            }
-
+            if (callback != null) callback.accept(false);
             return;
         }
 
@@ -70,22 +98,16 @@ public class ClientSocket {
         boolean bound = false;
 
         for (int i = 0; i < 100; i++) {
-
             try {
-
                 if (hostUtil.isUseSpecifications()) {
-                    channel.bind(
-                            new InetSocketAddress("localhost", port)
-                    );
+                    channel.bind(new InetSocketAddress("localhost", port));
                 }
 
                 bound = true;
                 break;
 
             } catch (BindException e) {
-
                 port++;
-
             } catch (Exception e) {
 
                 e.printStackTrace();
@@ -94,7 +116,7 @@ public class ClientSocket {
         }
 
         if (!bound) {
-            System.err.println("Failed to bind socket after 100 attempts.");
+            if(BOB.getInstance().isDebug()) System.out.println("Failed to bind socket after 100 attempts.");
 
             if (callback != null) {
                 callback.accept(false);
@@ -109,15 +131,14 @@ public class ClientSocket {
 
             @Override
             public void completed(Void result, Object attachment) {
-
                 connected = true;
                 reconnecting = false;
 
                 System.out.println("Connected to server!");
 
-                BOB.getInstance()
-                        .getSendTool()
-                        .send(channel, new PingPacket());
+                BOB.getInstance().getSendTool().send(channel, new LoginPacket(new Credentials(name, pw)));
+
+                BOB.getInstance().getSendTool().send(channel, new PingPacket());
 
                 if (callback != null) {
                     callback.accept(true);
@@ -131,9 +152,7 @@ public class ClientSocket {
 
                 connected = false;
 
-                System.out.println(
-                        "Connection failed: " + exc
-                );
+                System.out.println("Connection failed: " + exc);
 
                 if (callback != null) {
                     callback.accept(false);
@@ -151,14 +170,16 @@ public class ClientSocket {
         ByteBuffer buffer = ByteBuffer.allocate(8192);
 
         channel.read(buffer, buffer, new CompletionHandler<>() {
-
             @Override
             public void completed(Integer bytesRead, ByteBuffer attachment) {
-
                 if (bytesRead == -1) {
                     handleDisconnect(true);
                     return;
                 }
+
+                connected = true;
+                reconnecting = false;
+                reconnectCount = 0;
 
                 attachment.flip();
 
@@ -181,9 +202,7 @@ public class ClientSocket {
                 attachment.compact();
 
                 if (attachment.position() == attachment.capacity()) {
-
-                    ByteBuffer expanded =
-                            ByteBuffer.allocate(attachment.capacity() * 2);
+                    ByteBuffer expanded = ByteBuffer.allocate(attachment.capacity() * 2);
 
                     attachment.flip();
                     expanded.put(attachment);
@@ -218,7 +237,6 @@ public class ClientSocket {
     }
 
     private void handleDisconnect(boolean reconnect) {
-
         connected = false;
 
         if (channel != null) {
@@ -273,7 +291,7 @@ public class ClientSocket {
                 } catch (InterruptedException ignored) {}
             }
 
-            reconnect(AddressUtil.getThisAddress(server.getChannel()), null);
+            reconnect("","",AddressUtil.getThisAddress(server.getChannel()), null);
 
         } catch (Exception e) {
             reconnecting = false;
@@ -281,11 +299,11 @@ public class ClientSocket {
         }
     }
 
-    public void reconnect(InetSocketAddress address,
+    public void reconnect(String name, String pw, InetSocketAddress address,
                           Consumer<Boolean> callback) {
         closeCurrentChannel();
 
-        start(address, callback);
+        start(name,pw,address, callback);
     }
 
     private void closeCurrentChannel() {
