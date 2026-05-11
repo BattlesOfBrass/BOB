@@ -12,18 +12,27 @@ import java.nio.ByteBuffer;
 import java.nio.channels.*;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-//server PW adden
+//TODO: server PW adden
+//TODO: client timeout und threshold adden usw damit man nd botten kann
 public class ServerSocket {
 
     private AsynchronousChannelGroup workerGroup;
     private AsynchronousServerSocketChannel channel;
 
-    private HostUtil hostUtil = new HostUtil();
+    private final HostUtil hostUtil = new HostUtil();
+    private ScheduledExecutorService timeoutScheduler;
 
     private boolean local;
+    private final Map<AsynchronousSocketChannel, Long> lastAction = new ConcurrentHashMap<>();
+    private static final long threshold = 30000;
 
     public ServerSocket(boolean local) {
         this.local = local;
@@ -40,6 +49,7 @@ public class ServerSocket {
 
     public void start() {
         loadDetails();
+        startTimeoutChecker();
 
         try {
             workerGroup = AsynchronousChannelGroup.withFixedThreadPool(3, Thread::new);
@@ -62,6 +72,20 @@ public class ServerSocket {
 
     public boolean isLocal() {
         return local;
+    }
+
+    private void startTimeoutChecker() {
+        this.timeoutScheduler = Executors.newSingleThreadScheduledExecutor();
+
+        timeoutScheduler.scheduleAtFixedRate(() -> {
+            long now = System.currentTimeMillis();
+            lastAction.forEach((channel, time) -> {
+                if (now - time > threshold) {
+                    if(Server.getInstance().isDebug()) System.out.println("Client timed out: " + channel);
+                    cleanup(channel);
+                }
+            });
+        }, 10, 10, TimeUnit.SECONDS);
     }
 
     private void startAccepting() {
@@ -92,6 +116,8 @@ public class ServerSocket {
                     Player p = Server.getInstance().getPlayerManager().createPlayer(clientChannel, AddressUtil.getRemoteAddress(clientChannel));
                     Server.getInstance().getPlayerManager().addPlayer(p);
 
+                    lastAction.put(clientChannel, System.currentTimeMillis());
+
                     System.out.println("New client connected: " + remoteAddress);
 
                     if (channel.isOpen()) {
@@ -107,7 +133,7 @@ public class ServerSocket {
 
             @Override
             public void failed(Throwable exc, Void attachment) {
-                if (!(exc instanceof AsynchronousCloseException) &&
+                if (/*!(exc instanceof AsynchronousCloseException) &&*/
                         !(exc instanceof ClosedChannelException)) {
                     exc.printStackTrace();
                 }
@@ -122,67 +148,78 @@ public class ServerSocket {
     private void readFromClient(AsynchronousSocketChannel clientChannel) {
         ByteBuffer initialBuffer = ByteBuffer.allocate(8192);
 
-        clientChannel.read(initialBuffer, initialBuffer, new CompletionHandler<>() {
-            @Override
-            public void completed(Integer result, ByteBuffer buffer) {
-                if (result == -1) {
-                    cleanup(clientChannel);
-                    return;
-                }
+        if (clientChannel != null && clientChannel.isOpen()) {
+            clientChannel.read(initialBuffer, initialBuffer, new CompletionHandler<>() {
+                @Override
+                public void completed(Integer result, ByteBuffer buffer) {
+                    if (result == -1) {
+                        cleanup(clientChannel);
+                        return;
+                    }
 
-                buffer.flip();
+                    lastAction.put(clientChannel, System.currentTimeMillis());
 
-                while (buffer.hasRemaining()) {
-                    buffer.mark();
-                    Object packet = Server.getInstance().getCore().getRegistry()
-                            .getDecoder().code(buffer, clientChannel);
+                    buffer.flip();
+                    try {
+                        while (buffer.hasRemaining()) {
+                            buffer.mark();
+                            Object packet = Server.getInstance().getCore().getRegistry()
+                                    .getDecoder().code(buffer, clientChannel);
 
-                    if (packet == null) {
-                        buffer.reset();
-                        break;
+                            if (packet == null) {
+                                buffer.reset();
+                                break;
+                            }
+                        }
+
+                        if (!clientChannel.isOpen()) return;
+
+                        buffer.compact();
+
+                        ByteBuffer nextBuffer = buffer;
+                        if (buffer.position() == buffer.capacity()) {
+                            nextBuffer = ByteBuffer.allocate(buffer.capacity() * 2);
+                            buffer.flip();
+                            nextBuffer.put(buffer);
+                        }
+
+                        clientChannel.read(nextBuffer, nextBuffer, this);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        cleanup(clientChannel);
                     }
                 }
 
-                buffer.compact();
+                @Override
+                public void failed(Throwable exc, ByteBuffer attachment) {
+                    if (exc instanceof AsynchronousCloseException) {
+                        return;
+                    }
 
-                if (buffer.position() == buffer.capacity()) {
-                    ByteBuffer expandedBuffer = ByteBuffer.allocate(buffer.capacity() * 2);
-                    buffer.flip();
-                    expandedBuffer.put(buffer);
+                    String msg = exc.getMessage();
+                    if (msg == null || (!msg.contains("Connection reset") && !msg.contains("closed"))) {
+                        exc.printStackTrace();
+                    }
 
-                    buffer = expandedBuffer;
-
-                    System.out.println("Buffer expanded to " + buffer.capacity() + " bytes to fit large packet.");
+                    cleanup(clientChannel);
                 }
-
-                clientChannel.read(buffer, buffer, this);
-            }
-
-            @Override
-            public void failed(Throwable exc, ByteBuffer attachment) {
-                if (exc instanceof AsynchronousCloseException) {
-                    return;
-                }
-
-                String msg = exc.getMessage();
-                if (msg == null || (!msg.contains("Connection reset") && !msg.contains("closed"))) {
-                    exc.printStackTrace();
-                }
-
-                cleanup(clientChannel);
-            }
-        });
+            });
+        }
     }
 
     private void cleanup(AsynchronousSocketChannel clientChannel) {
+        lastAction.remove(clientChannel);
         Server.getInstance().getPlayerManager().removePlayer(clientChannel);
         try {
-            clientChannel.close();
+            if (clientChannel.isOpen()) {
+                clientChannel.close();
+            }
         } catch (Exception ignored) {}
     }
 
     public void shutdown() {
         try {
+            timeoutScheduler.shutdownNow();
             workerGroup.shutdownNow();
             Server.getInstance().getPlayerManager().getPlayers().forEach(client -> {
                 try {
@@ -206,7 +243,7 @@ public class ServerSocket {
     }
 
     public Set<AsynchronousSocketChannel> getClients() {
-        return Server.getInstance().getPlayerManager().getPlayers().stream().map(Player::clientChannel).collect(Collectors.toUnmodifiableSet());
+        return Server.getInstance().getPlayerManager().getPlayers().stream().filter(Player::authorized).map(Player::clientChannel).collect(Collectors.toUnmodifiableSet());
     }
 
     public HostUtil getHostUtil() {

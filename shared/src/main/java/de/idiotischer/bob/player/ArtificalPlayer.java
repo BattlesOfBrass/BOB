@@ -34,14 +34,4 @@ public class ArtificalPlayer implements Player {
     public List<Troop> selectedTroops() {
         return List.of();
     }
-
-    @Override
-    public InetSocketAddress address() {
-        return null;
-    }
-
-    @Override
-    public AsynchronousSocketChannel clientChannel() {
-        return null;
-    }
 }

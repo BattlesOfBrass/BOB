@@ -8,15 +8,32 @@ import de.idiotischer.bob.event.ClientConnectEvent;
 import de.idiotischer.bob.networking.packet.PacketRegistry;
 import de.idiotischer.bob.networking.packet.impl.*;
 import de.idiotischer.bob.networking.packet.impl.pp.RequestPacket;
+import de.idiotischer.bob.player.Player;
 import de.idiotischer.bob.scenario.Scenario;
 import de.idiotischer.bob.scenario.ServerScenarioManager;
 import de.idiotischer.bob.scenario.ServerScenarioSceneLoader;
 import de.idiotischer.bob.state.State;
 import it.unimi.dsi.fastutil.Pair;
 
+import java.io.IOException;
+
 public class ServerPacketListener implements ListenerAdapter {
     @EventHandler
     public void onPacketReceive(PacketRegistry.PacketReceiveEvent event) {
+        Player player = Server.getInstance().getPlayerManager().resolve(event.getChannel());
+
+        if(player != null && !player.authorized()) {
+            if(event.getPacket() instanceof LoginPacket pack) {
+                player.authorize(pack.getCredentials());
+            } else {
+                try {
+                    event.getChannel().close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
         if(event.getPacket() instanceof PingPacket) {
             System.out.println("Ping packet received at: " + System.nanoTime());
             Server.getInstance().getSendTool().send(event.getChannel(), new PongPacket());

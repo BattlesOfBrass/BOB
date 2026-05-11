@@ -29,6 +29,7 @@ public class ServerStateManager implements StateResolver {
     private final ExecutorService cacheExecutor = Executors.newVirtualThreadPerTaskExecutor();
 
     public ServerStateManager() {
+        //reload();
     }
 
     public void reload() {
@@ -36,12 +37,7 @@ public class ServerStateManager implements StateResolver {
         cache.clear();
 
         try (JsonReader reader = new JsonReader(
-                Files.newBufferedReader(
-                        Server.getInstance()
-                                .getScenarioSceneLoader()
-                                .getCurrentScenario()
-                                .getStatesConfig()
-                )
+                Files.newBufferedReader(Server.getInstance().getScenarioSceneLoader().getCurrentScenario().getStatesConfig())
         )) {
 
             JsonElement root = SharedCore.GSON.fromJson(reader, JsonElement.class);
@@ -88,8 +84,6 @@ public class ServerStateManager implements StateResolver {
                 );
 
                 registerState(state);
-
-                cache(state, state.getPoints());
 
                 if (Server.getInstance().isDebug()) {
                     System.out.println("registered state: " + state.getName()
@@ -140,6 +134,9 @@ public class ServerStateManager implements StateResolver {
         stateSet.remove(state);
         stateSet.add(state);
         cache.remove(state);
+
+        if(Server.getInstance().getConfig().isCacheOnRegister()) cache(state, state.getPoints());
+
         return state;
     }
 
@@ -151,22 +148,19 @@ public class ServerStateManager implements StateResolver {
         Point click = new Point(x, y);
 
         for (State state : stateSet) {
-            if (state == null || state.getPoints() == null) continue;
+            if (state == null) continue;
 
             Set<Point> expandedPoints = cache.get(state);
-            if (expandedPoints == null) {
-                cache(state, state.getPoints());
-                continue;
-            }
 
-            if (expandedPoints.contains(click)) {
-                return state;
+            if (expandedPoints != null) {
+                if (expandedPoints.contains(click)) return state;
+            } else {
+                cache(state, state.getPoints());
+                if (state.getPoints().contains(click)) return state;
             }
         }
-
         return null;
     }
-
 
     public Set<State> getStateSet() {
         return stateSet;

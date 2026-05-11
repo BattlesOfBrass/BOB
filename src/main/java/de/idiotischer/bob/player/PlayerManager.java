@@ -10,6 +10,7 @@ import de.idiotischer.bob.util.UUIDUtil;
 import it.unimi.dsi.fastutil.Pair;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.*;
@@ -39,7 +40,6 @@ public class PlayerManager implements PlayerResolver {
 
         return new ServerPlayer(address,null, uuid,channel);
     }
-
 
     public void changeCountry(UUID uuid, Country country) {
         Player p = resolve(uuid);
@@ -73,11 +73,24 @@ public class PlayerManager implements PlayerResolver {
         AtomicBoolean newP = new AtomicBoolean(true);
         players.removeIf(p -> {
             newP.set(false);
-            return player.uuid().equals(player.uuid());
+
+            if(player.uuid().equals(player.uuid())) {
+
+                try {
+                    p.clientChannel().close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return false;
+                }
+
+                return true;
+            }
+
+            return false;
         });
 
         if(newP.get()) {
-            if(BOB.getInstance().isDebug()) System.out.println("adding player " + player.uuid());
+            if(BOB.getInstance().isDebug()) System.out.println("Adding player " + player.uuid());
         }
 
         players.add(player);
@@ -104,24 +117,29 @@ public class PlayerManager implements PlayerResolver {
         });
     }
 
+    //TODO: check if && p.authorized() breaks smth
     public boolean hasPlayer(Country c) {
-        return players.stream().anyMatch(p -> p.country() != null && p.country().equals(c));
+        return players.stream().anyMatch(p -> p.country() != null && p.authorized() && p.country().equals(c));
     }
 
+    //TODO: check if && p.authorized() breaks smth
     public boolean hasPlayer(InetSocketAddress address) {
-        return players.stream().anyMatch(p -> p.address() != null && p.address().equals(address));
+        return players.stream().anyMatch(p -> p.address() != null && p.authorized() && p.address().equals(address));
     }
 
+    //TODO: check if && p.authorized() breaks smth
     public Player getPlayer(InetSocketAddress address) {
-        return players.stream().filter(p -> p.address() != null && p.address().equals(address)).findFirst().orElse(null);
+        return players.stream().filter(p -> p.address() != null && p.authorized() && p.address().equals(address)).findFirst().orElse(null);
     }
 
+    //TODO: check if && p.authorized() breaks smth
     public Player getPlayer(UUID uuid) {
-        return players.stream().filter(p -> p.uuid() != null && p.uuid().equals(uuid)).findFirst().orElse(null);
+        return players.stream().filter(p -> p.uuid() != null && p.authorized() && p.uuid().equals(uuid)).findFirst().orElse(null);
     }
 
+    //TODO: check if && p.authorized() breaks smth
     public boolean hasPlayer(UUID uuid) {
-        return players.stream().anyMatch(p -> p.uuid() != null && p.uuid().equals(uuid));
+        return players.stream().anyMatch(p -> p.uuid() != null && p.authorized() && p.uuid().equals(uuid));
     }
 
     public String constructChange(Player player, Country country) {
@@ -137,13 +155,15 @@ public class PlayerManager implements PlayerResolver {
         return Pair.of(this.resolve(uuid), c);
     }
 
+    //TODO: check if && p.authorized() breaks smth
     @Override
     public Player resolve(@NotNull UUID uuid) {
-        return players.stream().filter(p -> uuid.equals(p.uuid())).findFirst().orElse(null);
+        return players.stream().filter(p -> uuid.equals(p.uuid()) && p.authorized()).findFirst().orElse(null);
     }
 
+    //TODO: check if && p.authorized() breaks smth
     @Override
     public Player resolve(@NotNull InetSocketAddress address) {
-        return players.stream().filter(p -> address.equals(p.address())).findFirst().orElse(null);
+        return players.stream().filter(p -> address.equals(p.address()) && p.authorized()).findFirst().orElse(null);
     }
 }

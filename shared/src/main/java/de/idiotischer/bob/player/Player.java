@@ -1,5 +1,6 @@
 package de.idiotischer.bob.player;
 
+import de.idiotischer.bob.auth.Credentials;
 import de.idiotischer.bob.country.Country;
 import de.idiotischer.bob.troop.Troop;
 
@@ -13,6 +14,11 @@ public interface Player {
         return null;
     }
 
+    default String name() {
+        return "";
+    }
+    default void name(String name) {}
+
     UUID uuid();
     void uuid(UUID uuid);
 
@@ -22,7 +28,17 @@ public interface Player {
 
     List<Troop> selectedTroops();
 
-    InetSocketAddress address();
+    default InetSocketAddress address() {
+        return null;
+    }
 
-    AsynchronousSocketChannel clientChannel();
+    default AsynchronousSocketChannel clientChannel() {
+        return null;
+    }
+
+    default boolean authorized() {
+        return true;
+    }
+
+    default void authorize(Credentials credentials) {}
 }
