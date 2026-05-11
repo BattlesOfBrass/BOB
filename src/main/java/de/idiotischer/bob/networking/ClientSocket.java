@@ -149,10 +149,16 @@ public class ClientSocket {
 
             @Override
             public void failed(Throwable exc, Object attachment) {
-
                 connected = false;
+                reconnecting = false;
 
                 System.out.println("Connection failed: " + exc);
+
+                try {
+                    if (channel != null && channel.isOpen()) {
+                        channel.close();
+                    }
+                } catch (Exception ignored) {}
 
                 if (callback != null) {
                     callback.accept(false);
