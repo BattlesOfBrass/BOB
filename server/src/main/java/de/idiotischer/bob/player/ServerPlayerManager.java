@@ -1,6 +1,7 @@
 package de.idiotischer.bob.player;
 
 import de.idiotischer.bob.Server;
+import de.idiotischer.bob.auth.Credentials;
 import de.idiotischer.bob.country.Country;
 import de.idiotischer.bob.country.CountryResolver;
 import de.idiotischer.bob.networking.packet.impl.PlayerChangedCountryPacket;
@@ -65,7 +66,13 @@ public class ServerPlayerManager implements PlayerResolver {
         players.add(player);
 
         if(Server.getInstance().isDebug()) System.out.println("New player added: " + player.uuid());
-        Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new PlayerJoinPacket(player.uuid(),player.address()));
+    }
+
+    public void authPlayer(Player player, Credentials creds) {
+        player.authorize(creds);
+
+        //brauchen jz erst
+        Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new PlayerJoinPacket(player.uuid(), player.address()));
     }
 
     public void removePlayer(Player player) {

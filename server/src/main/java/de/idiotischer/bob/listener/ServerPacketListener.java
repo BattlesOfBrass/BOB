@@ -24,7 +24,8 @@ public class ServerPacketListener implements ListenerAdapter {
 
         if(player != null && !player.authorized()) {
             if(event.getPacket() instanceof LoginPacket pack) {
-                player.authorize(pack.getCredentials());
+                Server.getInstance().getPlayerManager().authPlayer(player,pack.getCredentials());
+                //player.authorize(pack.getCredentials());
             } else {
                 try {
                     event.getChannel().close();

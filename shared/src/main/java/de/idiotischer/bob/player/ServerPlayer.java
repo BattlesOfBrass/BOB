@@ -1,5 +1,6 @@
 package de.idiotischer.bob.player;
 
+import de.idiotischer.bob.SharedCore;
 import de.idiotischer.bob.auth.Credentials;
 import de.idiotischer.bob.country.Country;
 import de.idiotischer.bob.troop.Troop;
@@ -7,6 +8,7 @@ import de.idiotischer.bob.troop.Troop;
 import java.net.InetSocketAddress;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 
 public class ServerPlayer implements Player {
@@ -79,10 +81,18 @@ public class ServerPlayer implements Player {
 
     @Override
     public void authorize(Credentials credentials) {
-        if(credentials == null) return;
-        //if(!"somepwfromtheserverwhichidonthaveaccesstosinceweareinshared".equals(credentials.lobbyPW())) return;
+        if (credentials == null) return;
 
-        this.name(credentials.username());
+        String name = credentials.username();
+        if (name == null) return;
+        name = name.trim(); // ... ig
+
+        if (name.isEmpty()) name = "Player" + new Random().nextInt(1,999);
+        int max = SharedCore.getMaxNameLength();
+
+        if (name.length() > max) name = name.substring(0, max);
+
+        this.name(name);
         this.authorized = true;
     }
 }
