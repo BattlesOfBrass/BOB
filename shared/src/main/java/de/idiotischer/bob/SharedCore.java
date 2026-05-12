@@ -20,6 +20,8 @@ public class SharedCore {
 
     public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
+    private static final int maxNameLength = 16;
+
     public SharedCore() {
         this.registry = new PacketRegistry(this);
 
@@ -40,5 +42,9 @@ public class SharedCore {
 
     public ListenerRegistry getListenerRegistry() {
         return listenerRegistry;
+    }
+
+    public static int getMaxNameLength() {
+        return maxNameLength;
     }
 }

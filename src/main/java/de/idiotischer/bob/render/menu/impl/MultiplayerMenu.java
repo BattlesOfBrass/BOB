@@ -1,7 +1,9 @@
 package de.idiotischer.bob.render.menu.impl;
 
 import de.idiotischer.bob.BOB;
+import de.idiotischer.bob.SharedCore;
 import de.idiotischer.bob.render.MenuPanel;
+import de.idiotischer.bob.render.menu.components.LengthLimitFilter;
 import de.idiotischer.bob.render.menu.components.ModernTextField;
 import de.idiotischer.bob.render.menu.components.OnlyNumberFilter;
 import de.idiotischer.bob.render.menu.components.button.BOBButton;
@@ -31,15 +33,20 @@ public class MultiplayerMenu extends JPanel {
         int bottomY = layoutScaleY - 60;
 
         JTextField nameField = new JTextField("User187");
+        JTextField pwField = new JTextField("12345");
         JTextField ipField = new JTextField("127.0.0.1");
         JTextField portField = new JTextField("25562");
 
         nameField.setUI(new ModernTextField());
+        pwField.setUI(new ModernTextField());
         ipField.setUI(new ModernTextField());
         portField.setUI(new ModernTextField());
 
         ((AbstractDocument) portField.getDocument())
                 .setDocumentFilter(new OnlyNumberFilter());
+
+        ((AbstractDocument) pwField.getDocument())
+                .setDocumentFilter(new LengthLimitFilter(SharedCore.getMaxNameLength()));
 
         int fieldWidth = 300;
         int fieldHeight = 40;
@@ -49,8 +56,9 @@ public class MultiplayerMenu extends JPanel {
         int startYField = layoutScaleY / 2 - fieldHeight - spacing - 60;
 
         addLabeledField("Name:", nameField, centerXField, startYField, fieldWidth, fieldHeight);
-        addLabeledField("Server IP:", ipField, centerXField, startYField + fieldHeight + spacing, fieldWidth, fieldHeight);
-        addLabeledField("Port:", portField, centerXField, startYField + 2 * (fieldHeight + spacing), fieldWidth, fieldHeight);
+        addLabeledField("Password:", pwField, centerXField, startYField + fieldHeight + spacing, fieldWidth, fieldHeight);
+        addLabeledField("Server IP:", ipField, centerXField,startYField + 2 * (fieldHeight + spacing), fieldWidth, fieldHeight);
+        addLabeledField("Port:", portField, centerXField, startYField + 3 * (fieldHeight + spacing), fieldWidth, fieldHeight);
 
         JButton backBtn = createButton("Back to Menu", 180, 40);
         backBtn.setBounds(40, bottomY, 180, 40);
@@ -74,7 +82,7 @@ public class MultiplayerMenu extends JPanel {
 
             InetSocketAddress address = new InetSocketAddress(ip, port);
 
-            BOB.getInstance().getClient().reconnect(nameField.getText(),"", address, b -> {
+            BOB.getInstance().getClient().reconnect(nameField.getText(), pwField.getText(), address, b -> {
                 if(!b) return;
                 //hier dann später countryselect öffnen (braucht erst noch anpassungen)
                 BOB.getInstance().getScenarioSceneLoader().requestCurrent().thenAccept(scenario -> {
