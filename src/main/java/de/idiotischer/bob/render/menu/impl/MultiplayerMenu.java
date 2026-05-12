@@ -75,6 +75,7 @@ public class MultiplayerMenu extends JPanel {
             InetSocketAddress address = new InetSocketAddress(ip, port);
 
             BOB.getInstance().getClient().reconnect(nameField.getText(),"", address, b -> {
+                if(!b) return;
                 //hier dann später countryselect öffnen (braucht erst noch anpassungen)
                 BOB.getInstance().getScenarioSceneLoader().requestCurrent().thenAccept(scenario -> {
                     CountrySelectMenu menu = new CountrySelectMenu("Join", scenario, b1 -> {
