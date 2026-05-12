@@ -133,6 +133,7 @@ public class ClientSocket {
             public void completed(Void result, Object attachment) {
                 connected = true;
                 reconnecting = false;
+                reconnectCount = 0;
 
                 System.out.println("Connected to server!");
 
@@ -160,6 +161,8 @@ public class ClientSocket {
                     }
                 } catch (Exception ignored) {}
 
+                handleDisconnect(true);
+
                 if (callback != null) {
                     callback.accept(false);
                 }
@@ -185,7 +188,6 @@ public class ClientSocket {
 
                 connected = true;
                 reconnecting = false;
-                reconnectCount = 0;
 
                 attachment.flip();
 
@@ -230,10 +232,7 @@ public class ClientSocket {
 
                 String msg = exc.getMessage();
 
-                if (msg == null
-                        || (!msg.contains("Connection reset")
-                        && !msg.contains("closed"))) {
-
+                if (msg == null || (!msg.contains("Connection reset") && !msg.contains("closed"))) {
                     exc.printStackTrace();
                 }
 
