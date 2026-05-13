@@ -40,5 +40,5 @@ public interface Player {
         return true;
     }
 
-    default void authorize(Credentials credentials) {}
+    default boolean authorize(Credentials credentials) {return true;}
 }

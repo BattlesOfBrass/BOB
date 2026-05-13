@@ -16,6 +16,7 @@ import java.nio.channels.AsynchronousSocketChannel;
 import java.util.*;
 import java.util.stream.Collectors;
 
+//idk ob man authorized hier braucht
 public class ServerPlayerManager implements PlayerResolver {
 
     private final Set<Player> players = new HashSet<>();
@@ -66,13 +67,12 @@ public class ServerPlayerManager implements PlayerResolver {
         players.add(player);
 
         if(Server.getInstance().isDebug()) System.out.println("New player added: " + player.uuid());
+
+        Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new PlayerJoinPacket(player.authorized(), player.uuid(), player.address()));
     }
 
     public void authPlayer(Player player, Credentials creds) {
         player.authorize(creds);
-
-        //brauchen jz erst
-        Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new PlayerJoinPacket(player.uuid(), player.address()));
     }
 
     public void removePlayer(Player player) {
@@ -82,10 +82,7 @@ public class ServerPlayerManager implements PlayerResolver {
     }
 
     public Player resolve(@NotNull AsynchronousSocketChannel channel) {
-        return players.stream()
-                .filter(p -> channel.equals(p.clientChannel()))
-                .findFirst()
-                .orElse(null);
+        return players.stream().filter(p -> channel.equals(p.clientChannel())).findFirst().orElse(null);
     }
 
     public void removePlayer(@NotNull AsynchronousSocketChannel channel) {
