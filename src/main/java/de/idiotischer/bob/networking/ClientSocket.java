@@ -3,6 +3,7 @@ package de.idiotischer.bob.networking;
 import de.idiotischer.bob.BOB;
 import de.idiotischer.bob.ServerSocket;
 import de.idiotischer.bob.auth.Credentials;
+import de.idiotischer.bob.networking.packet.Packet;
 import de.idiotischer.bob.networking.packet.impl.LoginPacket;
 import de.idiotischer.bob.networking.packet.impl.PingPacket;
 import de.idiotischer.bob.util.AddressUtil;
@@ -195,11 +196,7 @@ public class ClientSocket {
 
                     attachment.mark();
 
-                    Object packet = BOB.getInstance()
-                            .getSharedCore()
-                            .getRegistry()
-                            .getDecoder()
-                            .code(attachment, channel);
+                    Packet packet = BOB.getInstance().getSharedCore().getRegistry().getDecoder().code(attachment, channel);
 
                     if (packet == null) {
                         attachment.reset();

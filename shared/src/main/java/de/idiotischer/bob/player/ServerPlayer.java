@@ -80,19 +80,21 @@ public class ServerPlayer implements Player {
     }
 
     @Override
-    public void authorize(Credentials credentials) {
-        if (credentials == null) return;
+    public boolean authorize(Credentials credentials) {
+        if (credentials == null) return false;
 
         String name = credentials.username();
-        if (name == null) return;
-        name = name.trim(); // ... ig
 
-        if (name.isEmpty()) name = "Player" + new Random().nextInt(1,999);
+        if(name == null) name = "Player";
+        if(name.isEmpty()) name = "Player";
+
         int max = SharedCore.getMaxNameLength();
 
         if (name.length() > max) name = name.substring(0, max);
 
         this.name(name);
         this.authorized = true;
+
+        return authorized();
     }
 }

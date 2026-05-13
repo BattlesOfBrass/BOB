@@ -26,9 +26,7 @@ public class PlayerManager implements PlayerResolver {
 
         if(addresses.contains(address)) return resolve(address);
 
-        Set<UUID> used = players.stream()
-                .map(Player::uuid)
-                .collect(Collectors.toSet());
+        Set<UUID> used = players.stream().map(Player::uuid).collect(Collectors.toSet());
 
         return new ServerPlayer(address,null, UUIDUtil.getUnused(used), channel);
     }
@@ -70,11 +68,13 @@ public class PlayerManager implements PlayerResolver {
     }
 
     public void addPlayer(Player player) {
+        if(player == null) return;
+
         AtomicBoolean newP = new AtomicBoolean(true);
         players.removeIf(p -> {
             newP.set(false);
 
-            if(player.uuid().equals(player.uuid())) {
+            if(player.uuid().equals(p.uuid())) {
 
                 try {
                     p.clientChannel().close();
@@ -89,9 +89,7 @@ public class PlayerManager implements PlayerResolver {
             return false;
         });
 
-        if(newP.get()) {
-            if(BOB.getInstance().isDebug()) System.out.println("Adding player " + player.uuid());
-        }
+        if(newP.get()) if(BOB.getInstance().isDebug()) System.out.println("Adding player " + player.uuid());
 
         players.add(player);
     }
