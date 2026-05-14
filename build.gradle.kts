@@ -177,6 +177,14 @@ java {
     }
 }
 
+tasks.register<Exec>("runApp") {
+    dependsOn("buildPreRun")
+
+    workingDir = file("$projectDir/run")
+    executable = "/bin/bash"
+    args("$projectDir/run/start.sh")
+}
+
 tasks.jar {
     enabled = false
 }
