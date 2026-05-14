@@ -115,29 +115,24 @@ public class PlayerManager implements PlayerResolver {
         });
     }
 
-    //TODO: check if && p.authorized() breaks smth
     public boolean hasPlayer(Country c) {
-        return players.stream().anyMatch(p -> p.country() != null && p.authorized() && p.country().equals(c));
+        return players.stream().anyMatch(p -> p.country() != null && p.country().equals(c));
     }
 
-    //TODO: check if && p.authorized() breaks smth
     public boolean hasPlayer(InetSocketAddress address) {
-        return players.stream().anyMatch(p -> p.address() != null && p.authorized() && p.address().equals(address));
+        return players.stream().anyMatch(p -> p.address() != null && p.address().equals(address));
     }
 
-    //TODO: check if && p.authorized() breaks smth
     public Player getPlayer(InetSocketAddress address) {
-        return players.stream().filter(p -> p.address() != null && p.authorized() && p.address().equals(address)).findFirst().orElse(null);
+        return players.stream().filter(p -> p.address() != null && p.address().equals(address)).findFirst().orElse(null);
     }
 
-    //TODO: check if && p.authorized() breaks smth
     public Player getPlayer(UUID uuid) {
-        return players.stream().filter(p -> p.uuid() != null && p.authorized() && p.uuid().equals(uuid)).findFirst().orElse(null);
+        return players.stream().filter(p -> p.uuid() != null && p.uuid().equals(uuid)).findFirst().orElse(null);
     }
 
-    //TODO: check if && p.authorized() breaks smth
     public boolean hasPlayer(UUID uuid) {
-        return players.stream().anyMatch(p -> p.uuid() != null && p.authorized() && p.uuid().equals(uuid));
+        return players.stream().anyMatch(p -> p.uuid() != null && p.uuid().equals(uuid));
     }
 
     public String constructChange(Player player, Country country) {
@@ -153,15 +148,13 @@ public class PlayerManager implements PlayerResolver {
         return Pair.of(this.resolve(uuid), c);
     }
 
-    //TODO: check if && p.authorized() breaks smth
     @Override
     public Player resolve(@NotNull UUID uuid) {
-        return players.stream().filter(p -> uuid.equals(p.uuid()) && p.authorized()).findFirst().orElse(null);
+        return players.stream().filter(p -> uuid.equals(p.uuid())).findFirst().orElse(null);
     }
 
-    //TODO: check if && p.authorized() breaks smth
     @Override
     public Player resolve(@NotNull InetSocketAddress address) {
-        return players.stream().filter(p -> address.equals(p.address()) && p.authorized()).findFirst().orElse(null);
+        return players.stream().filter(p -> address.equals(p.address())).findFirst().orElse(null);
     }
 }
