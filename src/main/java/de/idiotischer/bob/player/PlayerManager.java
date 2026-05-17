@@ -46,9 +46,7 @@ public class PlayerManager implements PlayerResolver {
     }
 
     public void resetCountries() {
-        players.forEach(p -> {
-            changeCountry(p,null);
-        });
+        players.forEach(p -> changeCountry(p,null));
     }
 
     public void changeCountry(Player player, Country country) {
@@ -56,9 +54,7 @@ public class PlayerManager implements PlayerResolver {
 
         if(!hasPlayer(country) || Server.getInstance().getServerSocket().getHostUtil().isCoop()) player.country(country);
 
-        Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(),
-                new RequestPacket(Type.PLAYER_CHANGE, constructChange(player, country))
-        );
+        Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new RequestPacket(Type.PLAYER_CHANGE, constructChange(player, country)));
     }
 
     public void addPlayer(UUID uuid) {

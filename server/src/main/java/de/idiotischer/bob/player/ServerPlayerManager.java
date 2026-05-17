@@ -4,9 +4,11 @@ import de.idiotischer.bob.Server;
 import de.idiotischer.bob.auth.Credentials;
 import de.idiotischer.bob.country.Country;
 import de.idiotischer.bob.country.CountryResolver;
+import de.idiotischer.bob.networking.packet.impl.PlayerAuthUpdatePacket;
 import de.idiotischer.bob.networking.packet.impl.PlayerChangedCountryPacket;
 import de.idiotischer.bob.networking.packet.impl.PlayerJoinPacket;
 import de.idiotischer.bob.networking.packet.impl.PlayerQuitPacket;
+import de.idiotischer.bob.networking.packet.impl.pp.ReplyPacket;
 import de.idiotischer.bob.util.UUIDUtil;
 import it.unimi.dsi.fastutil.Pair;
 import org.jetbrains.annotations.NotNull;
@@ -72,7 +74,7 @@ public class ServerPlayerManager implements PlayerResolver {
     }
 
     public void authPlayer(Player player, Credentials creds) {
-        player.authorize(creds);
+        Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new PlayerAuthUpdatePacket(player.uuid(), player.authorize(creds)));
     }
 
     public void removePlayer(Player player) {

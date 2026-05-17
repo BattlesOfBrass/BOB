@@ -2,6 +2,7 @@ package de.idiotischer.bob;
 
 import de.idiotischer.bob.country.CountryManager;
 import de.idiotischer.bob.debug.Debugger;
+import de.idiotischer.bob.game.GameManager;
 import de.idiotischer.bob.listener.PacketListener;
 import de.idiotischer.bob.networking.ClientSocket;
 import de.idiotischer.bob.networking.communication.SendTool;
@@ -55,6 +56,7 @@ public class BOB {
     private boolean remoteConnected = false;
     private CompletableFuture<Void> awaitingReload;
     private boolean initialized = false;
+    private GameManager gameManager;
 
     public static void main(String[] args) {
         new BOB();
@@ -122,6 +124,8 @@ public class BOB {
         this.awaitingReload = this.scenarioManager.reload().thenRun(() -> {
             this.scenarioSceneLoader.requestScenarioLoad(scenarioManager.getRandom());
         });
+
+        this.gameManager = new GameManager();
     }
 
     public ImageIcon createIcon() {
@@ -225,5 +229,9 @@ public class BOB {
 
     public PlayerManager getPlayerManager() {
         return playerManager;
+    }
+
+    public GameManager getGameManager() {
+        return gameManager;
     }
 }

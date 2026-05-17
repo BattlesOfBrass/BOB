@@ -5,21 +5,19 @@ import de.idiotischer.bob.state.State;
 
 import java.util.List;
 
-public record TroopStack(List<Troop> troops) {
+public class TroopStack extends Troop {
+
+    private final List<Troop> troops;
+
+    public TroopStack(List<Troop> troops) {
+        this.troops = troops;
+    }
 
     public Country getOwner() {
         return null;
     }
 
-    public Country getController() {
-        return null;
-    }
-
-    public boolean isVisible() {
-        return true;
-    }
-
-    public State getState() {
-        return null;
+    public List<Troop> getTroops() {
+        return troops;
     }
 }

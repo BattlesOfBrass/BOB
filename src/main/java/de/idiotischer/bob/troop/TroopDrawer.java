@@ -56,7 +56,7 @@ public class TroopDrawer {
     public static void drawContents(Graphics2D g2, TroopStack troopStack,
                                     Point p, int width, int height) {
 
-        String size = String.valueOf(troopStack.troops().size());
+        String size = String.valueOf(troopStack.getTroops().size());
 
         FontMetrics fm = g2.getFontMetrics();
 
