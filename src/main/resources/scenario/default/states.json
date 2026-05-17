@@ -168,7 +168,7 @@
     "mil": 1
   },
   "schwaben": {
-    "name": "Schwaben",
+    "name": "Bayrisch Schwaben",
     "locations": "603,146",
     "controller": "GER",
     "population": 1,
@@ -1175,10 +1175,186 @@
     "civ": 1,
     "mil": 1
   },
-  "east-serbia": {
-    "name": "East-Serbia",
-    "locations": "647,164",
-    "controller": "SER",
+  "leinster": {
+    "name": "Leinster",
+    "locations": "542,124",
+    "controller": "IRE",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "connacht": {
+    "name": "Connacht",
+    "locations": "537,121",
+    "controller": "IRE",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "munster": {
+    "name": "Munster",
+    "locations": "535,128",
+    "controller": "IRE",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "ulster": {
+    "name": "Ulster",
+    "locations": "544,117",
+    "controller": "ENG",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "aberdeen": {
+    "name": "Aberdeen",
+    "locations": "557,109",
+    "controller": "ENG",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "highlands": {
+    "name": "Highlands",
+    "locations": ["554,105", "546,104"], 
+    "controller": "ENG",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "argyll": {
+    "name": "Argyll",
+    "locations": "552, 114",
+    "controller": "ENG",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "shetland": {
+    "name": "Shetland Islands",
+    "locations": "558,99",
+    "controller": "ENG",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "faroer": {
+    "name": "Faröer Islands",
+    "locations": "552, 114",
+    "controller": "ENG",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "man": {
+    "name": "Isle of Man",
+    "locations": "551, 120",
+    "controller": "ENG",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "border": {
+    "name": "Border",
+    "locations": "557,114",
+    "controller": "ENG",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "northumbria": {
+    "name": "Northumbria",
+    "locations": "561,116",
+    "controller": "ENG",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "clankashire": {
+    "name": "Cumbria and Lancashire",
+    "locations": "528,120",
+    "controller": "ENG",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "yorkshire": {
+    "name": "Yorkshire",
+    "locations": "5564,120",
+    "controller": "ENG",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "west midlands": {
+    "name": "West Midlands",
+    "locations": "559,127",
+    "controller": "ENG",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "east midlands": {
+    "name": "East Midlands",
+    "locations": "564,125",
+    "controller": "ENG",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "anglia": {
+    "name": "East Anglia",
+    "locations": "568,128",
+    "controller": "ENG",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "cornwall": {
+    "name": "Cornwall",
+    "locations": "553,134",
+    "controller": "ENG",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "kent": {
+    "name": "Kent",
+    "locations": "568,133",
+    "controller": "ENG",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "london": {
+    "name": "Cornwall",
+    "locations": "563,131",
+    "controller": "ENG",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "gloucestershire": {
+    "name": "Gloucestershire",
+    "locations": "558,133",
+    "controller": "ENG",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "gwynedd": {
+    "name": "Gwynedd",
+    "locations": "554,125",
+    "controller": "ENG",
+    "population": 1,
+    "civ": 1,
+    "mil": 1
+  },
+  "deheubarth": {
+    "name": "Deheubarth",
+    "locations": "554,129",
+    "controller": "ENG",
     "population": 1,
     "civ": 1,
     "mil": 1
