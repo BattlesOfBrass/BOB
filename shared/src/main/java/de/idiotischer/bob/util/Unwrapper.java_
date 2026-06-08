@@ -1,0 +1,31 @@
+package de.idiotischer.bob.util;
+
+//later add tilemap merging (main and tile merger
+public class Unwrapper {
+    public static void main(String[] args) {
+        String psdPath = "input.psd";
+
+        try (PsdImage psd = (PsdImage) Image.load(psdPath)) {
+
+            for (int i = 0; i < psd.getLayers().length; i++) {
+                Layer layer = psd.getLayers()[i];
+
+                if (!layer.isVisible()) {
+                    continue;
+                }
+
+                String outputFile =
+                  i + "_" + sanitize(layer.getDisplayName()) + ".png";
+
+                layer.save(outputFile, new PngOptions());
+
+            }
+        }
+    }
+
+    private static String sanitize(String name) {
+        return name == null
+            ? "unnamed"
+            : name.replaceAll("[^a-zA-Z0-9._-]", "_");
+    }
+}

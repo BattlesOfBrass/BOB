@@ -1,0 +1,742 @@
+{
+  "memel": {
+    "tile": "memel",
+    "name": "Memel",
+    "owner": "LIT"
+  },
+  "koenigsberg": {
+    "tile": "koenigsberg",
+    "name": "koenigsberg",
+    "owner": "RUS"
+  },
+  "allenstein": {
+    "tile": "allenstein",
+    "name": "Allenstein",
+    "owner": "POL"
+  },
+  "danzig": {
+    "tile": "danzig",
+    "name": "Danzig",
+    "owner": "POL"
+  },
+  "gdynia": {
+    "tile": "gdynia",
+    "name": "Gdynia",
+    "owner": "POL"
+  },
+  "hinterpommern": {
+    "tile": "hinterpommern",
+    "name": "Hinterpommern",
+    "owner": "POL"
+  },
+  "pommern": {
+    "tile": "pommern",
+    "name": "Pommern",
+    "owner": "POL"
+  },
+  "stettin": {
+    "tile": "stettin",
+    "name": "Stettin",
+    "owner": "POL"
+  },
+  "vorpommern": {
+    "tile": "vorpommern",
+    "name": "Vorpommern",
+    "owner": "GER"
+  },
+  "ostmark": {
+    "tile": "ostmark",
+    "name": "Ostmark",
+    "owner": "POL"
+  },
+  "sachsen": {
+    "tile": "sachsen",
+    "name": "Sachsen",
+    "owner": "GER"
+  },
+  "sachsen-anhalt": {
+    "tile": "sachsen-anhalt",
+    "name": "Sachsen-Anhalt",
+    "owner": "GER"
+  },
+  "brandenburg": {
+    "tile": "brandenburg",
+    "name": "Brandenburg",
+    "owner": "GER"
+  },
+  "Posen": {
+    "tile": "Posen",
+    "name": "Posen",
+    "owner": "POL"
+  },
+  "oberschlesien": {
+    "tile": "oberschlesien",
+    "name": "Oberschlesien",
+    "owner": "POL"
+  },
+  "schleswig": {
+    "tile": "schleswig",
+    "name": "Schleswig-Holstein",
+    "owner": "GER"
+  },
+  "nordschleswig": {
+    "tile": "nordschleswig",
+    "name": "Nordschleswig",
+    "owner": "DEN"
+  },
+  "niederschlesien": {
+    "tile": "niederschlesien",
+    "name": "Niederschlesien",
+    "owner": "POL"
+  },
+  "kattowitz": {
+    "tile": "kattowitz",
+    "name": "Kattowitz",
+    "owner": "POL"
+  },
+  "franken": {
+    "tile": "franken",
+    "name": "Franken",
+    "owner": "GER"
+  },
+  "bayern": {
+    "tile": "bayern",
+    "name": "Bayern",
+    "owner": "GER"
+  },
+  "schwaben": {
+    "tile": "schwaben",
+    "name": "Schwaben",
+    "owner": "GER"
+  },
+  "baden": {
+    "tile": "baden",
+    "name": "Baden",
+    "owner": "GER"
+  },
+  "wuerttemberg": {
+    "tile": "wuerttemberg",
+    "name": "Württemberg",
+    "owner": "GER"
+  },
+  "thueringen": {
+    "tile": "thueringen",
+    "name": "Thüringen",
+    "owner": "GER"
+  },
+  "hessen": {
+    "tile": "hessen",
+    "name": "Hessen",
+    "owner": "GER"
+  },
+  "nordrhein-westfalen": {
+    "tile": "nordrhein-westfalen",
+    "name": "Nordrhein-Westfalen",
+    "owner": "GER"
+  },
+  "rheinland-pfalz": {
+    "tile": "rheinland-pfalz",
+    "name": "Rheinland-Pfalz",
+    "owner": "GER"
+  },
+  "saarland": {
+    "tile": "saarland",
+    "name": "Saarland",
+    "owner": "GER"
+  },
+  "eupen-malmedy": {
+    "tile": "eupen-malmedy",
+    "name": "Eupen-Malmedy",
+    "owner": "BEL"
+  },
+  "elsass-lothringen": {
+    "tile": "elsass-lothringen",
+    "name": "Elsass-Lothringen",
+    "owner": "FRA"
+  },
+  "hannover": {
+    "tile": "hannover",
+    "name": "Hannover",
+    "owner": "GER"
+  },
+  "weser-ems": {
+    "tile": "weser-ems",
+    "name": "Weser-Ems",
+    "owner": "GER"
+  },
+  "luxembourg": {
+    "tile": "luxembourg",
+    "name": "Luxemburg",
+    "owner": "LUX"
+  },
+  "pol-upper": {
+    "tile": "pol-upper",
+    "name": "Poland Upper",
+    "owner": "POL"
+  },
+  "pol-lower": {
+    "tile": "pol-lower",
+    "name": "Poland Lower",
+    "owner": "POL"
+  },
+  "carpathian-foothills": {
+    "tile": "carpathian-foothills",
+    "name": "Carpathian foothills",
+    "owner": "POL"
+  },
+  "lublin": {
+    "tile": "lublin",
+    "name": "Lublin",
+    "owner": "POL"
+  },
+  "podlascia": {
+    "tile": "podlascia",
+    "name": "Podlascia",
+    "owner": "POL"
+  },
+  "heiligkreuz": {
+    "tile": "heiligkreuz",
+    "name": "Swietokrzyskie Voivodeship",
+    "owner": "POL"
+  },
+  "rinkobing": {
+    "tile": "rinkobing",
+    "name": "Rinkobing",
+    "owner": "DEN"
+  },
+  "aarhus": {
+    "tile": "aarhus",
+    "name": "Aarhus",
+    "owner": "DEN"
+  },
+  "north-jutland": {
+    "tile": "north-jutland",
+    "name": "North-Jutland",
+    "owner": "DEN"
+  },
+  "zealand": {
+    "tile": "zealand",
+    "name": "Zealand",
+    "owner": "DEN"
+  },
+  "storstrom": {
+    "tile": "storstrom",
+    "name": "Storstrom",
+    "owner": "DEN"
+  },
+  "sudauen": {
+    "tile": "sudauen",
+    "name": "Sudavija",
+    "owner": "LIT"
+  },
+  "niederlitauen": {
+    "tile": "niederlitauen",
+    "name": "Zemaitija",
+    "owner": "LIT"
+  },
+  "oberlitauen": {
+    "tile": "oberlitauen",
+    "name": "Aukstaitija",
+    "owner": "LIT"
+  },
+  "oberlitauen-2-forremoval": {
+    "tile": "oberlitauen-2-forremoval",
+    "name": "Aukstaitija-2",
+    "owner": "LIT"
+  },
+  "gelderland": {
+    "tile": "gelderland",
+    "name": "Gelderland",
+    "owner": "NET"
+  },
+  "friesland": {
+    "tile": "friesland",
+    "name": "Friesland",
+    "owner": "NET"
+  },
+  "nord-brabant": {
+    "tile": "nord-brabant",
+    "name": "Nord-Brabant",
+    "owner": "NET"
+  },
+  "Zeeland": {
+    "tile": "Zeeland",
+    "name": "Zeeland",
+    "owner": "NET"
+  },
+  "utrecht": {
+    "tile": "utrecht",
+    "name": "Utrecht",
+    "owner": "NET"
+  },
+  "antwerp": {
+    "tile": "antwerp",
+    "name": "Antwerp",
+    "owner": "BEL"
+  },
+  "namur": {
+    "tile": "namur",
+    "name": "Namur",
+    "owner": "BEL"
+  },
+  "hanaut": {
+    "tile": "hanaut",
+    "name": "Hanaut",
+    "owner": "BEL"
+  },
+  "flanders": {
+    "tile": "flanders",
+    "name": "Flanderen",
+    "owner": "BEL"
+  },
+  "upper-sudeten": {
+    "tile": "upper-sudeten",
+    "name": "Upper Sudeten",
+    "owner": "CZE"
+  },
+  "lower-sudeten": {
+    "tile": "lower-sudeten",
+    "name": "Lower Sudeten",
+    "owner": "CZE"
+  },
+  "bohemia": {
+    "tile": "bohemia",
+    "name": "Bohemia",
+    "owner": "CZE"
+  },
+  "ostrava": {
+    "tile": "ostrava",
+    "name": "Ostrava",
+    "owner": "CZE"
+  },
+  "moravia": {
+    "tile": "moravia",
+    "name": "Moravia",
+    "owner": "CZE"
+  },
+  "czech-silesia": {
+    "tile": "czech-silesia",
+    "name": "Czech-Silesia",
+    "owner": "CZE"
+  },
+  "west-slovakia": {
+    "tile": "west-slovakia",
+    "name": "West-Slovakia",
+    "owner": "SVK"
+  },
+  "middle-slovakia": {
+    "tile": "middle-slovakia",
+    "name": "Middle-Slovakia",
+    "owner": "SVK"
+  },
+  "east-slovakia": {
+    "tile": "east-slovakia",
+    "name": "East-Slovakia",
+    "owner": "SVK"
+  },
+  "toeri": {
+    "tile": "toeri",
+    "name": "Töri",
+    "owner": "SWI"
+  },
+  "luzern": {
+    "tile": "luzern",
+    "name": "Luzern",
+    "owner": "SWI"
+  },
+  "bern": {
+    "tile": "bern",
+    "name": "Bern",
+    "owner": "SWI"
+  },
+  "jura": {
+    "tile": "jura",
+    "name": "Jura",
+    "owner": "SWI"
+  },
+  "tessin": {
+    "tile": "tessin",
+    "name": "Tessin",
+    "owner": "SWI"
+  },
+  "leman": {
+    "tile": "leman",
+    "name": "Leman",
+    "owner": "SWI"
+  },
+  "upper-corse": {
+    "tile": "upper-corse",
+    "name": "Upper-Corse",
+    "owner": "FRA"
+  },
+  "lower-corse": {
+    "tile": "lower-corse",
+    "name": "Lower-Corse",
+    "owner": "FRA"
+  },
+  "calais": {
+    "tile": "calais",
+    "name": "Calais",
+    "owner": "FRA"
+  },
+  "champagne": {
+    "tile": "champagne",
+    "name": "Champagne",
+    "owner": "FRA"
+  },
+  "lorraine": {
+    "tile": "lorraine",
+    "name": "Lorraine",
+    "owner": "FRA"
+  },
+  "picardy": {
+    "tile": "picardy",
+    "name": "Normandy",
+    "owner": "FRA"
+  },
+  "normandy": {
+    "tile": "normandy",
+    "name": "Normandy",
+    "owner": "FRA"
+  },
+  "paris": {
+    "tile": "paris",
+    "name": "Paris",
+    "owner": "FRA"
+  },
+  "comte": {
+    "tile": "comte",
+    "name": "Comte",
+    "owner": "FRA"
+  },
+  "auvergne": {
+    "tile": "auvergne",
+    "name": "Auvergne",
+    "owner": "FRA"
+  },
+  "rhone-alps": {
+    "tile": "rhone-alps",
+    "name": "Rhone-Alps",
+    "owner": "FRA"
+  },
+  "provence-alps": {
+    "tile": "provence-alps",
+    "name": "Provence-Alps",
+    "owner": "FRA"
+  },
+  "limousin": {
+    "tile": "limousin",
+    "name": "Limousin",
+    "owner": "FRA"
+  },
+  "burgundy": {
+    "tile": "burgundy",
+    "name": "Burgundy",
+    "owner": "FRA"
+  },
+  "centre-val-de-loire": {
+    "tile": "centre-val-de-loire",
+    "name": "Centre-Val-de-Loire",
+    "owner": "FRA"
+  },
+  "pays-de-loire": {
+    "tile": "pays-de-loire",
+    "name": "Pays-de-Loire",
+    "owner": "FRA"
+  },
+  "britany": {
+    "tile": "britany",
+    "name": "Britany",
+    "owner": "FRA"
+  },
+  "poitou-charentes": {
+    "tile": "poitou-charentes",
+    "name": "Poitou-Charentes",
+    "owner": "FRA"
+  },
+  "aquitaine": {
+    "tile": "aquitaine",
+    "name": "Aquitaine",
+    "owner": "FRA"
+  },
+  "languedoc-R": {
+    "tile": "languedoc-R",
+    "name": "Languedoc-R",
+    "owner": "FRA"
+  },
+  "midi-pyrenees": {
+    "tile": "midi-pyrenees",
+    "name": "Midi-Pyrenees",
+    "owner": "FRA"
+  },
+  "tirol": {
+    "tile": "tirol",
+    "name": "Tirol",
+    "owner": "AUS"
+  },
+  "steiermark": {
+    "tile": "steiermark",
+    "name": "Steiermark",
+    "owner": "AUS"
+  },
+  "nieder-oesterreich": {
+    "tile": "nieder-oesterreich",
+    "name": "Nieder-Österreich",
+    "owner": "AUS"
+  },
+  "burgenland": {
+    "tile": "burgenland",
+    "name": "Burgenland",
+    "owner": "AUS"
+  },
+  "ober-oesterreich": {
+    "tile": "ober-oesterreich",
+    "name": "Ober-Österreich",
+    "owner": "AUS"
+  },
+  "salzburg": {
+    "tile": "salzburg",
+    "name": "Salzburg",
+    "owner": "AUS"
+  },
+  "western-transdanubia": {
+    "tile": "western-transdanubia",
+    "name": "Western-Transdanubia",
+    "owner": "HUN"
+  },
+  "southern-great-plain": {
+    "tile": "southern-great-plain",
+    "name": "Southern-Great-Plain",
+    "owner": "HUN"
+  },
+  "northern-great-plain": {
+    "tile": "northern-great-plain",
+    "name": "Northern-Great-Plain",
+    "owner": "HUN"
+  },
+  "central-transdanubia": {
+    "tile": "central-transdanubia",
+    "name": "Central-Transdanubia",
+    "owner": "HUN"
+  },
+  "piemont": {
+    "tile": "piemont",
+    "name": "Piemont",
+    "owner": "ITA"
+  },
+  "lombardy": {
+    "tile": "lombardy",
+    "name": "Lombardy",
+    "owner": "ITA"
+  },
+  "south-tirol": {
+    "tile": "south-tirol",
+    "name": "South-Tirol",
+    "owner": "ITA"
+  },
+  "trentino": {
+    "tile": "trentino",
+    "name": "Trentino",
+    "owner": "ITA"
+  },
+  "emilia-romagna": {
+    "tile": "emilia-romagna",
+    "name": "Emilia-Romagna",
+    "owner": "ITA"
+  },
+  "tuscany": {
+    "tile": "tuscany",
+    "name": "Tuscany",
+    "owner": "ITA"
+  },
+  "latium": {
+    "tile": "latium",
+    "name": "Latium",
+    "owner": "ITA"
+  },
+  "marken-abruzzen": {
+    "tile": "marken-abruzzen",
+    "name": "Marken-Abruzzen",
+    "owner": "ITA"
+  },
+  "campania": {
+    "tile": "campania",
+    "name": "Campania",
+    "owner": "ITA"
+  },
+  "puglia": {
+    "tile": "puglia",
+    "name": "Puglia",
+    "owner": "ITA"
+  },
+  "calabria": {
+    "tile": "calabria",
+    "name": "Calabria",
+    "owner": "ITA"
+  },
+  "sicily": {
+    "tile": "sicily",
+    "name": "Sicily",
+    "owner": "ITA"
+  },
+  "veneto": {
+    "tile": "veneto",
+    "name": "Veneto",
+    "owner": "ITA"
+  },
+  "friuli-venezia": {
+    "tile": "friuli-venezia",
+    "name": "Friuli-Venezia",
+    "owner": "ITA"
+  },
+  "upper-sardinia": {
+    "tile": "upper-sardinia",
+    "name": "Upper-Sardinia",
+    "owner": "ITA"
+  },
+  "lower-sardinia": {
+    "tile": "lower-sardinia",
+    "name": "Lower-Sardinia",
+    "owner": "ITA"
+  },
+  "crisana": {
+    "tile": "crisana",
+    "name": "Crisana",
+    "owner": "ROM"
+  },
+  "bucovina": {
+    "tile": "bucovina",
+    "name": "Bucovina",
+    "owner": "ROM"
+  },
+  "banat": {
+    "tile": "banat",
+    "name": "Banat",
+    "owner": "ROM"
+  },
+  "oltenia": {
+    "tile": "oltenia",
+    "name": "Oltenia",
+    "owner": "ROM"
+  },
+  "transilvania": {
+    "tile": "transilvania",
+    "name": "Transilvania",
+    "owner": "ROM"
+  },
+  "muntenia": {
+    "tile": "muntenia",
+    "name": "Muntenia",
+    "owner": "ROM"
+  },
+  "muntenia-2": {
+    "tile": "muntenia-2",
+    "name": "Muntenia-2",
+    "owner": "ROM"
+  },
+  "moldova": {
+    "tile": "moldova",
+    "name": "Moldova",
+    "owner": "ROM"
+  },
+  "dobrogea": {
+    "tile": "dobrogea",
+    "name": "Dobrogea",
+    "owner": "ROM"
+  },
+  "dobrogea-2": {
+    "tile": "dobrogea-2",
+    "name": "Dobrogea-2",
+    "owner": "ROM"
+  },
+  "slovenia-west": {
+    "tile": "slovenia-west",
+    "name": "Slovenia-West",
+    "owner": "SLO"
+  },
+  "slovenia-east": {
+    "tile": "slovenia-east",
+    "name": "Slovenia-East",
+    "owner": "SLO"
+  },
+  "istria": {
+    "tile": "istria",
+    "name": "Istria",
+    "owner": "CRO"
+  },
+  "dalmatia": {
+    "tile": "dalmatia",
+    "name": "Dalmatia",
+    "owner": "CRO"
+  },
+  "central-croatia": {
+    "tile": "central-croatia",
+    "name": "Central-Croatia",
+    "owner": "CRO"
+  },
+  "danube-croatia": {
+    "tile": "danube-croatia",
+    "name": "Danube-Croatia",
+    "owner": "CRO"
+  },
+  "herzegovina": {
+    "tile": "herzegovina",
+    "name": "Herzegovina",
+    "owner": "BOS"
+  },
+  "herceg-bosna": {
+    "tile": "herceg-bosna",
+    "name": "Herceg-Bosna",
+    "owner": "BOS"
+  },
+  "bosanska-krajina": {
+    "tile": "bosanska-krajina",
+    "name": "Bosanska-Krajina",
+    "owner": "BOS"
+  },
+  "bosna": {
+    "tile": "bosna",
+    "name": "Bosna",
+    "owner": "BOS"
+  },
+  "montenegro-west": {
+    "tile": "montenegro-west",
+    "name": "Montenegro-West",
+    "owner": "MON"
+  },
+  "montenegro-east": {
+    "tile": "montenegro-east",
+    "name": "Montenegro-East",
+    "owner": "MON"
+  },
+  "belgrade": {
+    "tile": "belgrade",
+    "name": "Belgrade",
+    "owner": "SER"
+  },
+  "backa": {
+    "tile": "backa",
+    "name": "Backa",
+    "owner": "SER"
+  },
+  "north-banat": {
+    "tile": "north-banat",
+    "name": "North-Banat",
+    "owner": "SER"
+  },
+  "sumadija": {
+    "tile": "sumadija",
+    "name": "Sumadija",
+    "owner": "SER"
+  },
+  "zlatibor": {
+    "tile": "zlatibor",
+    "name": "Zlatibor",
+    "owner": "SER"
+  },
+  "east-serbia": {
+    "tile": "east-serbia",
+    "name": "East-Serbia",
+    "owner": "SER"
+  }
+}
