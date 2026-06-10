@@ -25,12 +25,11 @@ public class ServerTroopManager {
 
             TroopStack stack = troopStacks.stream()
                     .filter(s ->
-                            s.getTemplate().equals(troop.getTemplate())
-                                    && s.getController().equals(troop.getController())
-                                    && s.getTile().equals(troop.getTile()))
+                            s.getTemplate().equals(troop.getTemplate()) &&
+                                    s.getController().equals(troop.getController()) && s.getTile().equals(troop.getTile()))
                     .findFirst()
                     .orElseGet(() -> {
-                        TroopStack newStack = new TroopStack(new ArrayList<>());
+                        TroopStack newStack = new TroopStack(troop.getTile(),troop.getController(),new ArrayList<>());
                         troopStacks.add(newStack);
                         return newStack;
                     });

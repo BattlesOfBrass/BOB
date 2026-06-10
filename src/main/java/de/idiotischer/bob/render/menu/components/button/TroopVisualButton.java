@@ -1,38 +1,79 @@
 package de.idiotischer.bob.render.menu.components.button;
 
+import com.aspose.psd.internal.bD.B;
+import de.idiotischer.bob.BOB;
+import de.idiotischer.bob.tile.Tile;
 import de.idiotischer.bob.troop.TroopStack;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
-public class TroopVisualButton extends JButton {
+public class TroopVisualButton extends JToggleButton {
 
-    private final TroopStack troopStack;
-    public double scale;
+    private TroopStack stack;
 
-    public TroopVisualButton(TroopStack troopStack) {
-        this.troopStack = troopStack;
+    public TroopVisualButton(TroopStack stack) {
+        this.stack = stack;
+
+        setContentAreaFilled(false);
+        setBorderPainted(false);
+        setFocusPainted(false);
+        setOpaque(false);
+        setFocusable(false);
     }
 
     @Override
-    public void paint(Graphics g) {
-        Point point = troopStack.getTile().getPoints().getFirst();
+    protected void paintComponent(Graphics g) {
+        Graphics2D g2 = (Graphics2D) g.create();
 
-        //later i'm gonna multiply by scale ro smth, idrk rn
-        int width = 65;
-        int height = 15;
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
+        g2.setStroke(new BasicStroke(0.3f));
 
-        int x = point.x - width;
-        int y = point.y - height;
+        g2.setColor(Color.DARK_GRAY);
+        g2.fillRect(0, 0, getWidth(), getHeight());
 
-        Image image = troopStack.getOwner().getFlagImage().getScaledInstance(32,6, 0);
+        if (stack.getOwner() != null) {
+            BufferedImage img = stack.getOwner().getFlagImage();
 
-        g.drawImage(image, x, y, width, height, null);
+            g2.drawImage(
+                    img,
+                    0,
+                    0,
+                    getWidth(),
+                    getHeight(),
+                    null
+            );
+        }
 
-        g.setColor(Color.DARK_GRAY.darker());
-        g.fillRect(x,y,width, height);
-        g.setColor(troopStack.getController().countryColor().brighter());
-        g.drawRect(x,y,width, height);
+        g2.setColor(stack.getController() == null ? Color.GREEN : stack.getController().countryColor().brighter());
+
+        g2.drawRect(0, 0, getWidth() - 1, getHeight() - 1);
+
+        if (BOB.getInstance().getMainRenderer().getGamePanel().getTroopButtonGroup().contains(this)) {
+
+            g2.setColor(new Color(255, 255, 255, 126));
+            g2.setStroke(new BasicStroke(3f));
+
+            g2.fillRect(0, 0, getWidth(), getHeight());
+        }
+
+        g2.setColor(Color.WHITE);
+        g2.setFont(getFont().deriveFont(Font.BOLD, 14f));
+
+        String text = String.valueOf(stack.getTroops().size());
+
+        FontMetrics fm = g2.getFontMetrics();
+        int textWidth = fm.stringWidth(text);
+        int textHeight = fm.getAscent();
+
+        g2.drawString(text, (getWidth() - textWidth) / 2 + 15, (getHeight() + textHeight) / 2 - 2);
+
+        g2.dispose();
     }
+
+    public TroopStack getStack() {
+        return stack;
+    }
+
 }

@@ -11,5 +11,5 @@ public enum Type {
     PLAYER_CHANGE,
     SCENARIOS,
     STATES_SYNC,
-    STATE_SYNC,
+    STATE_SYNC, TROOPS_SYNC,
 }

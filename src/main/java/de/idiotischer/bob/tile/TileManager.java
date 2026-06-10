@@ -153,6 +153,10 @@ public class TileManager implements TileResolver {
         return Collections.unmodifiableSet(tileSet);
     }
 
+    public List<Tile> getTileList() {
+        return Collections.unmodifiableList(new ArrayList<>(tileSet));
+    }
+
     public static void recolorTile(Tile tile) {
         List<Color> taken = BOB.getInstance().getScenarioSceneLoader().getTakenColors();
 

@@ -12,13 +12,17 @@ import de.idiotischer.bob.render.MainRenderer;
 import de.idiotischer.bob.scenario.ScenarioManager;
 import de.idiotischer.bob.scenario.ScenarioSceneLoader;
 import de.idiotischer.bob.state.StateManager;
+import de.idiotischer.bob.tile.Tile;
 import de.idiotischer.bob.tile.TileManager;
+import de.idiotischer.bob.troop.Troop;
 import de.idiotischer.bob.troop.TroopManager;
+import de.idiotischer.bob.troop.TroopStack;
 import de.idiotischer.bob.util.AddressUtil;
 import de.idiotischer.bob.util.FileUtil;
 import de.idiotischer.bob.util.MainConfigUtil;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import javax.swing.*;
 
@@ -98,6 +102,12 @@ public class BOB {
         this.mapRenderer.start();
 
         this.initialized = true;
+
+        Tile ti = tileManager.getTileList().getLast();
+        Tile ti1 = tileManager.getTileList().getFirst();
+
+        this.troopManager.addTroopStack(new TroopStack(ti, player.country(), List.of(new Troop(ti, player.country()))));
+        this.troopManager.addTroopStack(new TroopStack(ti1, player.country(), List.of(new Troop(ti1, player.country()))));
     }
 
     public void init() {
@@ -124,6 +134,7 @@ public class BOB {
         this.stateManager = new StateManager();
 
         this.troopManager = new TroopManager();
+
 
         this.awaitingReload = this.scenarioManager.reload().thenRun(() -> {
             this.scenarioSceneLoader.requestScenarioLoad(scenarioManager.getRandom());

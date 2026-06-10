@@ -172,6 +172,14 @@ public class Camera {
         return (int) ((screenY + y) / zoom);
     }
 
+    public int worldToScreenX(double worldX) {
+        return (int) (worldX * zoom - x);
+    }
+
+    public int worldToScreenY(double worldY) {
+        return (int) (worldY * zoom - y);
+    }
+
     public double getX() { return x; }
     public double getY() { return y; }
     public double getZoom() { return zoom; }
