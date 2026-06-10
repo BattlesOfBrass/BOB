@@ -9,6 +9,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
+//TODO: fix color now completely wrong for some stupid reason
 public class TroopVisualButton extends JToggleButton {
 
     private TroopStack stack;
@@ -46,7 +47,10 @@ public class TroopVisualButton extends JToggleButton {
             );
         }
 
-        g2.setColor(stack.getController() == null ? Color.GREEN : stack.getController().countryColor().brighter());
+        g2.setColor(stack.getController() == null ? Color.GREEN : stack.getController().countryColor());
+
+        if(stack.getController() != null && stack.getController() == BOB.getInstance().getPlayer().country())
+            g2.setColor(Color.GREEN);
 
         g2.drawRect(0, 0, getWidth() - 1, getHeight() - 1);
 

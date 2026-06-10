@@ -16,10 +16,8 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.util.Arrays;
-import java.util.HashSet;
+import java.util.*;
 import java.util.List;
-import java.util.Set;
 
 public class RenderPanel extends JPanel implements Panel {
 
@@ -92,11 +90,9 @@ public class RenderPanel extends JPanel implements Panel {
     }
 
     public void updateTroopButtons(Graphics2D g2) {
-
-        List<TroopStack> visible =
-                BOB.getInstance()
+        List<TroopStack> visible = new ArrayList<>(BOB.getInstance()
                         .getTroopManager()
-                        .getVisible(BOB.getInstance().getPlayer().country());
+                        .getVisible(BOB.getInstance().getPlayer().country()).values());
 
         AffineTransform transform = renderer.getCamera().getTransform();
 
@@ -106,12 +102,24 @@ public class RenderPanel extends JPanel implements Panel {
         double zoom = renderer.getCamera().getZoom();
 
         double scale = 1.0 / Math.max(zoom, 0.1);
-
         scale = Math.min(scale, 1.05);
         scale = Math.max(scale, 1.0);
 
         int width = (int) (baseWidth * scale);
         int height = (int) (baseHeight * scale);
+
+        List<Component> toRemove = new ArrayList<>();
+        for (Component c : troopLayer.getComponents()) {
+            if (c instanceof TroopVisualButton button) {
+                if (!visible.contains(button.getStack())) {
+                    toRemove.add(c);
+                    selected.remove(button);
+                }
+            }
+        }
+        for (Component c : toRemove) {
+            troopLayer.remove(c);
+        }
 
         for (int i = 0; i < visible.size(); i++) {
             TroopStack stack = visible.get(i);
@@ -135,14 +143,12 @@ public class RenderPanel extends JPanel implements Panel {
                     @Override
                     public void mousePressed(java.awt.event.MouseEvent e) {
                         boolean shiftHeld = (e.getModifiersEx() & java.awt.event.InputEvent.SHIFT_DOWN_MASK) != 0;
-
                         boolean alreadySelected = selected.contains(finalButton);
 
                         if (!shiftHeld) {
                             selected.clear();
                         }
 
-                        //TODO: make it so when selecting multiple troops and clicking one it stays selected and all the other troops get deselected
                         if (alreadySelected) {
                             selected.remove(finalButton);
                         } else {
@@ -155,12 +161,10 @@ public class RenderPanel extends JPanel implements Panel {
             }
 
             Point world = stack.getTile().getPoints().getFirst();
-
             Point screen = new Point();
             transform.transform(world, screen);
 
             int stackIndexOnTile = 0;
-
             for (int j = 0; j < i; j++) {
                 TroopStack other = visible.get(j);
                 if (other.getTile() == stack.getTile()) {
@@ -177,6 +181,9 @@ public class RenderPanel extends JPanel implements Panel {
                     height
             );
         }
+
+        troopLayer.revalidate();
+        troopLayer.repaint();
     }
 
     /*private void drawTroops(Graphics2D g2) {

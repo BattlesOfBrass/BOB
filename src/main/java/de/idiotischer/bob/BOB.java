@@ -106,8 +106,8 @@ public class BOB {
         Tile ti = tileManager.getTileList().getLast();
         Tile ti1 = tileManager.getTileList().getFirst();
 
-        this.troopManager.addTroopStack(new TroopStack(ti, player.country(), List.of(new Troop(ti, player.country()))));
-        this.troopManager.addTroopStack(new TroopStack(ti1, player.country(), List.of(new Troop(ti1, player.country()))));
+        this.troopManager.addTroopStack(new TroopStack(ti, player.country(), List.of(new Troop("",ti, player.country(), player.country(), ""))));
+        this.troopManager.addTroopStack(new TroopStack(ti1, player.country(), List.of(new Troop("",ti1, player.country(), player.country(), ""))));
     }
 
     public void init() {
@@ -134,7 +134,6 @@ public class BOB {
         this.stateManager = new StateManager();
 
         this.troopManager = new TroopManager();
-
 
         this.awaitingReload = this.scenarioManager.reload().thenRun(() -> {
             this.scenarioSceneLoader.requestScenarioLoad(scenarioManager.getRandom());

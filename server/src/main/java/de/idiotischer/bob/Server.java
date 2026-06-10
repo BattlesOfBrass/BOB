@@ -10,6 +10,7 @@ import de.idiotischer.bob.scenario.ServerScenarioSceneLoader;
 import de.idiotischer.bob.state.ServerStateManager;
 import de.idiotischer.bob.tile.ServerTileManager;
 import de.idiotischer.bob.tile.TileValidator;
+import de.idiotischer.bob.troop.ServerTroopManager;
 import de.idiotischer.bob.util.FileUtil;
 import de.idiotischer.bob.util.MainConfigUtil;
 
@@ -26,6 +27,7 @@ public class Server {
     private TileValidator tileValidator = new TileValidator();
     private ServerPlayerManager playerManager;
     private ServerStateManager stateManager;
+    private ServerTroopManager troopManager;
 
     public static void main(String[] args) {
         new Server(false);
@@ -56,6 +58,7 @@ public class Server {
         this.playerManager = new ServerPlayerManager();
 
         this.scenarioManager = new ServerScenarioManager();
+
         this.scenarioManager.reload();
 
         this.scenarioLoader = new ServerScenarioSceneLoader();
@@ -65,6 +68,8 @@ public class Server {
         this.tileManager = new ServerTileManager();
 
         this.stateManager = new ServerStateManager();
+
+        this.troopManager = new ServerTroopManager();
 
         Scenario random = scenarioManager.getRandom();
         if(random != null) this.scenarioLoader.loadNew(random);
@@ -100,6 +105,10 @@ public class Server {
 
     public MainConfigUtil getConfig() {
         return config;
+    }
+
+    public ServerTroopManager getTroopManager() {
+        return troopManager;
     }
 
     public ServerScenarioManager getScenarioManager() {

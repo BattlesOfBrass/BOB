@@ -198,4 +198,18 @@ public class Scenario {
 
         return Files.notExists(path);
     }
+
+    public Path getTroopConfig() {
+        Path path = dir.resolve("troops.json");
+
+        if(Files.notExists(path)) path = FileUtil.getDefaultScenarioDir().resolve("troops.json");
+
+        return path;
+    }
+
+    public boolean isTroopConfigDefault() {
+        Path path = dir.resolve("troops.json");
+
+        return Files.notExists(path);
+    }
 }

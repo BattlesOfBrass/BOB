@@ -43,6 +43,8 @@ public class PacketRegistry {
         registerPacket(LoginPacket.class, 13);
         registerPacket(StateSyncPacket.class, 14);
         registerPacket(StatesSyncPacket.class, 15);
+        registerPacket(TroopStackSyncPacket.class, 16);
+        registerPacket(TroopStacksSyncPacket.class, 17);
     }
 
     public void registerPacket(Class<? extends Packet> packet, int id) {

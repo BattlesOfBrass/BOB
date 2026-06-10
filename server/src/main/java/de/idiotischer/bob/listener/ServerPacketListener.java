@@ -6,16 +6,21 @@ import de.idiotischer.bob.Server;
 import de.idiotischer.bob.country.Country;
 import de.idiotischer.bob.networking.packet.PacketRegistry;
 import de.idiotischer.bob.networking.packet.impl.*;
+import de.idiotischer.bob.networking.packet.impl.pp.ReplyPacket;
 import de.idiotischer.bob.networking.packet.impl.pp.RequestPacket;
+import de.idiotischer.bob.networking.packet.impl.pp.Type;
 import de.idiotischer.bob.player.Player;
 import de.idiotischer.bob.scenario.Scenario;
 import de.idiotischer.bob.scenario.ServerScenarioManager;
 import de.idiotischer.bob.scenario.ServerScenarioSceneLoader;
 import de.idiotischer.bob.state.State;
 import de.idiotischer.bob.tile.Tile;
+import de.idiotischer.bob.troop.TroopStack;
+import de.idiotischer.bob.troop.TroopValidator;
 import it.unimi.dsi.fastutil.Pair;
 
 import java.io.IOException;
+import java.util.UUID;
 
 public class ServerPacketListener implements ListenerAdapter {
     @EventHandler
@@ -41,10 +46,30 @@ public class ServerPacketListener implements ListenerAdapter {
 
         } else if(event.getPacket() instanceof RequestPacket pack) {
             //so ping pong like
-
             switch (pack.getRequestType()) {
+                case TROOPS_MOVE -> {
+                    String[] parts = pack.getMessage().split(";");
+
+                    String[] uuidPart = parts[0].split("=");
+                    String[] tilePart = parts[1].split("=");
+
+                    UUID uuid = UUID.fromString(uuidPart[0]);
+
+                    Tile tile = Server.getInstance().getTileManager().byAbbreviation(tilePart[1]);
+                    TroopStack troopStack = Server.getInstance().getTroopManager().getTroop(uuid);
+
+                    if(troopStack == null) return;
+                    if(tile == null) return;
+
+                    String reply = "troop=" + uuid + ";tile=" + tile.getAbbreviation() + ";type=" + TroopValidator.validate(troopStack,tile);
+
+                    Server.getInstance().getSendTool().send(event.getChannel(), new ReplyPacket(Type.TROOPS_MOVE, reply));
+                }
+                case TROOPS_SYNC -> {
+                    Server.getInstance().getSendTool().send(event.getChannel(), TroopStacksSyncPacket.fromStates(Server.getInstance().getTroopManager().getTroopStacks()));
+                }
                 case SCENARIOS -> {
-                    if(!Server.getInstance().getServerSocket().isLocal()) return;
+                    if(!Server.getInstance().getServerSocket().isLocal()) return; // only sync 1 scenario for remote not all like on the client
 
                     Server.getInstance().getSendTool().send(event.getChannel(), ScenariosSyncPacket.fromScenarios(Server.getInstance().getScenarioManager().getScenarios()));
                 }
@@ -58,9 +83,7 @@ public class ServerPacketListener implements ListenerAdapter {
 
                     Server.getInstance().getSendTool().send(event.getChannel(), syncPacket);
                 }
-                case STATE_SYNC -> {
-
-                }
+                case STATE_SYNC -> {}
                 case COUNTRIES_SYNC -> {
                     CountriesSyncPacket syncPacket = CountriesSyncPacket.fromCountries(Server.getInstance().getCountryManager().getCountries());
 

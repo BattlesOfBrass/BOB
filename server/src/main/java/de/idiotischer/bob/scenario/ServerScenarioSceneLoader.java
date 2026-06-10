@@ -45,6 +45,7 @@ public class ServerScenarioSceneLoader {
         Server.getInstance().getCountryManager().reload();
         Server.getInstance().getTileManager().reload();
         Server.getInstance().getStateManager().reload();
+        Server.getInstance().getTroopManager().reload();
 
         Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new ScenarioSyncPacket(scenario));
     }

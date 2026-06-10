@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 //TODO: alle assets wie flaggen für das scenario etc syncen
+//TODO: optimize data usage
 public class ScenarioSyncPacket implements Packet, de.idiotischer.bob.networking.packet.Packet {
 
     private String abbreviation;
@@ -30,11 +31,13 @@ public class ScenarioSyncPacket implements Packet, de.idiotischer.bob.networking
     private List<Color> borderColors = new ArrayList<>();
 
     private BufferedImage mapImage;
+    private BufferedImage backgroundImage;
 
     private byte[] unusableJson;
     private byte[] countriesJson;
     private byte[] tilesJson;
     private byte[] statesJson;
+    private byte[] troopsJson;
 
     public ScenarioSyncPacket() {}
 
@@ -46,11 +49,13 @@ public class ScenarioSyncPacket implements Packet, de.idiotischer.bob.networking
         this.borderColors = new ArrayList<>(scenario.getBorderColors());
 
         this.mapImage = scenario.getMapImage();
+        this.backgroundImage = scenario.getBackgroundImage();
 
         this.unusableJson = scenario.isUnusableDefault() ? null : FileUtil.readFile(scenario.getUnusable());
         this.countriesJson = scenario.isCountryConfigDefault() ? null : FileUtil.readFile(scenario.getCountryConfig());
         this.tilesJson = scenario.isTilesConfigDefault() ? null : FileUtil.readFile(scenario.getTilesConfig());
         this.statesJson = scenario.isStatesConfigDefault() ? null : FileUtil.readFile(scenario.getStatesConfig());
+        this.troopsJson = scenario.isTroopConfigDefault() ? null : FileUtil.readFile(scenario.getTroopConfig());
     }
 
     @Override
@@ -76,10 +81,22 @@ public class ScenarioSyncPacket implements Packet, de.idiotischer.bob.networking
                 buffer.getRaw().putInt(0);
             }
 
+            if (backgroundImage != null) {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                ImageIO.write(backgroundImage, "png", baos); //add support for svg and webp etc which is better
+                byte[] imageData = baos.toByteArray();
+
+                buffer.getRaw().putInt((imageData.length));
+                buffer.getRaw().put(imageData);
+            } else {
+                buffer.getRaw().putInt(0);
+            }
+
             writeBytes(buffer.getRaw(), unusableJson);
             writeBytes(buffer.getRaw(), countriesJson);
             writeBytes(buffer.getRaw(), tilesJson);
             writeBytes(buffer.getRaw(), statesJson);
+            writeBytes(buffer.getRaw(), troopsJson);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -109,10 +126,22 @@ public class ScenarioSyncPacket implements Packet, de.idiotischer.bob.networking
                 buffer.putInt(0);
             }
 
+            if (backgroundImage != null) {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                ImageIO.write(backgroundImage, "png", baos); //add support for svg and webp etc which is better
+                byte[] imageData = baos.toByteArray();
+
+                buffer.putInt((imageData.length));
+                buffer.put(imageData);
+            } else {
+                buffer.putInt(0);
+            }
+
             writeBytes(buffer, unusableJson);
             writeBytes(buffer, countriesJson);
             writeBytes(buffer, tilesJson);
             writeBytes(buffer, statesJson);
+            writeBytes(buffer, troopsJson);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -147,11 +176,23 @@ public class ScenarioSyncPacket implements Packet, de.idiotischer.bob.networking
                 e.printStackTrace();
             }
         }
+        int imageLength2 = buffer.getInt();
+        if (imageLength2 > 0) {
+            byte[] imageData = new byte[imageLength2];
+            buffer.get(imageData);
+            try {
+                this.backgroundImage = ImageIO.read(new ByteArrayInputStream(imageData));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
 
         this.unusableJson = readBytes(buffer);
         this.countriesJson = readBytes(buffer);
         this.tilesJson = readBytes(buffer);
         this.statesJson = readBytes(buffer);
+        this.troopsJson = readBytes(buffer);
     }
 
     public Path applyToDisk2() {
@@ -172,11 +213,19 @@ public class ScenarioSyncPacket implements Packet, de.idiotischer.bob.networking
             writeIfMissing(targetDir.resolve("countries.json"), countriesJson);
             writeIfMissing(targetDir.resolve("tiles.json"), tilesJson);
             writeIfMissing(targetDir.resolve("states.json"), statesJson);
+            writeIfMissing(targetDir.resolve("troops.json"), troopsJson);
 
             if (mapImage != null) {
                 Path mapPath = targetDir.resolve("map.png");
                 if (Files.notExists(mapPath)) {
                     ImageIO.write(mapImage, "png", mapPath.toFile());
+                }
+            }
+
+            if (backgroundImage != null) {
+                Path mapPath = targetDir.resolve("background.png");
+                if (Files.notExists(mapPath)) {
+                    ImageIO.write(backgroundImage, "png", mapPath.toFile());
                 }
             }
 
@@ -208,6 +257,7 @@ public class ScenarioSyncPacket implements Packet, de.idiotischer.bob.networking
             writeIfMissing(targetDir.resolve("countries.json"), countriesJson);
             writeIfMissing(targetDir.resolve("tiles.json"), tilesJson);
             writeIfMissing(targetDir.resolve("states.json"), statesJson);
+            writeIfMissing(targetDir.resolve("troops.json"), troopsJson);
 
             if (mapImage != null) {
                 Path mapPath = targetDir.resolve("map.png");
@@ -216,6 +266,12 @@ public class ScenarioSyncPacket implements Packet, de.idiotischer.bob.networking
                 }
             }
 
+            if (backgroundImage != null) {
+                Path mapPath = targetDir.resolve("background.png");
+                if (Files.notExists(mapPath)) {
+                    ImageIO.write(backgroundImage, "png", mapPath.toFile());
+                }
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -278,6 +334,30 @@ public class ScenarioSyncPacket implements Packet, de.idiotischer.bob.networking
     public List<Color> getTakenColors() { return takenColors; }
     public List<Color> getBorderColors() { return borderColors; }
     public BufferedImage getMapImage() { return mapImage; }
+
+    public BufferedImage getBackgroundImage() {
+        return backgroundImage;
+    }
+
+    public byte[] getTroopsJson() {
+        return troopsJson;
+    }
+
+    public byte[] getUnusableJson() {
+        return unusableJson;
+    }
+
+    public byte[] getTilesJson() {
+        return tilesJson;
+    }
+
+    public byte[] getStatesJson() {
+        return statesJson;
+    }
+
+    public byte[] getCountriesJson() {
+        return countriesJson;
+    }
 
     @Override
     public void handle(Networker networker) {

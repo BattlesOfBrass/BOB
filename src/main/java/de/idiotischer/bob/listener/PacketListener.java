@@ -20,10 +20,8 @@ import it.unimi.dsi.fastutil.Pair;
 import java.awt.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
-import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class PacketListener implements ListenerAdapter {
@@ -124,6 +122,23 @@ public class PacketListener implements ListenerAdapter {
             BOB.getInstance().getTileManager().registerTile(tile);
         } else if(event.getPacket() instanceof ReplyPacket pack) {
             switch (pack.getReplyType()) {
+                case TROOPS_MOVE -> {
+                    String[] parts = pack.getMessage().split(";");
+
+                    String[] uuidPart = parts[0].split("=");
+                    String[] tilePart = parts[1].split("=");
+                    String[] statusPart = parts[2].split("=");
+
+                    if(!Boolean.parseBoolean(statusPart[1])) return;
+
+                    Tile t = BOB.getInstance().getTileManager().byAbbreviation(tilePart[1]);
+
+                    UUID uuid = UUID.fromString(uuidPart[0]);
+
+                    if(t == null) return;
+
+                    BOB.getInstance().getTroopManager().finishMove(uuid, t);
+                }
                 case TILE_CHANGE -> {
                     String s = pack.getMessage();
 
@@ -169,6 +184,23 @@ public class PacketListener implements ListenerAdapter {
             if(player == null || country == null) return;
 
             player.country(country);
+        } else if(event.getPacket() instanceof TroopStackSyncPacket pack) {
+
+        } else if(event.getPacket() instanceof TroopStacksSyncPacket pack) {
+            BOB.getInstance().getTroopManager().finishReload(
+                    pack.getPackets().stream()
+                            .map(d -> {
+                                var pair = d.getTroopStack(
+                                        BOB.getInstance().getCountryManager(),
+                                        BOB.getInstance().getTileManager()
+                                );
+                                return Map.entry(pair.key(), pair.value());
+                            })
+                            .collect(Collectors.toMap(
+                                    Map.Entry::getKey,
+                                    Map.Entry::getValue
+                            )), true
+            );
         }
     }
 }

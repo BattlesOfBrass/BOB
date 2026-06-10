@@ -362,7 +362,7 @@ public class MainRenderer extends Thread {
             if(BOB.getInstance().isDebug()) System.out.println("moved stacks to new loc: " + tile.getName());
         });
 
-        tile.setControllerClient(BOB.getInstance().getClient().getChannel(), BOB.getInstance().getPlayer().country());
+        tile.setControllerClient(BOB.getInstance().getClient().getChannel(), BOB.getInstance().getPlayer().country()); //TODO: combine with troop movement
 
         renderPanel.repaint();
     }
