@@ -54,7 +54,7 @@ public class PlayerManager implements PlayerResolver {
 
         if(!hasPlayer(country) || Server.getInstance().getServerSocket().getHostUtil().isCoop()) player.country(country);
 
-        Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new RequestPacket(Type.PLAYER_CHANGE, constructChange(player, country)));
+        BOB.getInstance().getSendTool().send(BOB.getInstance().getClient().getChannel(), new RequestPacket(Type.PLAYER_CHANGE, constructChange(player, country)));
     }
 
     public void addPlayer(UUID uuid) {

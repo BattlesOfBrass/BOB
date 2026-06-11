@@ -36,4 +36,12 @@ public class LoginPacket implements Packet {
     public Credentials getCredentials() {
         return credentials;
     }
+
+    public String getUsername() {
+        return credentials.username();
+    }
+
+    public String getLobbyPW() {
+        return credentials.lobbyPW();
+    }
 }

@@ -1,1 +1,32 @@
-{}
+{
+  "InfantryFRA": {
+    "template": "Infantry",
+    "tile": "paris",
+    "owner": "FRA",
+    "count": 3
+  },
+  "InfantryGER": {
+    "template": "Infantry",
+    "tile": "vorpommern",
+    "owner": "GER",
+    "count": 10
+  },
+  "TankGER": {
+    "template": "Tank",
+    "tile": "sachsen",
+    "owner": "GER",
+    "count": 5
+  },
+  "ArtilleryGER": {
+    "template": "Artillery",
+    "tile": "brandenburg",
+    "owner": "GER",
+    "count": 3
+  },
+  "MixedGER": {
+    "template": "Mixed",
+    "tile": "schwaben",
+    "owner": "GER",
+    "count": 7
+  }
+}

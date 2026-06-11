@@ -243,6 +243,7 @@ public class ServerSocket {
     }
 
     public Set<AsynchronousSocketChannel> getClients() {
+        //the moment the filter is removed nothing works anymore lol
         return Server.getInstance().getPlayerManager().getPlayers().stream().filter(Player::authorized).map(Player::clientChannel).collect(Collectors.toUnmodifiableSet());
     }
 

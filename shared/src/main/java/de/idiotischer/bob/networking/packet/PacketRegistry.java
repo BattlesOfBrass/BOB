@@ -45,6 +45,7 @@ public class PacketRegistry {
         registerPacket(StatesSyncPacket.class, 15);
         registerPacket(TroopStackSyncPacket.class, 16);
         registerPacket(TroopStacksSyncPacket.class, 17);
+        registerPacket(PlayerAuthUpdatePacket.class, 18);
     }
 
     public void registerPacket(Class<? extends Packet> packet, int id) {

@@ -23,6 +23,7 @@ import de.idiotischer.bob.util.MainConfigUtil;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import javax.swing.*;
 
@@ -89,12 +90,6 @@ public class BOB {
             throw new IllegalStateException("Setup called before countries loaded");
         }
 
-        this.player = playerManager.createPlayer(client.getChannel(), AddressUtil.getThisAddress(client.getChannel()));
-
-        this.playerManager.addPlayer(player);
-
-        this.playerManager.changeCountry(player, countries.getRandom());
-
         this.mapRenderer = new MainRenderer();
 
         this.debugger = new Debugger();
@@ -102,12 +97,6 @@ public class BOB {
         this.mapRenderer.start();
 
         this.initialized = true;
-
-        Tile ti = tileManager.getTileList().getLast();
-        Tile ti1 = tileManager.getTileList().getFirst();
-
-        this.troopManager.addTroopStack(new TroopStack(ti, player.country(), List.of(new Troop("",ti, player.country(), player.country(), ""))));
-        this.troopManager.addTroopStack(new TroopStack(ti1, player.country(), List.of(new Troop("",ti1, player.country(), player.country(), ""))));
     }
 
     public void init() {
@@ -252,5 +241,9 @@ public class BOB {
 
     public GameManager getGameManager() {
         return gameManager;
+    }
+
+    public void setPlayer(UUID uuid) {
+        this.player = playerManager.createPlayer(client.getChannel(), uuid, AddressUtil.getThisAddress(client.getChannel()));
     }
 }

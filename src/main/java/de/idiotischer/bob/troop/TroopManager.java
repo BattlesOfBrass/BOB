@@ -22,7 +22,7 @@ public class TroopManager {
 
     private CompletableFuture<Void> awaitingFuture = new CompletableFuture<>();
 
-    private Map<UUID, CompletableFuture<Pair<TroopStack, Tile>>> requests = new HashMap<>();
+    private Map<UUID, CompletableFuture<Pair<TroopStack, Pair<Tile, MoveStatus>>>> requests = new HashMap<>();
 
     private boolean switchMM;
 
@@ -31,13 +31,11 @@ public class TroopManager {
     }
 
     public CompletableFuture<Pair<TroopStack, Tile>> move(TroopStack selected, Tile newTile) {
-        selected.setTile(newTile);
-
         UUID uuid = getUuid(selected);
 
         BOB.getInstance().getSendTool().send(BOB.getInstance().getClient().getChannel(), new RequestPacket(Type.TROOPS_MOVE, "troop=" + uuid.toString() + ";tile=" + newTile.getAbbreviation()));
 
-        requests.put(uuid, new CompletableFuture<>());
+        requests.putIfAbsent(uuid, new CompletableFuture<>());
 
         return CompletableFuture.completedFuture(null);
     }
@@ -48,13 +46,21 @@ public class TroopManager {
         return uuid.getKey();
     }
 
-    public void finishMove(UUID troopId, Tile newTile) {
+    public void finishMove(UUID troopId, Tile newTile, MoveStatus moveStatus) {
         TroopStack troop = troops.get(troopId);
 
+        requests.get(troopId).complete(Pair.of(troop, Pair.of(newTile, moveStatus)));
+
         if(troop == null) return;
+        if(newTile == null) return;
+        if(moveStatus == MoveStatus.NO_CONTROL || moveStatus == MoveStatus.FAILURE || moveStatus == MoveStatus.FAILURE_KICKED) return;
+
+        //theoretically already set in the request on the server
+        newTile.setControllerClient(BOB.getInstance().getClient().getChannel(), troop.getController());
 
         troop.setTile(newTile);
-        requests.get(troopId).complete(Pair.of(troop, newTile));
+
+        newTile.setControllerClient(BOB.getInstance().getClient().getChannel(), BOB.getInstance().getPlayer().country()); //TODO: combine with troop movement
     }
 
     public CompletableFuture<Void> reload() {
@@ -105,15 +111,23 @@ public class TroopManager {
             });
         }
 
-        BOB.getInstance().getTileManager().colorAllDefault(); //TODO: gucken ob man das hier für immer lassen kann
+        BOB.getInstance().getTileManager().colorAllDefault();
 
         switchMM = true;
         if(awaitingFuture == null || awaitingFuture.isDone()) return;
         awaitingFuture.complete(null);
     }
 
+    public void addTroopStack(UUID uuid, TroopStack stack) {
+        troops.putIfAbsent(uuid, stack);
+    }
+
     public void addTroopStack(TroopStack stack) {
-        troops.put(UUIDUtil.getUnused(troops.keySet()), stack);
+        troops.putIfAbsent(UUIDUtil.getUnused(troops.keySet()), stack);
+    }
+
+    public void removeTroopStack(UUID uuid) {
+        troops.remove(uuid);
     }
 
     public List<TroopStack> getEnemy() {

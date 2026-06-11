@@ -1,9 +1,11 @@
 package de.idiotischer.bob.render;
 
+import de.idiotischer.bob.BOB;
 import de.idiotischer.bob.render.menu.components.button.TroopVisualButton;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Objects;
 
 public class DragOverlay extends JComponent {
 
@@ -65,6 +67,8 @@ public class DragOverlay extends JComponent {
             if (!(c instanceof TroopVisualButton button)) continue;
 
             if (!button.isVisible()) continue;
+
+            if(!Objects.equals(button.getStack().getController().getAbbreviation(), BOB.getInstance().getPlayer().country().getAbbreviation())) continue;
 
             if (selection.intersects(button.getBounds())) {
                 renderer.getGamePanel().selected.add(button);

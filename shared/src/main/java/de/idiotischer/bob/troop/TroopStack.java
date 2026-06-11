@@ -29,7 +29,7 @@ public class TroopStack extends Troop {
 
     @Deprecated
     public TroopStack(Tile tile, Country controller, List<Troop> troops) {
-        super("",tile, null,controller, "");
+        super("",tile, controller,controller, "");
 
         this.tile = tile;
         this.troops = troops;

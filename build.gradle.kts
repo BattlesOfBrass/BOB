@@ -23,16 +23,22 @@ java {
 repositories {
     mavenCentral()
     maven {
+        name = "cbr"
+        url = uri("https://repo.craftsblock.de/releases")
+    }
+
+    maven {
         name = "cbe"
         url = uri("https://repo.craftsblock.de/experimental")
     }
+
     maven {
         url = uri("https://releases.aspose.com/java/repo/")
     }
 }
 
 dependencies {
-    implementation(platform("de.craftsblock.craftscore:bom:3.8.13-pre9"))
+    implementation(platform("de.craftsblock.craftscore:bom:3.8.17"))
     implementation("de.craftsblock.craftscore:buffer")
     implementation("de.craftsblock.craftsnet.modules.websocketpackets:common:1.1.2-pre5")
     implementation("de.craftsblock.craftscore:event")

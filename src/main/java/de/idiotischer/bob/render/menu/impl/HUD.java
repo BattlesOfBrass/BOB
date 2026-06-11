@@ -47,6 +47,8 @@ public class HUD extends JPanel {
     }
 
     public void updateHUD() {
+        if(BOB.getInstance().getPlayer() == null) return;
+        if(BOB.getInstance().getPlayer().country() == null) return;
         String name = BOB.getInstance().getPlayer().country().countryName();
         topBar.setCountryName(name);
     }

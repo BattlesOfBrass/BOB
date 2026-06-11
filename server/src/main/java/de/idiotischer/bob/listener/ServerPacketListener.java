@@ -13,10 +13,11 @@ import de.idiotischer.bob.player.Player;
 import de.idiotischer.bob.scenario.Scenario;
 import de.idiotischer.bob.scenario.ServerScenarioManager;
 import de.idiotischer.bob.scenario.ServerScenarioSceneLoader;
-import de.idiotischer.bob.state.State;
 import de.idiotischer.bob.tile.Tile;
+import de.idiotischer.bob.troop.MoveStatus;
 import de.idiotischer.bob.troop.TroopStack;
 import de.idiotischer.bob.troop.TroopValidator;
+import de.idiotischer.bob.util.AddressUtil;
 import it.unimi.dsi.fastutil.Pair;
 
 import java.io.IOException;
@@ -29,8 +30,7 @@ public class ServerPacketListener implements ListenerAdapter {
 
         if(player != null && !player.authorized()) {
             if(event.getPacket() instanceof LoginPacket pack) {
-                Server.getInstance().getPlayerManager().authPlayer(player,pack.getCredentials());
-                //player.authorize(pack.getCredentials());
+                Server.getInstance().getPlayerManager().authPlayer(player, pack.getCredentials());
             } else {
                 try {
                     event.getChannel().close();
@@ -53,7 +53,7 @@ public class ServerPacketListener implements ListenerAdapter {
                     String[] uuidPart = parts[0].split("=");
                     String[] tilePart = parts[1].split("=");
 
-                    UUID uuid = UUID.fromString(uuidPart[0]);
+                    UUID uuid = UUID.fromString(uuidPart[1]);
 
                     Tile tile = Server.getInstance().getTileManager().byAbbreviation(tilePart[1]);
                     TroopStack troopStack = Server.getInstance().getTroopManager().getTroop(uuid);
@@ -61,9 +61,46 @@ public class ServerPacketListener implements ListenerAdapter {
                     if(troopStack == null) return;
                     if(tile == null) return;
 
-                    String reply = "troop=" + uuid + ";tile=" + tile.getAbbreviation() + ";type=" + TroopValidator.validate(troopStack,tile);
+                    Player p = Server.getInstance().getPlayerManager().resolve(event.getChannel());
+
+                    MoveStatus moveStatus = TroopValidator.validate(p, troopStack,tile);
+
+                    String reply = "troop=" + uuid + ";tile=" + tile.getAbbreviation() + ";type=" + moveStatus.ordinal();
+
+                    if(moveStatus == MoveStatus.NO_CONTROL || moveStatus == MoveStatus.FAILURE || moveStatus == MoveStatus.FAILURE_KICKED) return;
 
                     Server.getInstance().getSendTool().send(event.getChannel(), new ReplyPacket(Type.TROOPS_MOVE, reply));
+                }
+                case PLAYER_CHANGE -> {
+                    //System.out.println("Player change packet received at: " + System.nanoTime());
+                    //System.out.println(pack.getMessage());
+                    //Server.getInstance().getPlayerManager().getPlayers().forEach(p -> System.out.println(p.uuid().toString()));
+
+                    String[] parts = pack.getMessage().split(";");
+
+                    String uuid = parts[0];
+                    String abbreviation = parts[1];
+
+                    Country country = Server.getInstance().getCountryManager().byAbbreviation(abbreviation);
+
+                    if(country == null) {
+                        Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(),
+                                new ReplyPacket(Type.PLAYER_CHANGE, pack.getMessage() + ";type=false"));
+                        return;
+                    }
+
+                    Player p = Server.getInstance().getPlayerManager().getPlayer(AddressUtil.getRemoteAddress(event.getChannel()));
+
+                    if(p == null) {
+                        Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(),
+                                new ReplyPacket(Type.PLAYER_CHANGE, pack.getMessage() + ";type=false"));
+                        return;
+                    }
+
+                    p.country(country);
+
+                    Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(),
+                            new ReplyPacket(Type.PLAYER_CHANGE, pack.getMessage() + ";type=true"));
                 }
                 case TROOPS_SYNC -> {
                     Server.getInstance().getSendTool().send(event.getChannel(), TroopStacksSyncPacket.fromStates(Server.getInstance().getTroopManager().getTroopStacks()));

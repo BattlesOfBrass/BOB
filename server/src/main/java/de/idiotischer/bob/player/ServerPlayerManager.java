@@ -74,7 +74,8 @@ public class ServerPlayerManager implements PlayerResolver {
     }
 
     public void authPlayer(Player player, Credentials creds) {
-        Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new PlayerAuthUpdatePacket(player.uuid(), player.authorize(creds)));
+        boolean authed = player.authorize(creds); //so that the clients contain the authed one too!
+        Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new PlayerAuthUpdatePacket(player.address(), player.uuid(), authed));
     }
 
     public void removePlayer(Player player) {
@@ -106,6 +107,14 @@ public class ServerPlayerManager implements PlayerResolver {
         Country c = r.byAbbreviation(split[1]);
 
         return Pair.of(this.resolve(uuid), c);
+    }
+
+    public Player getPlayer(InetSocketAddress address) {
+        return players.stream().filter(p -> p.address() != null && p.address().equals(address)).findFirst().orElse(null);
+    }
+
+    public Player getPlayer(UUID uuid) {
+        return players.stream().filter(p -> p.uuid() != null && p.uuid().equals(uuid)).findFirst().orElse(null);
     }
 
     public boolean hasPlayer(Country c) {

@@ -72,7 +72,7 @@ public class ServerTroopManager {
                     UUID uuid = UUIDUtil.getUnused(troopStacks.keySet());
 
                     //troopStacks.remove(uuid); if the uuid weren't unique i'd need this here
-                    troopStacks.put(uuid,stack);
+                    troopStacks.putIfAbsent(uuid,stack);
 
                     if(Server.getInstance().isDebug())
                         System.out.println("Added troop stack with info:  owner: "
@@ -80,6 +80,9 @@ public class ServerTroopManager {
                                 + stack.getController().getAbbreviation() + " tile: "
                                 + stack.getTile().getAbbreviation()
                         );
+                } else {
+                    if(Server.getInstance().isDebug())
+                        System.out.println("Couldn't add troop stack: " + name + " because the owner or tile couldn't be found!");
                 }
             });
 
@@ -92,6 +95,10 @@ public class ServerTroopManager {
         var uuid = troopStacks.entrySet().stream().filter(entry -> entry.getValue() == troopStack).findFirst().get();
 
         return uuid.getKey();
+    }
+
+    public void addTroopStack(TroopStack troop) {
+        troopStacks.putIfAbsent(UUIDUtil.getUnused(troopStacks.keySet()), troop);
     }
 
     public void addTroop(Troop troop) {

@@ -139,11 +139,14 @@ public class RenderPanel extends JPanel implements Panel {
 
                 TroopVisualButton finalButton = button;
 
+                TroopVisualButton finalButton1 = button;
                 button.addMouseListener(new java.awt.event.MouseAdapter() {
                     @Override
                     public void mousePressed(java.awt.event.MouseEvent e) {
                         boolean shiftHeld = (e.getModifiersEx() & java.awt.event.InputEvent.SHIFT_DOWN_MASK) != 0;
                         boolean alreadySelected = selected.contains(finalButton);
+
+                        if(!Objects.equals(finalButton1.getStack().getController().getAbbreviation(), BOB.getInstance().getPlayer().country().getAbbreviation())) return;
 
                         if (!shiftHeld) {
                             selected.clear();

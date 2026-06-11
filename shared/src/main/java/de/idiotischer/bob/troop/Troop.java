@@ -54,7 +54,7 @@ public class Troop {
     }
 
     public Country getController() {
-        return controller;
+        return controller != null ? controller : owner;
     }
 
 }

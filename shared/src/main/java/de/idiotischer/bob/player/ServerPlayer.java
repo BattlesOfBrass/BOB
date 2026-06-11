@@ -81,20 +81,20 @@ public class ServerPlayer implements Player {
 
     @Override
     public boolean authorize(Credentials credentials) {
-        if (credentials == null) return false;
+        //if (credentials == null) return false;
 
-        String name = credentials.username();
+        //String name = credentials.username();
 
-        if(name == null) name = "Player";
-        if(name.isEmpty()) name = "Player";
+        //if(name == null) name = "Player";
+        //if(name.isEmpty()) name = "Player";
 
-        int max = SharedCore.getMaxNameLength();
+        //int max = SharedCore.getMaxNameLength();
 
-        if (name.length() > max) name = name.substring(0, max);
+        //if (name.length() > max) name = name.substring(0, max);
 
         this.name(name);
         this.authorized = true;
 
-        return authorized();
+        return true;
     }
 }

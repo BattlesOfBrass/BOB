@@ -1,5 +1,6 @@
 package de.idiotischer.bob.listener;
 
+import com.aspose.psd.internal.bl.B;
 import de.craftsblock.craftscore.event.EventHandler;
 import de.craftsblock.craftscore.event.EventPriority;
 import de.craftsblock.craftscore.event.ListenerAdapter;
@@ -9,12 +10,15 @@ import de.idiotischer.bob.country.Country;
 import de.idiotischer.bob.networking.packet.PacketRegistry;
 import de.idiotischer.bob.networking.packet.impl.*;
 import de.idiotischer.bob.networking.packet.impl.pp.ReplyPacket;
+import de.idiotischer.bob.networking.packet.impl.pp.Type;
 import de.idiotischer.bob.player.Player;
 import de.idiotischer.bob.scenario.Scenario;
 import de.idiotischer.bob.scenario.ScenarioManager;
 import de.idiotischer.bob.state.State;
 import de.idiotischer.bob.tile.Tile;
 import de.idiotischer.bob.tile.TileManager;
+import de.idiotischer.bob.troop.MoveStatus;
+import de.idiotischer.bob.util.AddressUtil;
 import it.unimi.dsi.fastutil.Pair;
 
 import java.awt.*;
@@ -129,15 +133,13 @@ public class PacketListener implements ListenerAdapter {
                     String[] tilePart = parts[1].split("=");
                     String[] statusPart = parts[2].split("=");
 
-                    if(!Boolean.parseBoolean(statusPart[1])) return;
+                    MoveStatus s = MoveStatus.values()[Integer.parseInt(statusPart[1])];
 
                     Tile t = BOB.getInstance().getTileManager().byAbbreviation(tilePart[1]);
 
-                    UUID uuid = UUID.fromString(uuidPart[0]);
+                    UUID uuid = UUID.fromString(uuidPart[1]);
 
-                    if(t == null) return;
-
-                    BOB.getInstance().getTroopManager().finishMove(uuid, t);
+                    BOB.getInstance().getTroopManager().finishMove(uuid, t, s);
                 }
                 case TILE_CHANGE -> {
                     String s = pack.getMessage();
@@ -159,13 +161,69 @@ public class PacketListener implements ListenerAdapter {
                     tile.setControllerFinish(country, BOB.getInstance().isDebug());
                     TileManager.recolorTile(tile, c);
                 }
+                case PLAYER_CHANGE -> {
+
+                    String[] parts = pack.getMessage().split(";");
+
+                    String uuid = parts[0];
+                    String abbreviation = parts[1];
+                    String status = parts[2];
+
+                    if(!Boolean.parseBoolean(status)) return;
+
+                    Country country = Server.getInstance().getCountryManager().byAbbreviation(abbreviation);
+
+                    if(country == null) {
+                        return;
+                    }
+
+                    Player p = Server.getInstance().getPlayerManager().getPlayer(AddressUtil.getRemoteAddress(event.getChannel()));
+
+                    if(p == null) {
+                        return;
+                    }
+
+                    p.country(country);
+                }
                 case ERROR -> {}
             }
-        } else if(event.getPacket() instanceof PlayerJoinPacket pack) {
-            if(BOB.getInstance().getPlayerManager().hasPlayer(pack.getUuid())) return;
+        } else if(event.getPacket() instanceof PlayerAuthUpdatePacket pack) {
+            if(!pack.isAuthed()) return;
+
+            BOB.getInstance().setPlayer(pack.getUuid());
+            BOB.getInstance().getPlayerManager().addPlayer(BOB.getInstance().getPlayer());
+        }
+        else if(event.getPacket() instanceof PlayerJoinPacket pack) {
+            //System.out.println(
+            //        "join packet " +
+            //                pack.getAddress() +
+            //                " " +
+            //                pack.getUuid()
+            //);
+
+            if(pack.getAddress() == AddressUtil.getThisAddress(event.getChannel())) {
+                BOB.getInstance().getPlayerManager().getPlayer(pack.getAddress()).uuid(pack.getUuid());
+            }
+
+            if(BOB.getInstance().getPlayerManager().hasPlayer(pack.getUuid())) {
+                System.out.println(
+                        "UUID already good " +
+                                BOB.getInstance().getPlayerManager().getPlayer(pack.getAddress()).uuid() +
+                                " " +
+                                pack.getUuid()
+                );
+                return;
+            }
 
             if(BOB.getInstance().getPlayerManager().hasPlayer(pack.getAddress())) {
                 //für local sync
+                System.out.println(
+                        "UUID changed " +
+                                BOB.getInstance().getPlayerManager().getPlayer(pack.getAddress()).uuid() +
+                                " " +
+                                pack.getUuid()
+                );
+
                 BOB.getInstance().getPlayerManager().getPlayer(pack.getAddress()).uuid(pack.getUuid());
             }
 
@@ -185,7 +243,8 @@ public class PacketListener implements ListenerAdapter {
 
             player.country(country);
         } else if(event.getPacket() instanceof TroopStackSyncPacket pack) {
-
+            var z = pack.getTroopStack(BOB.getInstance().getCountryManager(), BOB.getInstance().getTileManager());
+            BOB.getInstance().getTroopManager().addTroopStack(z.key(), z.value());
         } else if(event.getPacket() instanceof TroopStacksSyncPacket pack) {
             BOB.getInstance().getTroopManager().finishReload(
                     pack.getPackets().stream()

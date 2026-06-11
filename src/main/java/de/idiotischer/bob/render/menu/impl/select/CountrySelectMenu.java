@@ -59,6 +59,7 @@ public class CountrySelectMenu extends JPanel {
         JButton startBtn = createButton(label, 140, 40);
         startBtn.setBounds(layoutScaleX - 180, bottomY, 140, 40);
         startBtn.addActionListener(e -> {
+            if(BOB.getInstance().getPlayer() == null || BOB.getInstance().getPlayer().country() == null) return;
             action.accept(this);
         });
 
@@ -79,6 +80,7 @@ public class CountrySelectMenu extends JPanel {
 
         if (selectedCountry == null && !featured.isEmpty()) {
             selectedCountry = featured.get(ThreadLocalRandom.current().nextInt(featured.size()));
+            BOB.getInstance().getPlayerManager().changeCountry(BOB.getInstance().getPlayer(), selectedCountry);
         }
 
         for (Country c : featured) {
@@ -128,6 +130,7 @@ public class CountrySelectMenu extends JPanel {
 
             selectedCountry = c;
             btn.setSelected(true);
+            BOB.getInstance().getPlayerManager().changeCountry(BOB.getInstance().getPlayer(), selectedCountry);
             //repaint();
         });
     }
