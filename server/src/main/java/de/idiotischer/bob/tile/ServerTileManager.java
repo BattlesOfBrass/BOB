@@ -9,11 +9,13 @@ import de.idiotischer.bob.country.Country;
 import de.idiotischer.bob.networking.packet.impl.TilesSyncPacket;
 import de.idiotischer.bob.util.PosUtil;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.nio.file.Files;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -27,6 +29,8 @@ public class ServerTileManager implements TileResolver {
     private final Map<Tile, Set<Point>> cache = new HashMap<>();
 
     private final ExecutorService cacheExecutor = Executors.newVirtualThreadPerTaskExecutor();
+    private boolean cached;
+
 
     public ServerTileManager() {
         //reload();
@@ -105,8 +109,19 @@ public class ServerTileManager implements TileResolver {
         //);
     }
 
+
+    public Tile registerTile(Tile tile) {
+        cache.remove(tile);
+        tileSet.remove(tile);
+        tileSet.add(tile);
+
+        if(Server.getInstance().getConfig().isCacheOnRegister()) cache(tile, tile.getPoints());
+
+        return tile;
+    }
+
     private void cache(Tile tile, List<Point> points) {
-        if (cache.containsKey(tile)) return;
+        cache.remove(tile);
 
         cacheExecutor.submit(() -> {
             if (Server.getInstance().isDebug()) System.out.println(tile.getAbbreviation() + " caching started!");
@@ -118,7 +133,7 @@ public class ServerTileManager implements TileResolver {
 
             points.parallelStream().forEach(basePoint -> {
                 pointsSet.add(basePoint);
-                List<Point> expanded = PosUtil.getPossiblePos(takenColors, logicMap, basePoint.x, basePoint.y);
+                List<Point> expanded = PosUtil.getPossiblePos(takenColors.stream().map(Color::getRGB).collect(Collectors.toSet()), logicMap, basePoint.x, basePoint.y);
                 pointsSet.addAll(expanded);
             });
 
@@ -130,20 +145,75 @@ public class ServerTileManager implements TileResolver {
         });
     }
 
-    public Tile registerTile(Tile tile) {
-        tileSet.remove(tile);
-        tileSet.add(tile);
-        cache.remove(tile);
+    public Set<Tile> findNeighbors(Tile tile) {
+        Set<Point> pixels = cache.get(tile);
+        if (pixels == null) {
+            cache(tile, tile.getPoints());
+            return Set.of();
+        }
 
-        if(Server.getInstance().getConfig().isCacheOnRegister()) cache(tile, tile.getPoints());
+        BufferedImage map = Server.getInstance().getScenarioSceneLoader().getMap();
+        int black = Color.BLACK.getRGB();
 
-        return tile;
+        int maxBorderWidth = 1; //later fetch from some kind of config
+
+        Set<Tile> neighbors = new HashSet<>();
+        int width = map.getWidth();
+        int height = map.getHeight();
+
+        //int[][] dirs = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+        int[][] dirs = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {-1, -1}, {-1, 1}, {1, -1}};
+
+        for (Point p : pixels) {
+            for (int[] d : dirs) {
+
+                for (int distance = 1; distance <= maxBorderWidth + 1; distance++) {
+                    int x = p.x + d[0] * distance;
+                    int y = p.y + d[1] * distance;
+
+                    if (x < 0 || y < 0 || x >= width || y >= height) {
+                        break;
+                    }
+
+                    int rgb = map.getRGB(x, y);
+
+                    if (distance <= maxBorderWidth) {
+                        if (rgb != black) {
+                            break;
+                        }
+                    } else {
+                        Tile other = getTileAt(x, y);
+                        if (other != null && other != tile) {
+                            neighbors.add(other);
+                        }
+                    }
+                }
+            }
+        }
+
+        return neighbors;
     }
+
 
     public List<String> getTiles() {
         return tileSet.stream().map(Tile::toString).collect(Collectors.toList());
     }
 
+    //public Tile getTileAt(int x, int y) {
+    //    List<Point> points = PosUtil.getPossiblePos(BOB.getInstance().getMainRenderer().getMap(), x, y);
+    //    Map<Point, Tile> tilePoints = getTileSet().stream()
+    //            .filter(Objects::nonNull)
+    //            .collect(Collectors.toMap(
+    //                    s -> new Point(s.getX(), s.getY()),
+    //                    Function.identity(),
+    //                    (a, b) -> a
+    //            ));
+    //    Optional<Point> point = points.stream().filter(tilePoints::containsKey).findFirst();
+
+    //    return tilePoints.get(point.orElse(null));
+    //}
+
+    //TODO: optimize
     public Tile getTileAt(int x, int y) {
         Point click = new Point(x, y);
 
@@ -163,8 +233,35 @@ public class ServerTileManager implements TileResolver {
     }
 
     public Set<Tile> getTileSet() {
-        return tileSet;
+        return Collections.unmodifiableSet(tileSet);
     }
+
+    public List<Tile> getTileList() {
+        return Collections.unmodifiableList(new ArrayList<>(tileSet));
+    }
+
+
+    //private boolean isPointInTile(java.awt.Point p, List<java.awt.Point> polygon) {
+    //    boolean result = false;
+
+    //    for (int i = 0, j = polygon.size() - 1; i < polygon.size(); j = i++) {
+
+    //        int xi = polygon.get(i).x;
+    //        int yi = polygon.get(i).y;
+
+    //        int xj = polygon.get(j).x;
+    //        int yj = polygon.get(j).y;
+
+    //        boolean intersect = ((yi > p.y) != (yj > p.y)) &&
+    //                (p.x < (double) (xj - xi) * (p.y - yi) / (double) (yj - yi) + xi);
+
+    //        if (intersect) {
+    //            result = !result;
+    //        }
+    //    }
+
+    //    return result;
+    //}
 
     @Override
     public Tile byAbbreviation(String abbreviation) {
@@ -173,6 +270,10 @@ public class ServerTileManager implements TileResolver {
 
     @Override
     public Tile fromPos(int x, int y) {
-        return getTileAt(x, y);
+        return getTileAt(x,y);
+    }
+
+    public void clearTiles() {
+        tileSet.clear();
     }
 }

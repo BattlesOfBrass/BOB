@@ -69,7 +69,7 @@ public class TileManager implements TileResolver {
     }
 
     private void cache(Tile tile, List<Point> points) {
-        if (cache.containsKey(tile)) return;
+        cache.remove(tile);
 
         cacheExecutor.submit(() -> {
             if (BOB.getInstance().isDebug()) System.out.println(tile.getAbbreviation() + " caching started!");
@@ -81,7 +81,7 @@ public class TileManager implements TileResolver {
 
             points.parallelStream().forEach(basePoint -> {
                 pointsSet.add(basePoint);
-                List<Point> expanded = PosUtil.getPossiblePos(takenColors, logicMap, basePoint.x, basePoint.y);
+                List<Point> expanded = PosUtil.getPossiblePos(takenColors.stream().map(Color::getRGB).collect(Collectors.toSet()), logicMap, basePoint.x, basePoint.y);
                 pointsSet.addAll(expanded);
             });
 
@@ -92,6 +92,56 @@ public class TileManager implements TileResolver {
             if (BOB.getInstance().isDebug()) System.out.println(tile.getAbbreviation() + " caching finished!");
         });
     }
+
+    public Set<Tile> findNeighbors(Tile tile) {
+        Set<Point> pixels = cache.get(tile);
+        if (pixels == null) {
+            cache(tile, tile.getPoints());
+            return Set.of();
+        }
+
+        BufferedImage map = Server.getInstance().getScenarioSceneLoader().getMap();
+        int black = Color.BLACK.getRGB();
+
+        int maxBorderWidth = 1; //later fetch from some kind of config
+
+        Set<Tile> neighbors = new HashSet<>();
+        int width = map.getWidth();
+        int height = map.getHeight();
+
+        //int[][] dirs = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+        int[][] dirs = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {-1, -1}, {-1, 1}, {1, -1}};
+
+        for (Point p : pixels) {
+            for (int[] d : dirs) {
+
+                for (int distance = 1; distance <= maxBorderWidth + 1; distance++) {
+                    int x = p.x + d[0] * distance;
+                    int y = p.y + d[1] * distance;
+
+                    if (x < 0 || y < 0 || x >= width || y >= height) {
+                        break;
+                    }
+
+                    int rgb = map.getRGB(x, y);
+
+                    if (distance <= maxBorderWidth) {
+                        if (rgb != black) {
+                            break;
+                        }
+                    } else {
+                        Tile other = getTileAt(x, y);
+                        if (other != null && other != tile) {
+                            neighbors.add(other);
+                        }
+                    }
+                }
+            }
+        }
+
+        return neighbors;
+    }
+
 
     public List<String> getTiles() {
         return tileSet.stream().map(Tile::toString).collect(Collectors.toList());
@@ -164,7 +214,7 @@ public class TileManager implements TileResolver {
             //PosUtil.getPossibleBDPos(taken, BOB.getInstance().getMainRenderer().getLogicMap(), pos.x, pos.y).forEach(px -> {
             //    BOB.getInstance().getMainRenderer().getVisualBorderOverlay().setRGB(px.x,px.y, tile.getController().countryColor().darker().getRGB());
             //});
-            PosUtil.getPossiblePos(taken, BOB.getInstance().getMainRenderer().getLogicMap(), pos.x, pos.y).forEach(px -> {
+            PosUtil.getPossiblePos(taken.stream().map(Color::getRGB).collect(Collectors.toSet()), BOB.getInstance().getMainRenderer().getLogicMap(), pos.x, pos.y).forEach(px -> {
                 BOB.getInstance().getMainRenderer().getLogicMap().setRGB(px.x,px.y, tile.getController().countryColor().getRGB());
             });
 
@@ -177,7 +227,7 @@ public class TileManager implements TileResolver {
         List<Color> taken = BOB.getInstance().getScenarioSceneLoader().getTakenColors();
 
         tile.getPoints().forEach(pos -> {
-            PosUtil.getPossiblePos(taken, BOB.getInstance().getMainRenderer().getLogicMap(), pos.x, pos.y).forEach(px -> {
+            PosUtil.getPossiblePos(taken.stream().map(Color::getRGB).collect(Collectors.toSet()), BOB.getInstance().getMainRenderer().getLogicMap(), pos.x, pos.y).forEach(px -> {
                 BOB.getInstance().getMainRenderer().getLogicMap().setRGB(px.x,px.y, color.getRGB());
             });
 

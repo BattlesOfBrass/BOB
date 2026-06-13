@@ -68,6 +68,9 @@ public class DragOverlay extends JComponent {
 
             if (!button.isVisible()) continue;
 
+            if(BOB.getInstance().getPlayer() == null) continue;
+            if(BOB.getInstance().getPlayer().country() == null) continue;
+
             if(!Objects.equals(button.getStack().getController().getAbbreviation(), BOB.getInstance().getPlayer().country().getAbbreviation())) continue;
 
             if (selection.intersects(button.getBounds())) {

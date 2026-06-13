@@ -49,4 +49,8 @@ public class ServerScenarioSceneLoader {
 
         Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new ScenarioSyncPacket(scenario));
     }
+
+    public List<Color> getBorderColors() {
+        return currentScenario.getBorderColors();
+    }
 }

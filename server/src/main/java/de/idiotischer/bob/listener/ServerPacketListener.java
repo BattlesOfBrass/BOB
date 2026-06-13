@@ -63,11 +63,13 @@ public class ServerPacketListener implements ListenerAdapter {
 
                     Player p = Server.getInstance().getPlayerManager().resolve(event.getChannel());
 
-                    MoveStatus moveStatus = TroopValidator.validate(p, troopStack,tile);
+                    MoveStatus moveStatus = TroopValidator.validate(p, troopStack,tile, Server.getInstance().getTileManager());
 
                     String reply = "troop=" + uuid + ";tile=" + tile.getAbbreviation() + ";type=" + moveStatus.ordinal();
 
                     if(moveStatus == MoveStatus.NO_CONTROL || moveStatus == MoveStatus.FAILURE || moveStatus == MoveStatus.FAILURE_KICKED) return;
+
+                    troopStack.setTile(tile);
 
                     Server.getInstance().getSendTool().send(event.getChannel(), new ReplyPacket(Type.TROOPS_MOVE, reply));
                 }

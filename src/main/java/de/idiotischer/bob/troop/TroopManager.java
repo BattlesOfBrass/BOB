@@ -4,14 +4,12 @@ import de.idiotischer.bob.BOB;
 import de.idiotischer.bob.country.Country;
 import de.idiotischer.bob.networking.packet.impl.pp.RequestPacket;
 import de.idiotischer.bob.networking.packet.impl.pp.Type;
-import de.idiotischer.bob.render.menu.components.button.TroopVisualButton;
 import de.idiotischer.bob.render.menu.impl.select.ScenarioSelectMenu;
 import de.idiotischer.bob.tile.Tile;
 import de.idiotischer.bob.util.UUIDUtil;
 import it.unimi.dsi.fastutil.Pair;
 
 import javax.swing.*;
-import java.awt.*;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -30,16 +28,19 @@ public class TroopManager {
         //reload();
     }
 
-    public CompletableFuture<Pair<TroopStack, Tile>> move(TroopStack selected, Tile newTile) {
+    public CompletableFuture<Pair<TroopStack, Pair<Tile, MoveStatus>>> move(TroopStack selected, Tile newTile) {
         UUID uuid = getUuid(selected);
 
-        BOB.getInstance().getSendTool().send(BOB.getInstance().getClient().getChannel(), new RequestPacket(Type.TROOPS_MOVE, "troop=" + uuid.toString() + ";tile=" + newTile.getAbbreviation()));
+        CompletableFuture<Pair<TroopStack, Pair<Tile, MoveStatus>>> future =
+                new CompletableFuture<>();
 
-        requests.putIfAbsent(uuid, new CompletableFuture<>());
+        //requests.remove(uuid); could possibly cause bugs?
+        requests.put(uuid, future);
 
-        return CompletableFuture.completedFuture(null);
+        BOB.getInstance().getSendTool().send(BOB.getInstance().getClient().getChannel(), new RequestPacket(Type.TROOPS_MOVE, "troop=" + uuid + ";tile=" + newTile.getAbbreviation()));
+
+        return future;
     }
-
     public UUID getUuid(TroopStack troopStack) {
         var uuid = troops.entrySet().stream().filter(entry -> entry.getValue() == troopStack).findFirst().get();
 
@@ -50,6 +51,7 @@ public class TroopManager {
         TroopStack troop = troops.get(troopId);
 
         requests.get(troopId).complete(Pair.of(troop, Pair.of(newTile, moveStatus)));
+        requests.remove(troopId);
 
         if(troop == null) return;
         if(newTile == null) return;
@@ -112,6 +114,7 @@ public class TroopManager {
         }
 
         BOB.getInstance().getTileManager().colorAllDefault();
+        System.out.println(BOB.getInstance().getTileManager().findNeighbors(BOB.getInstance().getTileManager().byAbbreviation("bayern")));
 
         switchMM = true;
         if(awaitingFuture == null || awaitingFuture.isDone()) return;
