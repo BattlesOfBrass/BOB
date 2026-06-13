@@ -28,5 +28,11 @@
     "tile": "schwaben",
     "owner": "GER",
     "count": 7
+  },
+  "MountaineerAUS": {
+    "template": "mountaineer",
+    "tile": "steiermark",
+    "owner": "AUS",
+    "count": 1
   }
 }

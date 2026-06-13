@@ -7,7 +7,7 @@ import java.util.concurrent.Executors;
 
 //will probably remain only server side but i'll call it this way anyways
 public class ServerWarManager {
-    private final ExecutorService warService = Executors.newSingleThreadExecutor();
+    private final ExecutorService warExecutorService = Executors.newSingleThreadExecutor();
 
     public void reload() {}
 

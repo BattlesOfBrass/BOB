@@ -6,16 +6,13 @@ import com.google.gson.stream.JsonReader;
 import de.idiotischer.bob.Server;
 import de.idiotischer.bob.SharedCore;
 import de.idiotischer.bob.country.Country;
-import de.idiotischer.bob.networking.packet.impl.TilesSyncPacket;
 import de.idiotischer.bob.util.PosUtil;
 
-import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.nio.file.Files;
 import java.util.*;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -80,7 +77,7 @@ public class ServerTileManager implements TileResolver {
                 }
 
                 Tile tile = new Tile(
-                        Server.getInstance().getCore(),
+                        Server.getInstance().getSharedCore(),
                         abbreviation,
                         name,
                         points,
@@ -153,23 +150,28 @@ public class ServerTileManager implements TileResolver {
         }
 
         BufferedImage map = Server.getInstance().getScenarioSceneLoader().getMap();
-        int black = Color.BLACK.getRGB();
 
-        int maxBorderWidth = 1; //later fetch from some kind of config
-
-        Set<Tile> neighbors = new HashSet<>();
         int width = map.getWidth();
         int height = map.getHeight();
 
-        //int[][] dirs = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
-        int[][] dirs = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {-1, -1}, {-1, 1}, {1, -1}};
+        int maxBorderThickness = 1; //TODO: make this configurable in a map config
+
+        Set<Integer> borderColors = Server.getInstance().getScenarioSceneLoader().getBorderColors().stream().map(Color::getRGB).collect(Collectors.toSet());
+
+        Set<Tile> neighbors = new HashSet<>();
+
+        int[][] dirs = {{-1, 0}, {-1, 1}, {0, 1}, {1, 1}, {1, 0}, {1, -1}, {0, -1}, {-1, -1}};
 
         for (Point p : pixels) {
-            for (int[] d : dirs) {
 
-                for (int distance = 1; distance <= maxBorderWidth + 1; distance++) {
-                    int x = p.x + d[0] * distance;
-                    int y = p.y + d[1] * distance;
+            for (int[] dir : dirs) {
+
+                boolean enteredBorder = false;
+
+                for (int distance = 1; distance <= maxBorderThickness + 1/*without +1 it doesnt work for some reason but with it this is great*/ /*+ 20*/; distance++) {
+
+                    int x = p.x + dir[0] * distance;
+                    int y = p.y + dir[1] * distance;
 
                     if (x < 0 || y < 0 || x >= width || y >= height) {
                         break;
@@ -177,16 +179,26 @@ public class ServerTileManager implements TileResolver {
 
                     int rgb = map.getRGB(x, y);
 
-                    if (distance <= maxBorderWidth) {
-                        if (rgb != black) {
-                            break;
-                        }
-                    } else {
-                        Tile other = getTileAt(x, y);
-                        if (other != null && other != tile) {
-                            neighbors.add(other);
-                        }
+                    if (borderColors.contains(rgb)) {
+                        enteredBorder = true;
+                        continue;
                     }
+
+                    Tile other = getTileAt(x, y);
+
+                    if (other == null) {
+                        break;
+                    }
+
+                    if (other == tile) {
+                        break;
+                    }
+
+                    if (enteredBorder) {
+                        neighbors.add(other);
+                    }
+
+                    break;
                 }
             }
         }

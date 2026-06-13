@@ -87,7 +87,7 @@ public class Server {
         return instance;
     }
 
-    public SharedCore getCore() {
+    public SharedCore getSharedCore() {
         return core;
     }
 

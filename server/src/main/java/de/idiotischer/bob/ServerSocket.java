@@ -2,7 +2,6 @@ package de.idiotischer.bob;
 
 import de.idiotischer.bob.event.ClientConnectEvent;
 import de.idiotischer.bob.player.Player;
-import de.idiotischer.bob.player.ServerPlayer;
 import de.idiotischer.bob.util.AddressUtil;
 import de.idiotischer.bob.util.HostUtil;
 
@@ -10,8 +9,6 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.*;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -32,7 +29,8 @@ public class ServerSocket {
 
     private boolean local;
     private final Map<AsynchronousSocketChannel, Long> lastAction = new ConcurrentHashMap<>();
-    private static final long threshold = 30000;
+    private static final long threshold = 30000000; /*kicks player after this time, idk why i added it but its stupid, should add a safety mechanism that i only get kicked when no keepalive is sent
+    also make it configurable*/
 
     public ServerSocket(boolean local) {
         this.local = local;
@@ -81,6 +79,16 @@ public class ServerSocket {
             long now = System.currentTimeMillis();
             lastAction.forEach((channel, time) -> {
                 if (now - time > threshold) {
+                    if (!hostUtil.kickEnabled()) {
+                        lastAction.put(channel, now);
+                        return;
+                    }
+
+                    if (isLocal()) {
+                        lastAction.put(channel, now);
+                        return;
+                    }
+
                     if(Server.getInstance().isDebug()) System.out.println("Client timed out: " + channel);
                     cleanup(channel);
                 }
@@ -106,7 +114,7 @@ public class ServerSocket {
 
                     ClientConnectEvent event = new ClientConnectEvent(clientChannel);
 
-                    Server.getInstance().getCore().getListenerRegistry().call(event);
+                    Server.getInstance().getSharedCore().getListenerRegistry().call(event);
 
                     if(event.isCancelled()) {
                         //clients.remove(clientChannel);
@@ -163,7 +171,7 @@ public class ServerSocket {
                     try {
                         while (buffer.hasRemaining()) {
                             buffer.mark();
-                            Object packet = Server.getInstance().getCore().getRegistry()
+                            Object packet = Server.getInstance().getSharedCore().getRegistry()
                                     .getDecoder().code(buffer, clientChannel);
 
                             if (packet == null) {

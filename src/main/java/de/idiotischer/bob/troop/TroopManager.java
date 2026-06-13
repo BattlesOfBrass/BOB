@@ -114,7 +114,6 @@ public class TroopManager {
         }
 
         BOB.getInstance().getTileManager().colorAllDefault();
-        System.out.println(BOB.getInstance().getTileManager().findNeighbors(BOB.getInstance().getTileManager().byAbbreviation("bayern")));
 
         switchMM = true;
         if(awaitingFuture == null || awaitingFuture.isDone()) return;
