@@ -8,6 +8,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.file.Path;
+import java.rmi.ServerError;
 import java.util.List;
 
 //maybe handle currentselected scenario here even though it's more of a local thing for the menu?
@@ -46,6 +47,7 @@ public class ServerScenarioSceneLoader {
         Server.getInstance().getTileManager().reload();
         Server.getInstance().getStateManager().reload();
         Server.getInstance().getTroopManager().reload();
+        Server.getInstance().getWarManager().reload();
 
         Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new ScenarioSyncPacket(scenario));
     }

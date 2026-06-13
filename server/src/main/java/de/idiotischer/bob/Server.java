@@ -13,6 +13,7 @@ import de.idiotischer.bob.tile.TileValidator;
 import de.idiotischer.bob.troop.ServerTroopManager;
 import de.idiotischer.bob.util.FileUtil;
 import de.idiotischer.bob.util.MainConfigUtil;
+import de.idiotischer.bob.war.ServerWarManager;
 
 public class Server {
 
@@ -28,6 +29,7 @@ public class Server {
     private ServerPlayerManager playerManager;
     private ServerStateManager stateManager;
     private ServerTroopManager troopManager;
+    private ServerWarManager warManager;
 
     public static void main(String[] args) {
         new Server(false);
@@ -70,6 +72,8 @@ public class Server {
         this.stateManager = new ServerStateManager();
 
         this.troopManager = new ServerTroopManager();
+
+        this.warManager = new ServerWarManager();
 
         Scenario random = scenarioManager.getRandom();
         if(random != null) this.scenarioLoader.loadNew(random);
@@ -129,6 +133,10 @@ public class Server {
 
     public TileValidator getTileValidator() {
         return tileValidator;
+    }
+
+    public ServerWarManager getWarManager() {
+        return warManager;
     }
 
     public ServerPlayerManager getPlayerManager() {
