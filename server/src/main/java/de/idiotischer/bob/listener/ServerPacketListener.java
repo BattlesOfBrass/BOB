@@ -47,6 +47,29 @@ public class ServerPacketListener implements ListenerAdapter {
         } else if(event.getPacket() instanceof RequestPacket pack) {
             //so ping pong like
             switch (pack.getRequestType()) {
+                case START_WAR -> {
+                    System.out.println(pack.getMessage());
+                    String[] parts = pack.getMessage().split(";");
+
+                    String abbr = parts[0];
+                    String country = parts[1]; //in the case that the client should be desynced i just send the right country with it
+                    boolean callAllies = Boolean.parseBoolean(parts[2]);
+
+                    Tile declaredTile = Server.getInstance().getTileManager().byAbbreviation(abbr);
+
+                    if(declaredTile == null) return;
+
+                    Country controller = Server.getInstance().getCountryManager().byAbbreviation(country);
+
+                    if(controller == null) return;
+
+                    Player p = Server.getInstance().getPlayerManager().resolve(event.getChannel());
+
+                    if(p == null) return;
+
+                    Server.getInstance().getWarManager().declareWar(callAllies, declaredTile, controller, p.country());
+
+                }
                 case TROOPS_MOVE -> {
                     String[] parts = pack.getMessage().split(";");
 

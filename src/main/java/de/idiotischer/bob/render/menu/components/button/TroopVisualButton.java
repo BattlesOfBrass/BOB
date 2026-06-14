@@ -29,7 +29,6 @@ public class TroopVisualButton extends JToggleButton {
         Graphics2D g2 = (Graphics2D) g.create();
 
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g2.setStroke(new BasicStroke(3f));
 
         g2.setColor(Color.DARK_GRAY);
         g2.fillRect(0, 0, getWidth(), getHeight());
@@ -40,23 +39,26 @@ public class TroopVisualButton extends JToggleButton {
         }
 
         g2.setColor(stack.getController() == null ? Color.GREEN : stack.getController().countryColor());
-        if (stack.getController() != null && stack.getController() == BOB.getInstance().getPlayer().country())
+        if (stack.getController() != null &&
+                stack.getController() == BOB.getInstance().getPlayer().country()) {
             g2.setColor(Color.GREEN);
-
+        }
+        g2.setStroke(new BasicStroke(7f));
         g2.drawRect(0, 0, getWidth() - 1, getHeight() - 1);
 
         if (BOB.getInstance().getMainRenderer().getGamePanel().getTroopButtonGroup().contains(this)) {
             g2.setColor(new Color(255, 255, 255, 126));
-            g2.setStroke(new BasicStroke(3f));
             g2.fillRect(0, 0, getWidth(), getHeight());
         }
 
         String text = String.valueOf(stack.getTroops().size());
         Font font = getFont().deriveFont(Font.BOLD, 14f);
         g2.setFont(font);
+
         FontMetrics fm = g2.getFontMetrics();
         int textWidth = fm.stringWidth(text);
         int textHeight = fm.getAscent();
+
         int x = (getWidth() - textWidth) / 2 + 15;
         int y = (getHeight() + textHeight) / 2 - 2;
 
@@ -68,6 +70,11 @@ public class TroopVisualButton extends JToggleButton {
 
         g2.setColor(Color.WHITE);
         g2.drawString(text, x, y);
+
+        g2.setColor(Color.WHITE);
+        g2.setStroke(new BasicStroke(1f));
+
+        g2.drawRect(0, 0, getWidth() -1 , getHeight() -1);
 
         g2.dispose();
     }

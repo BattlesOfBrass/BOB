@@ -126,6 +126,20 @@ public class PacketListener implements ListenerAdapter {
             BOB.getInstance().getTileManager().registerTile(tile);
         } else if(event.getPacket() instanceof ReplyPacket pack) {
             switch (pack.getReplyType()) {
+                case START_WAR -> {
+                    String[] parts = pack.getMessage().split(";");
+
+                    String aggressorAbbr = parts[0];
+                    String defenderAbbr = parts[1];
+
+                    Country aggressor = BOB.getInstance().getCountryManager().byAbbreviation(aggressorAbbr);
+                    Country defender = BOB.getInstance().getCountryManager().byAbbreviation(defenderAbbr);
+
+                    if(aggressor == null || defender == null) return;
+
+                    //TODO: show popup that a war happened
+
+                }
                 case TROOPS_MOVE -> {
                     String[] parts = pack.getMessage().split(";");
 

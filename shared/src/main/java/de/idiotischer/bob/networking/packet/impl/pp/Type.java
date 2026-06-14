@@ -14,5 +14,5 @@ public enum Type {
     STATE_SYNC,
     TROOPS_SYNC,
     TROOPS_MOVE,
-    AUTHORZIED,
+    START_WAR,
 }
