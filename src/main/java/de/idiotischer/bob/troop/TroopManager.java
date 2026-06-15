@@ -57,11 +57,9 @@ public class TroopManager {
         if(newTile == null) return;
         if(moveStatus == MoveStatus.NO_CONTROL || moveStatus == MoveStatus.FAILURE || moveStatus == MoveStatus.FAILURE_KICKED) return;
 
-        //theoretically already set in the request on the server
-        newTile.setControllerClient(BOB.getInstance().getClient().getChannel(), troop.getController());
-
         troop.setTile(newTile);
 
+        //theoretically already set in the request on the server
         newTile.setControllerClient(BOB.getInstance().getClient().getChannel(), BOB.getInstance().getPlayer().country()); //TODO: combine with troop movement
     }
 

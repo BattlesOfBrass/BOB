@@ -1,6 +1,7 @@
 package de.idiotischer.bob.country;
 
 import de.idiotischer.bob.BOB;
+import de.idiotischer.bob.Server;
 import de.idiotischer.bob.networking.packet.impl.pp.RequestPacket;
 import de.idiotischer.bob.networking.packet.impl.pp.Type;
 import de.idiotischer.bob.tile.Tile;
@@ -89,9 +90,19 @@ public class CountryManager implements CountryResolver{
         return countrySet.stream().filter(c -> c.getAbbreviation().equals(abbreviation)).findFirst().orElse(null);
     }
 
+    public List<Tile> getOwned(Country country) {
+        if(Server.getInstance().getTileManager() == null) return List.of();
+        return Server.getInstance().getTileManager().getTileSet().stream().filter(s -> s.getOwner() == country).toList();
+    }
+
     public List<Tile> getControlled(Country country) {
-        if(BOB.getInstance().getTileManager() == null) return List.of();
-        return BOB.getInstance().getTileManager().getTileSet().stream().filter(s -> s.getController() == country).toList();
+        if(Server.getInstance().getTileManager() == null) return List.of();
+        return Server.getInstance().getTileManager().getTileSet().stream().filter(s -> s.getController() == country).toList();
+    }
+
+    public int getTotalVPs(Country country) {
+        //getOwned(country).;
+        return getOwned(country).stream().mapToInt(Tile::getVictoryPoints).sum();
     }
 
     public List<Country> getCountries() {

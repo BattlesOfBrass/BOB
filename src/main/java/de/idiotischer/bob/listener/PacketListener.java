@@ -126,6 +126,23 @@ public class PacketListener implements ListenerAdapter {
             BOB.getInstance().getTileManager().registerTile(tile);
         } else if(event.getPacket() instanceof ReplyPacket pack) {
             switch (pack.getReplyType()) {
+                case CAPITULATE_COUNTRY -> {
+                    String[] parts = pack.getMessage().split(";");
+
+                    String countryAbbr = parts[0];
+                    boolean capped = Boolean.parseBoolean(parts[1]);
+
+                    Country country = BOB.getInstance().getCountryManager().byAbbreviation(countryAbbr);
+
+                    if(country == null) return;
+
+                    country.setCapitulated(capped);
+
+                    //TODO: show popup that a country capped
+                }
+                case END_WAR -> {
+                    //TODO: show popup that a war ended and start peace conference (oh gosh i need to code that)
+                }
                 case START_WAR -> {
                     String[] parts = pack.getMessage().split(";");
 
@@ -138,7 +155,6 @@ public class PacketListener implements ListenerAdapter {
                     if(aggressor == null || defender == null) return;
 
                     //TODO: show popup that a war happened
-
                 }
                 case TROOPS_MOVE -> {
                     String[] parts = pack.getMessage().split(";");

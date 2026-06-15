@@ -115,6 +115,11 @@ public class ServerCountryManager implements CountryResolver {
         return countrySet.stream().filter(c -> c.getAbbreviation().equals(abbreviation)).findFirst().orElse(null);
     }
 
+    public List<Tile> getOwned(Country country) {
+        if(Server.getInstance().getTileManager() == null) return List.of();
+        return Server.getInstance().getTileManager().getTileSet().stream().filter(s -> s.getOwner() == country).toList();
+    }
+
     public List<Tile> getControlled(Country country) {
         if(Server.getInstance().getTileManager() == null) return List.of();
         return Server.getInstance().getTileManager().getTileSet().stream().filter(s -> s.getController() == country).toList();
@@ -125,6 +130,11 @@ public class ServerCountryManager implements CountryResolver {
                 .stream()
                 .sorted(Comparator.comparing(Country::getAbbreviation))
                 .toList();
+    }
+
+    public int getTotalVPs(Country country) {
+        //getOwned(country).;
+        return getOwned(country).stream().mapToInt(Tile::getVictoryPoints).sum();
     }
 
     //public List<Country> getMajors() {

@@ -17,8 +17,12 @@ public class TileSyncPacket implements de.idiotischer.bob.networking.packet.Pack
     private String abbreviation;
     private String name;
     private String countryAbbreviation;
+    private String ownerAbbreviation;
     private List<Point> points;
     private boolean reconstructed = false;
+    private String cityName;
+    private boolean city;
+    private int victoryPoints;
 
     public TileSyncPacket() {}
 
@@ -39,9 +43,11 @@ public class TileSyncPacket implements de.idiotischer.bob.networking.packet.Pack
 
         this.abbreviation = parts[0];
         this.name = parts[1];
+        this.city = Boolean.parseBoolean(parts[2]);
+        this.cityName = parts[3];
 
         this.points = new ArrayList<>();
-        String[] pointParts = parts[2].split("\\|");
+        String[] pointParts = parts[4].split("\\|");
 
         for (String p : pointParts) {
             String[] coords = p.split(",");
@@ -50,7 +56,9 @@ public class TileSyncPacket implements de.idiotischer.bob.networking.packet.Pack
             points.add(new Point(x, y));
         }
 
-        this.countryAbbreviation = parts[3];
+        this.countryAbbreviation = parts[5];
+        this.ownerAbbreviation = parts[6];
+        this.victoryPoints = Integer.parseInt(parts[7]);
     }
 
     public void reconstruct(SharedCore core, CountryResolver resolver) {
@@ -60,7 +68,7 @@ public class TileSyncPacket implements de.idiotischer.bob.networking.packet.Pack
     public void reconstruct(SharedCore core, CountryResolver resolver, boolean forceReconstruct) {
         if(!forceReconstruct && reconstructed) return;
 
-        this.tile = Tile.by(core, resolver, abbreviation, name, points, countryAbbreviation);
+        this.tile = Tile.by(core, resolver, abbreviation, victoryPoints, name, cityName, city, points, countryAbbreviation,ownerAbbreviation);
 
         reconstructed = true;
     }

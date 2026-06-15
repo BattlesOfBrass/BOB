@@ -48,7 +48,6 @@ public class ServerPacketListener implements ListenerAdapter {
             //so ping pong like
             switch (pack.getRequestType()) {
                 case START_WAR -> {
-                    System.out.println(pack.getMessage());
                     String[] parts = pack.getMessage().split(";");
 
                     String abbr = parts[0];
@@ -180,15 +179,17 @@ public class ServerPacketListener implements ListenerAdapter {
 
                     Tile tile = pair.key();
 
-
                     if(tile == null) return;
 
                     Country country = pair.value();
 
                     if(country == null) return;
 
+                    Country oldController = tile.getController();
+
                     if(Server.getInstance().getTileValidator().isChangeValid(tile, tile.getController(), country)) {
                         tile.setControllerForAll(Server.getInstance().getServerSocket().getClients(), country);
+                        Server.getInstance().getWarManager().checkWarOver(country, oldController, tile);
                     }
                 }
             }

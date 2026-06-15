@@ -26,7 +26,6 @@ public class ServerTileManager implements TileResolver {
     private final Map<Tile, Set<Point>> cache = new HashMap<>();
 
     private final ExecutorService cacheExecutor = Executors.newVirtualThreadPerTaskExecutor();
-    private boolean cached;
 
 
     public ServerTileManager() {
@@ -47,12 +46,38 @@ public class ServerTileManager implements TileResolver {
                 String abbreviation = entry.getKey();
                 JsonObject tileElement = entry.getValue().getAsJsonObject();
 
-                String controllerString = tileElement.get("controller").getAsString();
-                Country country = Server.getInstance()
+                String controllerString = getAsStringSafe(tileElement, "controller");
+                Country controller = Server.getInstance()
                         .getCountryManager()
                         .fromAbbreviation(controllerString);
+                String ownerString = getAsStringSafe(tileElement, "owner");
+                Country owner = Server.getInstance()
+                        .getCountryManager()
+                        .fromAbbreviation(ownerString);
 
                 String name = tileElement.get("name").getAsString();
+
+                int victoryPoints = 50;
+                JsonElement victoryPointsElement = tileElement.get("victoryPoints");
+                if (victoryPointsElement != null && !victoryPointsElement.isJsonNull()) {
+                    victoryPoints = victoryPointsElement.getAsInt();
+                }
+
+                String cityName = "";
+
+                JsonElement cityElement = tileElement.get("city");
+                boolean hasCity = cityElement != null && cityElement.isJsonObject();
+
+                if (hasCity) {
+                    JsonObject cityObject = cityElement.getAsJsonObject();
+
+                    JsonElement cityNameElement = cityObject.get("name");
+                    if (cityNameElement != null && !cityNameElement.isJsonNull()) {
+                        cityName = cityNameElement.getAsString();
+                    }
+                }
+
+                if(cityName == null || cityName.isEmpty()) hasCity = false;
 
                 List<Point> points = new ArrayList<>();
                 JsonElement locationsElement = tileElement.get("locations");
@@ -76,12 +101,30 @@ public class ServerTileManager implements TileResolver {
                     ));
                 }
 
+                if(owner == null && controller == null) {
+                    if (Server.getInstance().isDebug()) {
+                        System.out.println("Failed to registered tile: " + name
+                                + " (" + abbreviation + ") points: "
+                                + points
+                                + " BECAUSE controller and owner are not set!"
+                        );
+                    }
+                    return;
+                }
+
+                if(owner == null) owner = controller;
+                if(controller == null) controller = owner;
+
                 Tile tile = new Tile(
                         Server.getInstance().getSharedCore(),
+                        victoryPoints,
+                        cityName,
+                        hasCity,
                         abbreviation,
                         name,
                         points,
-                        country
+                        controller,
+                        owner
                 );
 
                 registerTile(tile);
@@ -92,6 +135,8 @@ public class ServerTileManager implements TileResolver {
                             + tile.getPoints()
                             + " controller: "
                             + (tile.getController() == null ? "none" : tile.getController().getAbbreviation())
+                            + " owner: "
+                            + (tile.getOwner() == null ? "none" : tile.getOwner().getAbbreviation())
                     );
                 }
             });
@@ -106,6 +151,11 @@ public class ServerTileManager implements TileResolver {
         //);
     }
 
+    private String getAsStringSafe(JsonObject obj, String key) {
+        JsonElement el = obj.get(key);
+        if (el == null || el.isJsonNull()) return "";
+        return el.getAsString();
+    }
 
     public Tile registerTile(Tile tile) {
         cache.remove(tile);

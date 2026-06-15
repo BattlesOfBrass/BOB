@@ -33,6 +33,8 @@ public class HUD extends JPanel {
         topPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 0));
 
         topPanel.setOpaque(false);
+        setFocusable(false);
+        setRequestFocusEnabled(false);
 
         topBar = new HUDTopBar();
         topPanel.add(topBar);
@@ -70,6 +72,7 @@ public class HUD extends JPanel {
     private JPanel createOverviewPanel() {
         JPanel panel = new JPanel();
         panel.setOpaque(false);
+        panel.setFocusable(false);
 
         JLabel label = new JLabel();
         label.setForeground(Color.WHITE);
@@ -123,6 +126,7 @@ public class HUD extends JPanel {
     private Component createDeploymentPanel() {
         JPanel panel = new JPanel();
         panel.setOpaque(false);
+        panel.setFocusable(false);
 
         JLabel label = new JLabel("Deployment");
         label.setForeground(Color.WHITE);
@@ -135,6 +139,7 @@ public class HUD extends JPanel {
     private Component createForeignOverviewPanel() {
         JPanel panel = new JPanel();
         panel.setOpaque(false);
+        panel.setFocusable(false);
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
         JPanel flagPanel = new JPanel(new BorderLayout());
@@ -171,6 +176,7 @@ public class HUD extends JPanel {
         countryName.setFont(countryName.getFont().deriveFont(Font.BOLD, 20f));
         countryName.setAlignmentX(Component.CENTER_ALIGNMENT);
         countryName.setHorizontalAlignment(SwingConstants.CENTER);
+        countryName.setFocusable(false);
 
         JPanel namePanel = new JPanel();
         namePanel.setOpaque(false);
@@ -179,6 +185,7 @@ public class HUD extends JPanel {
         namePanel.add(Box.createHorizontalGlue());
         namePanel.add(countryName);
         namePanel.add(Box.createHorizontalGlue());
+        namePanel.setFocusable(false);
 
         JButton declareWarButton = new BOBButton(
                 "Declare War",
@@ -190,6 +197,7 @@ public class HUD extends JPanel {
                 5
         );
 
+        declareWarButton.setFocusable(false);
         declareWarButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         declareWarButton.addActionListener(e -> {
@@ -216,6 +224,7 @@ public class HUD extends JPanel {
 
     private JPanel createIndustryPanel() {
         JPanel panel = new JPanel();
+        panel.setFocusable(false);
         panel.setOpaque(false);
 
         JLabel label = new JLabel("Industry data");
@@ -248,6 +257,8 @@ public class HUD extends JPanel {
         }
 
         this.currentTile = tile;
+
+        currentMode = TabMode.NONE; //hacky but works
         updateTabs();
 
         revalidate();

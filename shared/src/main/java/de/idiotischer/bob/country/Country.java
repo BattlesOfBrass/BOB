@@ -16,6 +16,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 public class Country {
 
@@ -28,6 +29,7 @@ public class Country {
     private PuppetState puppetState;
     private int puppetProgress = 0; //in prozent (0-100) bzw maybe als float idk
     private Set<State> states = new HashSet<>();
+    private boolean capitulated;
 
     public Country(String abbreviation, String name, Color color, boolean major, boolean selectScreen) {
         this.abbreviation = abbreviation;
@@ -35,6 +37,7 @@ public class Country {
         this.color = color;
         this.major = major;
         this.selectScreen = selectScreen;
+        this.capitulated = false;
     }
 
     //später nicht die default sondern die current flag returnen
@@ -56,10 +59,6 @@ public class Country {
 
     public Color countryColor() {
         return color;
-    }
-
-    public boolean exists() {
-        return true;
     }
 
     public String countryName() {
@@ -144,6 +143,7 @@ public class Country {
         //buffer.put((byte) (getPuppetTile() == null ? -1 : getPuppetTile().ordinal()));
 
         buffer.putInt(getPuppetProgress());
+        BufferUtil.of(buffer).putBoolean(isCapitulated());
     }
 
     public static Country readCountry(ByteBuffer buffer) {
@@ -178,6 +178,7 @@ public class Country {
         country.setPlayer(Player.of(uuid));
         country.setPuppetTile(puppetTile);
         country.setPuppetProgress(puppetProgress);
+        country.setCapitulated(BufferUtil.of(buffer).getBoolean());
 
         return country;
     }
@@ -193,7 +194,7 @@ public class Country {
                 ", player=" + (getPlayer() == null ? "null" : getPlayer().uuid() == null ? "null" : getPlayer().uuid().toString()) +
                 ", getPuppetProgress=" + getPuppetProgress() +
                 ", puppetTile=" + (getPuppetTile() == null ? "null" : getPuppetTile().name()) +
-                ", exists=" + exists() +
+                ", capitulated=" + isCapitulated() +
                 /*", autonomous=" + isAutonomous() + wird im client bestimmt*/
                 '}';
     }
@@ -204,5 +205,18 @@ public class Country {
 
     public Set<State> getStates() {
         return states;
+    }
+
+    public boolean isCapitulated() {
+        return capitulated;
+    }
+
+    public void setCapitulated(boolean b) {
+        this.capitulated = b;
+    }
+
+    public void setCapitulated(boolean b, Consumer<Void> consumer) {
+        this.capitulated = b;
+        consumer.accept(null);
     }
 }

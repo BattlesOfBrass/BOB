@@ -24,19 +24,39 @@ public class Tile {
     private final String name;
     private final String abbreviation;
     private final SharedCore core;
+    private final int victoryPoints;
     private Country controller;
+    private Country owner;
     private final List<Point> points;
+    private final String cityName;
+    private final boolean city;
 
-    public Tile(SharedCore core, String abbreviation, String name, List<Point> points, Country controller) {
+    public Tile(SharedCore core, int victoryPoints, String cityName, boolean city, String abbreviation, String name, List<Point> points, Country controller, Country owner) {
         this.core = core;
         this.abbreviation = abbreviation;
         this.name = name;
         this.controller = controller;
+        this.owner = owner;
         this.points = points;
+        this.cityName = cityName;
+        this.city = city;
+        this.victoryPoints = victoryPoints;
+    }
+
+    public Country getOwner() {
+        return owner;
+    }
+
+    public void setOwner(Country owner) {
+        this.owner = owner;
+    }
+
+    public void setController(Country controller) {
+        this.controller = controller;
     }
 
     public Country getController() {
-        return controller;
+        return controller == null ? owner : controller;
     }
 
     public void setControllerForAll(Set<AsynchronousSocketChannel> channels, Country controller) {
@@ -101,36 +121,54 @@ public class Tile {
         return name;
     }
 
-    public static @NotNull Tile fromString(SharedCore core, @NotNull CountryResolver resolver, @NotNull String string) {
-        String[] parts = string.split(";");
+    //public static @NotNull Tile fromString(SharedCore core, @NotNull CountryResolver resolver, @NotNull String string) {
+    //    String[] parts = string.split(";");
 
-        String abbreviation = parts[0];
-        String name = parts[1];
+    //    String abbreviation = parts[0];
+    //    String name = parts[1];
 
-        String[] pointParts = parts[2].split("\\|");
-        List<Point> points = new ArrayList<>();
+    //    String[] pointParts = parts[2].split("\\|");
+    //    List<Point> points = new ArrayList<>();
 
-        for (String p : pointParts) {
-            String[] coords = p.split(",");
-            int x = Integer.parseInt(coords[0]);
-            int y = Integer.parseInt(coords[1]);
-            points.add(new Point(x, y));
-        }
+    //    for (String p : pointParts) {
+    //        String[] coords = p.split(",");
+    //        int x = Integer.parseInt(coords[0]);
+    //        int y = Integer.parseInt(coords[1]);
+    //        points.add(new Point(x, y));
+    //    }
 
-        Country controller = resolver.byAbbreviation(parts[3]);
+    //    Country controller = resolver.byAbbreviation(parts[3]);
 
-        return new Tile(core, abbreviation, name, points, controller);
+    //    return new Tile(core, cityName, hasCity, abbreviation, name, points, controller);
+    //}
+
+    public boolean hasCity() {
+        return city;
+    }
+
+    public int getVictoryPoints() {
+        return victoryPoints;
+    }
+
+    public String getCityName() {
+        return cityName;
     }
 
     public static @NotNull Tile by(SharedCore core,
                                    @NotNull CountryResolver resolver,
                                    @NotNull String abbreviation,
+                                   int victoryPoints,
                                    String name,
+                                   String cityName,
+                                   boolean hasCity,
                                    List<Point> points,
-                                   String controllerAbbreviation) {
+                                   String controllerAbbreviation,
+                                   String ownerAbbreviation) {
 
-        Country controller = resolver.byAbbreviation(controllerAbbreviation);
-        return new Tile(core, abbreviation, name, points, controller);
+        Country controller = "null".equals(controllerAbbreviation) ? null : resolver.byAbbreviation(controllerAbbreviation);
+        Country owner = "null".equals(ownerAbbreviation) ? null : resolver.byAbbreviation(ownerAbbreviation);
+
+        return new Tile(core, victoryPoints, cityName, hasCity, abbreviation, name, points, controller,owner);
     }
 
     public String toDataString() {
@@ -147,8 +185,12 @@ public class Tile {
 
         return getAbbreviation() + ";" +
                 getName() + ";" +
+                hasCity() + ";" +
+                getCityName() + ";" +
                 sb + ";" +
-                (getController() != null ? getController().getAbbreviation() : "null");
+                (getController() != null ? getController().getAbbreviation() : "null") + ";" +
+                (getOwner() != null ? getOwner().getAbbreviation() : "null") + ";" +
+                victoryPoints;
     }
 
     @Override
@@ -157,7 +199,11 @@ public class Tile {
                 "name='" + name + '\'' +
                 ", abbreviation='" + abbreviation + '\'' +
                 ", controller=" + (controller != null ? controller.getAbbreviation() : "null") +
+                ", owner=" + (owner != null ? owner.getAbbreviation() : "null") +
                 ", points=" + points +
+                ", hasCity=" + city +
+                ", citName=" + cityName +
+                ", victoryPoints=" + victoryPoints +
                 '}';
     }
 }

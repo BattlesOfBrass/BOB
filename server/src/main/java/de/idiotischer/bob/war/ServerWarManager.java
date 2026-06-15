@@ -7,23 +7,23 @@ import de.idiotischer.bob.networking.packet.impl.pp.Type;
 import de.idiotischer.bob.tile.Tile;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 public class ServerWarManager {
 
     private final ExecutorService warExecutorService = Executors.newSingleThreadExecutor();
 
-    private final Map<Country, Set<WarStatus>> activeWars = new HashMap<>();
+    private final Map<String, Set<WarStatus>> activeWars = new ConcurrentHashMap<>();
 
     public void reload() {
         activeWars.clear();
     }
 
     public Set<WarStatus> getWars(Country c) {
-        return activeWars.entrySet().stream()
-                .filter(entry -> entry.getKey().getAbbreviation().equals(c.getAbbreviation()))
-                .findFirst().map(Map.Entry::getValue).orElseGet(HashSet::new);
+        return activeWars.getOrDefault(c.getAbbreviation(), Collections.emptySet());
     }
 
     public boolean isAtWar(Country a, Country b) {
@@ -31,18 +31,18 @@ public class ServerWarManager {
     }
 
     public boolean fightsTogetherWith(Country one, Country two) {
-        return getWars(one).stream().anyMatch(w -> w.alliesCalledIn().stream().anyMatch(ally -> ally.getAbbreviation().equals(two.getAbbreviation())));
+        return getWars(one).stream().anyMatch(w ->
+                w.getAttackers().stream().anyMatch(ally ->
+                        ally.getAbbreviation().equals(two.getAbbreviation())
+                )
+        );
     }
 
     private Set<WarStatus> getOrCreateWars(Country c) {
-        return activeWars.entrySet().stream()
-                .filter(entry -> entry.getKey().getAbbreviation().equals(c.getAbbreviation()))
-                .findFirst().map(Map.Entry::getValue)
-                .orElseGet(() -> {
-                    Set<WarStatus> wars = new HashSet<>();
-                    activeWars.put(c, wars);
-                    return wars;
-                });
+        return activeWars.computeIfAbsent(
+                c.getAbbreviation(),
+                k -> ConcurrentHashMap.newKeySet()
+        );
     }
 
     public boolean declareWar(boolean callAllies, Tile declaredTile, Country controller, Country aggressor) {
@@ -56,23 +56,106 @@ public class ServerWarManager {
             String name = controller.countryName() + "–" + aggressor.countryName() + " War";
             String abbr = controller.getAbbreviation() + "-" + aggressor.getAbbreviation();
 
-            List<Country> enemies = new ArrayList<>();
-            enemies.add(aggressor);
+            Set<Country> defenders = new HashSet<>();
+            defenders.add(controller);
 
-            List<Country> allies = new ArrayList<>();
+            Set<Country> attackers = new HashSet<>();
+            attackers.add(aggressor);
 
-            if (callAllies) {
-                // TODO: add factions, puppets etc and than make them get a message on whether they want to join or not
+            if(callAllies) {
+                //TODO add allies
             }
 
-            WarStatus status = new WarStatus(name, abbr, enemies, allies);
+            Map<Country, Integer> baseVP = new HashMap<>();
+            baseVP.put(controller, Server.getInstance().getCountryManager().getTotalVPs(controller));
+            baseVP.put(aggressor, Server.getInstance().getCountryManager().getTotalVPs(aggressor));
+
+            WarStatus status = new WarStatus(
+                    baseVP,
+                    new HashMap<>(baseVP),
+                    name,
+                    abbr,
+                    attackers,
+                    defenders
+            );
 
             getOrCreateWars(controller).add(status);
             getOrCreateWars(aggressor).add(status);
+
         });
 
-        Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new ReplyPacket(Type.START_WAR, aggressor.getAbbreviation() + ";" + controller.getAbbreviation()));
+        Server.getInstance().getSendTool().broadcast(
+                Server.getInstance().getServerSocket().getClients(),
+                new ReplyPacket(Type.START_WAR, aggressor.getAbbreviation() + ";" + controller.getAbbreviation())
+        );
 
         return true;
+    }
+
+    public void checkWarOver(Country aggressor, Country defender, Tile tile) {
+
+        Set<WarStatus> wars = getWars(aggressor);
+
+        for (WarStatus war : new HashSet<>(wars)) {
+
+            boolean aggressorIsAttacker = war.getAttackers().stream().map(Country::getAbbreviation).collect(Collectors.toSet()).contains(aggressor.getAbbreviation());
+            boolean defenderIsDefender = war.getDefenders().stream().map(Country::getAbbreviation).collect(Collectors.toSet()).contains(defender.getAbbreviation());
+
+            if (!aggressorIsAttacker || !defenderIsDefender) {
+                continue;
+            }
+
+            Map<Country, Integer> vpMap = war.getCurrentVP();
+
+            Country owner = tile.getOwner();
+
+            vpMap.computeIfPresent(defender, (c, vp) -> vp - tile.getVictoryPoints());
+
+            if (owner.getAbbreviation().equals(aggressor.getAbbreviation())) {
+                vpMap.computeIfPresent(aggressor, (c, vp) -> vp + tile.getVictoryPoints());
+            }
+
+            int base = war.getBaseVP().get(defender);
+            int current = vpMap.getOrDefault(defender, 0);
+
+            if (base > 0 && current <= base * 0.35) {
+                defender.setCapitulated(true, (v) -> {
+                    Server.getInstance().getCountryManager().getControlled(defender)
+                            .forEach(c -> c.setControllerForAll(Server.getInstance().getServerSocket().getClients(), aggressor));
+                    Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(),
+                            new ReplyPacket(Type.CAPITULATE_COUNTRY, aggressor.getAbbreviation() + ";" + defender.getAbbreviation()));
+                });
+            }
+
+            boolean defendersDead = war.getDefenders().stream().allMatch(Country::isCapitulated);
+            boolean attackersDead = war.getAttackers().stream().allMatch(Country::isCapitulated);
+
+            if (defendersDead || attackersDead
+                    || war.getDefenders().isEmpty()
+                    || war.getAttackers().isEmpty()) {
+                endWar(war);
+            }
+        }
+    }
+
+    private void endWar(WarStatus status) {
+        for (Country c : status.getAttackers()) {
+            Set<WarStatus> wars = activeWars.get(c.getAbbreviation());
+            if (wars != null) {
+                wars.remove(status);
+            }
+        }
+
+        for (Country c : status.getDefenders()) {
+            Set<WarStatus> wars = activeWars.get(c.getAbbreviation());
+            if (wars != null) {
+                wars.remove(status);
+            }
+        }
+
+        Server.getInstance().getSendTool().broadcast(
+                Server.getInstance().getServerSocket().getClients(),
+                new ReplyPacket(Type.END_WAR, "")
+        );
     }
 }
