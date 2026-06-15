@@ -1,6 +1,5 @@
 package de.idiotischer.bob.listener;
 
-import com.aspose.psd.internal.bl.B;
 import de.craftsblock.craftscore.event.EventHandler;
 import de.craftsblock.craftscore.event.EventPriority;
 import de.craftsblock.craftscore.event.ListenerAdapter;

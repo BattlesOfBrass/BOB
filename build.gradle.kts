@@ -32,9 +32,9 @@ repositories {
         url = uri("https://repo.craftsblock.de/experimental")
     }
 
-    maven {
-        url = uri("https://releases.aspose.com/java/repo/")
-    }
+    //maven {
+    //    url = uri("https://releases.aspose.com/java/repo/")
+    //}
 }
 
 dependencies {
@@ -56,7 +56,7 @@ dependencies {
     // Source: https://mvnrepository.com/artifact/it.unimi.dsi/fastutil
     implementation("it.unimi.dsi:fastutil:8.5.18")
     // Source: https://mvnrepository.com/artifact/com.aspose/aspose-psd
-    implementation("com.aspose:aspose-psd:26.5:jdk16")
+    //implementation("com.aspose:aspose-psd:26.5:jdk16") we dont use it currently so yeah
 }
 
 tasks.build {

@@ -1,6 +1,5 @@
 package de.idiotischer.bob.render.menu.impl;
 
-import com.aspose.psd.internal.bl.B;
 import de.idiotischer.bob.BOB;
 import de.idiotischer.bob.networking.packet.impl.pp.RequestPacket;
 import de.idiotischer.bob.networking.packet.impl.pp.Type;

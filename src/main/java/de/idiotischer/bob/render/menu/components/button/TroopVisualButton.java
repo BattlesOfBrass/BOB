@@ -1,6 +1,5 @@
 package de.idiotischer.bob.render.menu.components.button;
 
-import com.aspose.psd.internal.bD.B;
 import de.idiotischer.bob.BOB;
 import de.idiotischer.bob.tile.Tile;
 import de.idiotischer.bob.troop.TroopStack;
