@@ -125,6 +125,19 @@ public class PacketListener implements ListenerAdapter {
             BOB.getInstance().getTileManager().registerTile(tile);
         } else if(event.getPacket() instanceof ReplyPacket pack) {
             switch (pack.getReplyType()) {
+                case TROOP_REMOVE -> {
+                    String uuidString = pack.getMessage();
+
+                    UUID uuid;
+
+                    try {
+                        uuid = UUID.fromString(uuidString);
+                    } catch (IllegalArgumentException e) {
+                        return;
+                    }
+
+                    BOB.getInstance().getTroopManager().removeTroopStack(uuid);
+                }
                 case CAPITULATE_COUNTRY -> {
                     String[] parts = pack.getMessage().split(";");
 

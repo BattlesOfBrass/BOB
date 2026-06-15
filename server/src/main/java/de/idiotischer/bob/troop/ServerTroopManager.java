@@ -6,6 +6,8 @@ import com.google.gson.stream.JsonReader;
 import de.idiotischer.bob.Server;
 import de.idiotischer.bob.SharedCore;
 import de.idiotischer.bob.country.Country;
+import de.idiotischer.bob.networking.packet.impl.pp.ReplyPacket;
+import de.idiotischer.bob.networking.packet.impl.pp.Type;
 import de.idiotischer.bob.tile.Tile;
 import de.idiotischer.bob.util.UUIDUtil;
 
@@ -149,5 +151,22 @@ public class ServerTroopManager {
 
     public TroopStack getTroop(UUID uuid) {
         return troopStacks.get(uuid);
+    }
+
+    public void removeTroops(Country country) {
+        List<UUID> toRemove = troopStacks.entrySet().stream()
+                .filter(e -> e.getValue().getController() != null
+                        && e.getValue().getController().getAbbreviation()
+                        .equals(country.getAbbreviation()))
+                .map(Map.Entry::getKey)
+                .toList();
+
+        toRemove.forEach(this::removeTroop);
+    }
+
+    public void removeTroop(UUID uuid) {
+        troopStacks.remove(uuid);
+
+        Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new ReplyPacket(Type.TROOP_REMOVE, uuid.toString()));
     }
 }

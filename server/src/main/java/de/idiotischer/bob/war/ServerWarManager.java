@@ -120,6 +120,8 @@ public class ServerWarManager {
 
             if (base > 0 && current <= base * 0.35) {
                 defender.setCapitulated(true, (v) -> {
+                    Server.getInstance().getTroopManager().removeTroops(defender);
+                    //TODO: only replace tiles without enemy troops
                     Server.getInstance().getCountryManager().getControlled(defender)
                             .forEach(c -> c.setControllerForAll(Server.getInstance().getServerSocket().getClients(), aggressor));
                     Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(),

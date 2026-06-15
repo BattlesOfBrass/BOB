@@ -14,6 +14,7 @@ public enum Type {
     STATE_SYNC,
     TROOPS_SYNC,
     TROOPS_MOVE,
+    TROOP_REMOVE,
     START_WAR,
     END_WAR,
     CAPITULATE_COUNTRY,
