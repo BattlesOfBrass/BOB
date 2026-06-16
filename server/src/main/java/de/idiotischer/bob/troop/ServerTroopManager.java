@@ -16,6 +16,7 @@ import java.nio.file.Files;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 //gets its own thread prob (at least for movement)
 public class ServerTroopManager implements TroopResolver{
@@ -133,6 +134,15 @@ public class ServerTroopManager implements TroopResolver{
         }
     }
 
+    public Set<TroopStack> getAt(Tile tile) {
+        return troopStacks.values().stream().filter(s -> s.getTile().equals(tile)).collect(Collectors.toSet());
+    }
+
+    public boolean hasStack(Tile tile) {
+        return getAt(tile) != null && !getAt(tile).isEmpty();
+    }
+
+
     public List<TroopStack> getEnemy(Country country) {
         return List.of();
     }
@@ -196,7 +206,7 @@ public class ServerTroopManager implements TroopResolver{
                     continue;
                 }
 
-                if (!canTraverse(troopController, current, neighbour)) {
+                if (canTraverse(troopController, current, neighbour) == MoveStatus.FAILURE) {
                     continue;
                 }
 
@@ -210,21 +220,29 @@ public class ServerTroopManager implements TroopResolver{
     }
 
     @Override
-    public boolean canTraverse(Country troopController, Tile from, Tile to) {
+    public MoveStatus canTraverse(Country troopController, Tile from, Tile to) {
         Country fromController = from.getController();
         Country toController = to.getController();
 
         if(!Objects.equals(toController.getAbbreviation(), troopController.getAbbreviation())) {
-            if (!Server.getInstance().getWarManager().isAtWar(troopController, toController)) return false;
+            if (!Server.getInstance().getWarManager().isAtWar(troopController, toController)) return MoveStatus.FAILURE;
         }
 
-        if(!Objects.equals(fromController.getAbbreviation(), troopController.getAbbreviation())) {
-
-            if(!Objects.equals(fromController.getAbbreviation(), toController.getAbbreviation()))
-                if(!Server.getInstance().getWarManager().fightsTogetherWith(troopController, fromController)) return false;
+        if(Server.getInstance().getWarManager().fightsTogetherWith(troopController, fromController) ||
+                Server.getInstance().getWarManager().isAtWar(fromController, toController)) {
+            if(!Objects.equals(fromController.getAbbreviation(), toController.getAbbreviation()) &&
+                    !Objects.equals(fromController.getAbbreviation(), troopController.getAbbreviation())) {
+                return MoveStatus.FAILURE;
+            }
         }
 
-        return true;
+        if(hasStack(to)) {
+            if(Server.getInstance().getWarManager().isEnemy(troopController, toController)) {
+                return MoveStatus.FAILURE_FIGHT;
+            }
+        }
+
+        return MoveStatus.SUCCESS;
     }
 
     public void startMovement(TroopStack troopStack) {
@@ -255,10 +273,25 @@ public class ServerTroopManager implements TroopResolver{
                 Tile from = troopStack.getTile();
                 Tile to = currentPath.get(i[0]);
 
-                if (!canTraverse(troopStack.getController(), from, to)) {
+                MoveStatus status = canTraverse(troopStack.getController(), from, to);
+
+                if (status == MoveStatus.FAILURE) {
                     activePathfindings.remove(troopStack);
                     scheduledFutures[0].cancel(false);
                     return;
+                }
+
+                if(status == MoveStatus.FAILURE_FIGHT) {
+                    Set<TroopStack> troops = getAt(to);
+                    Set<TroopStack> these = getAt(troopStack.getTile());
+
+                    if(!Server.getInstance().getCombatManager().whoWins(troops, these).contains(troopStack)) {
+                        activePathfindings.remove(troopStack);
+                        scheduledFutures[0].cancel(false);
+                        return;
+                    } else {
+                        Server.getInstance().getTroopManager().removeTroops(troops);
+                    }
                 }
 
                 troopStack.setTile(to);
@@ -297,6 +330,27 @@ public class ServerTroopManager implements TroopResolver{
         troopStacks.remove(uuid);
 
         Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new ReplyPacket(Type.TROOP_REMOVE, uuid.toString()));
+    }
+
+    public void removeTroops(Set<TroopStack> stacks) {
+        if (stacks == null || stacks.isEmpty()) return;
+
+        for (TroopStack stack : stacks) {
+            if (stack == null) continue;
+
+            UUID uuid = getUuidSafe(stack);
+            if (uuid != null) {
+                removeTroop(uuid);
+            }
+        }
+    }
+
+    public UUID getUuidSafe(TroopStack troopStack) {
+        return troopStacks.entrySet().stream()
+                .filter(entry -> entry.getValue() == troopStack)
+                .map(Map.Entry::getKey)
+                .findFirst()
+                .orElse(null);
     }
 
     public void addTroopPath(TroopStack troopStack, List<Tile> path) {

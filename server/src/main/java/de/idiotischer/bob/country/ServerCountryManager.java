@@ -71,7 +71,7 @@ public class ServerCountryManager implements CountryResolver {
     }
 
     public Set<Country> getPuppets() {
-        return this.getCountries().stream().filter(c -> c.getPuppetTile() != PuppetState.NONE).collect(Collectors.toSet());
+        return this.getCountries().stream().filter(c -> c.getPuppetState() != PuppetState.NONE).collect(Collectors.toSet());
     }
 
     public Country fromNameExact(String name) {

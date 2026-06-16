@@ -1,5 +1,6 @@
 package de.idiotischer.bob;
 
+import de.idiotischer.bob.combat.ServerCombatManager;
 import de.idiotischer.bob.country.ServerCountryManager;
 import de.idiotischer.bob.listener.ServerPacketListener;
 import de.idiotischer.bob.networking.communication.SendTool;
@@ -30,6 +31,7 @@ public class Server {
     private ServerStateManager stateManager;
     private ServerTroopManager troopManager;
     private ServerWarManager warManager;
+    private ServerCombatManager combatManager;
 
     public static void main(String[] args) {
         new Server(false);
@@ -75,6 +77,8 @@ public class Server {
 
         this.warManager = new ServerWarManager();
 
+        combatManager = new ServerCombatManager();
+
         Scenario random = scenarioManager.getRandom();
         if(random != null) this.scenarioLoader.loadNew(random);
     }
@@ -113,6 +117,10 @@ public class Server {
 
     public ServerTroopManager getTroopManager() {
         return troopManager;
+    }
+
+    public ServerCombatManager getCombatManager() {
+        return combatManager;
     }
 
     public ServerScenarioManager getScenarioManager() {

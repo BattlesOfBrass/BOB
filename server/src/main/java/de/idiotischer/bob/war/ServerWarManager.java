@@ -33,9 +33,7 @@ public class ServerWarManager {
 
     public boolean fightsTogetherWith(Country one, Country two) {
         return getWars(one).stream().anyMatch(w ->
-                w.getAttackers().stream().anyMatch(ally ->
-                        ally.getAbbreviation().equals(two.getAbbreviation())
-                )
+                w.getAttackers().stream().anyMatch(ally -> ally.getAbbreviation().equals(two.getAbbreviation()))
         );
     }
 
@@ -45,6 +43,39 @@ public class ServerWarManager {
                 k -> ConcurrentHashMap.newKeySet()
         );
     }
+
+    public boolean isEnemy(Country a, Country b) {
+        return getWars(a).stream().anyMatch(w ->
+                w.getDefenders().stream().anyMatch(ally -> ally.getAbbreviation().equals(b.getAbbreviation()))
+        );
+    }
+
+    /*public boolean isEnemy(Country a, Country b) {
+    if (a == null || b == null) return false;
+
+    String abA = a.getAbbreviation();
+    String abB = b.getAbbreviation();
+
+    if (abA.equals(abB)) return false;
+
+    return getWars(a).stream().anyMatch(war ->
+            (war.getAttackers().stream()
+                    .map(Country::getAbbreviation)
+                    .anyMatch(abA::equals)
+             &&
+             war.getDefenders().stream()
+                    .map(Country::getAbbreviation)
+                    .anyMatch(abB::equals))
+            ||
+            (war.getDefenders().stream()
+                    .map(Country::getAbbreviation)
+                    .anyMatch(abA::equals)
+             &&
+             war.getAttackers().stream()
+                    .map(Country::getAbbreviation)
+                    .anyMatch(abB::equals))
+    );
+    }*/
 
     public boolean declareWar(boolean callAllies, Tile declaredTile, Country controller, Country aggressor) {
 

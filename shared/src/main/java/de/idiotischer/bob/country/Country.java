@@ -79,7 +79,7 @@ public class Country {
         return null;
     }
 
-    public PuppetState getPuppetTile() {
+    public PuppetState getPuppetState() {
         return puppetState;
     }
 
@@ -89,7 +89,7 @@ public class Country {
     }
 
     public boolean isAutonomous() {
-        return getPuppetTile() == null || getPuppetTile() == PuppetState.NONE;
+        return getPuppetState() == null || getPuppetState() == PuppetState.NONE;
     }
 
     public boolean isMajor() {
@@ -139,7 +139,7 @@ public class Country {
             util.putUuid(getPlayer().uuid());
         }
 
-        util.putEnum(getPuppetTile() == null ? PuppetState.NONE : getPuppetTile());
+        util.putEnum(getPuppetState() == null ? PuppetState.NONE : getPuppetState());
         //buffer.put((byte) (getPuppetTile() == null ? -1 : getPuppetTile().ordinal()));
 
         buffer.putInt(getPuppetProgress());
@@ -193,7 +193,7 @@ public class Country {
                 ", selectScreen=" + selectScreen +
                 ", player=" + (getPlayer() == null ? "null" : getPlayer().uuid() == null ? "null" : getPlayer().uuid().toString()) +
                 ", getPuppetProgress=" + getPuppetProgress() +
-                ", puppetTile=" + (getPuppetTile() == null ? "null" : getPuppetTile().name()) +
+                ", puppetTile=" + (getPuppetState() == null ? "null" : getPuppetState().name()) +
                 ", capitulated=" + isCapitulated() +
                 /*", autonomous=" + isAutonomous() + wird im client bestimmt*/
                 '}';

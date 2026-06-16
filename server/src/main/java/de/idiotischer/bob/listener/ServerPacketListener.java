@@ -88,11 +88,11 @@ public class ServerPacketListener implements ListenerAdapter {
 
                     Player p = Server.getInstance().getPlayerManager().resolve(event.getChannel());
 
-                    MoveStatus moveStatus = TroopValidator.validate(p, troopStack,tile, Server.getInstance().getTileManager());
+                    MoveStatus moveStatus = TroopValidator.validate(p, troopStack,tile, Server.getInstance().getTroopManager(), Server.getInstance().getTileManager());
 
                     String reply = "troop=" + uuid + ";tile=" + tile.getAbbreviation() + ";type=" + moveStatus.ordinal();
 
-                    if(moveStatus == MoveStatus.FAILURE_NO_CONTROL || moveStatus == MoveStatus.FAILURE || moveStatus == MoveStatus.FAILURE_KICKED
+                    if(moveStatus == MoveStatus.FAILURE_FIGHT || moveStatus == MoveStatus.FAILURE_NO_CONTROL || moveStatus == MoveStatus.FAILURE || moveStatus == MoveStatus.FAILURE_KICKED
                             || moveStatus == MoveStatus.FAILURE_IN_COMBAT || moveStatus == MoveStatus.FAILURE_STARTED_PATHFINDING) return;
 
                     Server.getInstance().getTroopManager().removePathfinding(troopStack);

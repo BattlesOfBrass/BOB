@@ -24,7 +24,7 @@ public class TroopValidator {
         return true;
     }
 
-    public static MoveStatus validate(Player mover, TroopStack troopStack, Tile tile, TileResolver resolver) {
+    public static MoveStatus validate(Player mover, TroopStack troopStack, Tile tile, TroopResolver tr, TileResolver resolver) {
         Set<Tile> neighbours = resolver.findNeighbors(troopStack.getTile());
 
         Country troopController = troopStack.getController();
@@ -47,33 +47,31 @@ public class TroopValidator {
 
             boolean pathFound = path != null;
 
-            /*while (!queue.isEmpty()) {
-                Tile current = queue.poll();
-
-                if (current.equals(tile)) {
-                    pathFound = true;
-                    break;
-                }
-
-                for (Tile neighbour : resolver.findNeighbors(current)) {
-
-                    if (visited.contains(neighbour)) {
-                        continue;
-                    }
-
-                    if (!canTraverse(troopController, current, neighbour)) {
-                        continue;
-                    }
-
-                    visited.add(neighbour);
-                    queue.add(neighbour);
-                }
-            }*/
-
             if (!pathFound) return MoveStatus.FAILURE;
             else return MoveStatus.FAILURE_STARTED_PATHFINDING;
         }
 
+        Set<TroopStack> toStacks = tr.getAt(tile);
+
+        if (!toStacks.isEmpty()) {
+
+            if (Server.getInstance()
+                    .getWarManager()
+                    .isEnemy(troopController, tile.getController())) {
+
+                Set<TroopStack> fromStacks = tr.getAt(troopStack.getTile());
+
+                if (!Server.getInstance()
+                        .getCombatManager()
+                        .whoWins(fromStacks, toStacks)
+                        .contains(troopStack)) {
+
+                    return MoveStatus.FAILURE_FIGHT;
+                } else {
+                    Server.getInstance().getTroopManager().removeTroops(toStacks);
+                }
+            }
+        }
         if(mover == null) {
             //do smth else
             return MoveStatus.SUCCESS;
