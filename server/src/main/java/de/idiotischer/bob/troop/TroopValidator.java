@@ -83,7 +83,7 @@ public class TroopValidator {
                         fallbacks.removeIf(tile1 -> !Objects.equals(tile1.getController().getAbbreviation(), new ArrayList<>(pushable).getFirst().getController().getAbbreviation()) &&
                                 !Server.getInstance().getWarManager().fightsTogetherWith(tile1.getController(), new ArrayList<>(pushable).getFirst().getController()));
 
-                        if(!git fallbacks.isEmpty()) {
+                        if(!fallbacks.isEmpty()) {
                             Tile tile2 = fallbacks.getFirst();
 
                             pushable.forEach(p -> {
