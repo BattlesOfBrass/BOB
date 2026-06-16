@@ -6,8 +6,7 @@ import de.idiotischer.bob.player.Player;
 import de.idiotischer.bob.tile.Tile;
 import de.idiotischer.bob.tile.TileResolver;
 
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 //Definiert wo truppen actually hin können und wo nd, zum beispiel ohne MA nicht in andere länder etc
 //TODO: so coden dass man das easy für navy adapten kann
@@ -32,22 +31,55 @@ public class TroopValidator {
         Country tileController = troopStack.getTile().getController();
         Country newTileController = tile.getController();
 
-        if(newTileController != troopController) {
+        if(!Objects.equals(newTileController.getAbbreviation(), troopController.getAbbreviation())) {
             if (!Server.getInstance().getWarManager().isAtWar(troopController, newTileController)) return MoveStatus.FAILURE;
         }
 
-        if(tileController != troopController) {
+        if(!Objects.equals(tileController.getAbbreviation(), troopController.getAbbreviation())) {
             if(!Server.getInstance().getWarManager().fightsTogetherWith(troopController, tileController)) return MoveStatus.FAILURE;
         }
 
-        if(!neighbours.contains(tile)) return MoveStatus.FAILURE;
+        if (!neighbours.contains(tile)) {
+
+            List<Tile> path = Server.getInstance().getTroopManager().findPath(troopStack,tile,resolver);
+            Server.getInstance().getTroopManager().addTroopPath(troopStack,path);
+            Server.getInstance().getTroopManager().startMovement(troopStack);
+
+            boolean pathFound = path != null;
+
+            /*while (!queue.isEmpty()) {
+                Tile current = queue.poll();
+
+                if (current.equals(tile)) {
+                    pathFound = true;
+                    break;
+                }
+
+                for (Tile neighbour : resolver.findNeighbors(current)) {
+
+                    if (visited.contains(neighbour)) {
+                        continue;
+                    }
+
+                    if (!canTraverse(troopController, current, neighbour)) {
+                        continue;
+                    }
+
+                    visited.add(neighbour);
+                    queue.add(neighbour);
+                }
+            }*/
+
+            if (!pathFound) return MoveStatus.FAILURE;
+            else return MoveStatus.FAILURE_STARTED_PATHFINDING;
+        }
 
         if(mover == null) {
             //do smth else
             return MoveStatus.SUCCESS;
         }
 
-        if(!Objects.equals(mover.country().getAbbreviation(), troopController.getAbbreviation())) return MoveStatus.NO_CONTROL;
+        if(!Objects.equals(mover.country().getAbbreviation(), troopController.getAbbreviation())) return MoveStatus.FAILURE_NO_CONTROL;
 
         return MoveStatus.SUCCESS;
     }

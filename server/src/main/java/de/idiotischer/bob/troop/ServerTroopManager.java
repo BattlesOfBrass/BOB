@@ -9,19 +9,23 @@ import de.idiotischer.bob.country.Country;
 import de.idiotischer.bob.networking.packet.impl.pp.ReplyPacket;
 import de.idiotischer.bob.networking.packet.impl.pp.Type;
 import de.idiotischer.bob.tile.Tile;
+import de.idiotischer.bob.tile.TileResolver;
 import de.idiotischer.bob.util.UUIDUtil;
 
-import java.awt.*;
 import java.nio.file.Files;
 import java.util.*;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.concurrent.*;
 
 //gets its own thread prob (at least for movement)
-public class ServerTroopManager {
+public class ServerTroopManager implements TroopResolver{
 
     private final List<Troop> troops = new ArrayList<>();
     private final Map<UUID, TroopStack> troopStacks = new HashMap<>();
+
+    private final ScheduledExecutorService movementExecutor = Executors.newScheduledThreadPool(2);
+
+    private final Map<TroopStack, List<Tile>> activePathfindings = new ConcurrentHashMap<>();
 
     public void reload() {
         troopStacks.clear();
@@ -141,6 +145,10 @@ public class ServerTroopManager {
         return troopStacks.values().stream().filter(s -> s.getController() != null && s.getController().equals(country)).toList();
     }
 
+    public void removePathfinding(TroopStack troop) {
+        activePathfindings.remove(troop);
+    }
+
     public Map<UUID,TroopStack> getTroopStacks() {
         return troopStacks;
     }
@@ -151,6 +159,127 @@ public class ServerTroopManager {
 
     public TroopStack getTroop(UUID uuid) {
         return troopStacks.get(uuid);
+    }
+
+    @Override
+    public List<Tile> findPath(TroopStack troopStack, Tile destination, TileResolver resolver) {
+        Country troopController = troopStack.getController();
+
+        Map<Tile, Tile> previous = new HashMap<>();
+        Set<Tile> visited = new HashSet<>();
+        Queue<Tile> queue = new LinkedList<>();
+
+        Tile start = troopStack.getTile();
+
+        queue.add(start);
+        visited.add(start);
+
+        while (!queue.isEmpty()) {
+            Tile current = queue.poll();
+
+            if (current.equals(destination)) {
+                LinkedList<Tile> path = new LinkedList<>();
+
+                Tile step = destination;
+
+                while (step != null) {
+                    path.addFirst(step);
+                    step = previous.get(step);
+                }
+
+                return path;
+            }
+
+            for (Tile neighbour : resolver.findNeighbors(current)) {
+
+                if (visited.contains(neighbour)) {
+                    continue;
+                }
+
+                if (!canTraverse(troopController, current, neighbour)) {
+                    continue;
+                }
+
+                visited.add(neighbour);
+                previous.put(neighbour, current);
+                queue.add(neighbour);
+            }
+        }
+
+        return null;
+    }
+
+    @Override
+    public boolean canTraverse(Country troopController, Tile from, Tile to) {
+        Country fromController = from.getController();
+        Country toController = to.getController();
+
+        if(!Objects.equals(toController.getAbbreviation(), troopController.getAbbreviation())) {
+            if (!Server.getInstance().getWarManager().isAtWar(troopController, toController)) return false;
+        }
+
+        if(!Objects.equals(fromController.getAbbreviation(), troopController.getAbbreviation())) {
+
+            if(!Objects.equals(fromController.getAbbreviation(), toController.getAbbreviation()))
+                if(!Server.getInstance().getWarManager().fightsTogetherWith(troopController, fromController)) return false;
+        }
+
+        return true;
+    }
+
+    public void startMovement(TroopStack troopStack) {
+        List<Tile> path = activePathfindings.get(troopStack);
+
+        if (path == null || path.size() < 2) {
+            return;
+        }
+
+        final int[] i = {1};
+        ScheduledFuture<?>[] scheduledFutures = new ScheduledFuture<?>[1];
+
+        scheduledFutures[0] = movementExecutor.scheduleAtFixedRate(() -> {
+            try {
+                List<Tile> currentPath = activePathfindings.get(troopStack);
+
+                if (currentPath == null || currentPath.size() < 2) {
+                    scheduledFutures[0].cancel(false);
+                    return;
+                }
+
+                if (i[0] >= currentPath.size()) {
+                    activePathfindings.remove(troopStack);
+                    scheduledFutures[0].cancel(false);
+                    return;
+                }
+
+                Tile from = troopStack.getTile();
+                Tile to = currentPath.get(i[0]);
+
+                if (!canTraverse(troopStack.getController(), from, to)) {
+                    activePathfindings.remove(troopStack);
+                    scheduledFutures[0].cancel(false);
+                    return;
+                }
+
+                troopStack.setTile(to);
+
+                String reply = "troop=" + getUuid(troopStack) + ";tile=" + to.getAbbreviation() + ";type=" + MoveStatus.SUCCESS_PATHFIND.ordinal();
+
+                Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new ReplyPacket(Type.TROOPS_MOVE, reply));
+
+                i[0]++;
+
+                if (i[0] >= currentPath.size()) {
+                    activePathfindings.remove(troopStack);
+                    scheduledFutures[0].cancel(false);
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                activePathfindings.remove(troopStack);
+                scheduledFutures[0].cancel(false);
+            }
+        }, 0, 500, TimeUnit.MILLISECONDS);
     }
 
     public void removeTroops(Country country) {
@@ -168,5 +297,13 @@ public class ServerTroopManager {
         troopStacks.remove(uuid);
 
         Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new ReplyPacket(Type.TROOP_REMOVE, uuid.toString()));
+    }
+
+    public void addTroopPath(TroopStack troopStack, List<Tile> path) {
+        if (troopStack == null || path == null) {
+            return; // fun fact, i get an npe whe nto doing this bc of the concurrent hashmap which is very strict which wa snew to me atp
+        }
+
+        activePathfindings.put(troopStack, path);
     }
 }

@@ -18,4 +18,5 @@ public enum Type {
     START_WAR,
     END_WAR,
     CAPITULATE_COUNTRY,
+    WARS_SYNC
 }

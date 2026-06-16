@@ -22,8 +22,6 @@ public class TroopManager {
 
     private Map<UUID, CompletableFuture<Pair<TroopStack, Pair<Tile, MoveStatus>>>> requests = new HashMap<>();
 
-    private boolean switchMM;
-
     public TroopManager() {
         //reload();
     }
@@ -41,6 +39,7 @@ public class TroopManager {
 
         return future;
     }
+
     public UUID getUuid(TroopStack troopStack) {
         var uuid = troops.entrySet().stream().filter(entry -> entry.getValue() == troopStack).findFirst().get();
 
@@ -50,13 +49,14 @@ public class TroopManager {
     public void finishMove(UUID troopId, Tile newTile, MoveStatus moveStatus) {
         TroopStack troop = troops.get(troopId);
 
-        requests.get(troopId).complete(Pair.of(troop, Pair.of(newTile, moveStatus)));
+        requests.getOrDefault(troopId, new CompletableFuture<>() /*I'm too lazy to null handle this*/).complete(Pair.of(troop, Pair.of(newTile, moveStatus)));
         requests.remove(troopId);
 
         if(troop == null) return;
         if(newTile == null) return;
-        if(moveStatus == MoveStatus.NO_CONTROL || moveStatus == MoveStatus.FAILURE || moveStatus == MoveStatus.FAILURE_KICKED) return;
 
+        if(moveStatus == MoveStatus.FAILURE_NO_CONTROL || moveStatus == MoveStatus.FAILURE || moveStatus == MoveStatus.FAILURE_KICKED
+                || moveStatus == MoveStatus.FAILURE_IN_COMBAT || moveStatus == MoveStatus.FAILURE_STARTED_PATHFINDING) return;
         troop.setTile(newTile);
 
         //theoretically already set in the request on the server
@@ -75,45 +75,11 @@ public class TroopManager {
         return awaitingFuture;
     }
 
-    public boolean isSwitchMM() {
-        return switchMM;
-    }
-
-    public void setSwitchMM(boolean switchMM) {
-        this.switchMM = switchMM;
-    }
-
     public void finishReload(Map<UUID,TroopStack> troops, boolean withInit) {
         this.troops.putAll(troops);
 
-        if(withInit && !BOB.getInstance().isInitialized()) {
-            BOB.getInstance().setup();
-            switchMM = false;
-        }
+        BOB.getInstance().getWarManager().reload();
 
-        if(BOB.getInstance().getMainRenderer() == null) return;
-
-        if(switchMM) {
-            BOB.getInstance().getMainRenderer().getGamePanel().setEscMenu(false);
-            BOB.getInstance().getMainRenderer().setMainMenu(false);
-            BOB.getInstance().getMainRenderer().getMenuPanel().setInScenarioSelect(false);
-            BOB.getInstance().getMainRenderer().getMenuPanel().setScenarioSelectMenu(new ScenarioSelectMenu(BOB.getInstance().getScenarioSceneLoader().getCurrentScenario()));
-        }
-
-        if(BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getMapImage() != null) {
-            //TODO: check if i need this 2x
-            BOB.getInstance().getMainRenderer().setMap(BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getMapImage());//, currentScenario.getBackgroundImage());
-
-            SwingUtilities.invokeLater(() -> {
-                if( BOB.getInstance().getMainRenderer().getGamePanel() == null) return;
-                BOB.getInstance().getMainRenderer().setMap(BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getMapImage());//,currentScenario.getBackgroundImage());
-                BOB.getInstance().getMainRenderer().getCamera().zoomToMin();
-            });
-        }
-
-        BOB.getInstance().getTileManager().colorAllDefault();
-
-        switchMM = true;
         if(awaitingFuture == null || awaitingFuture.isDone()) return;
         awaitingFuture.complete(null);
     }

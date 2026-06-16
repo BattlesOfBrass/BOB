@@ -83,9 +83,6 @@ public class Tile {
         }
 
         core.getTool().send(channel, new RequestPacket(Type.TILE_CHANGE, constructChange(controller)));
-        //wenn das packet nachher ankommt dann das img recoloren (das fällt mit delay auch nd mehr auf wenn dann eben nicht mehr auf den click direkt der tile recolored werden soll
-
-        //this.controller = controller; das dann im packet
     }
 
     //TODO: these method names are dumb xD

@@ -27,6 +27,7 @@ public class ServerWarManager {
     }
 
     public boolean isAtWar(Country a, Country b) {
+        if(Objects.equals(a.getAbbreviation(), b.getAbbreviation())) return false;
         return !Collections.disjoint(getWars(a), getWars(b));
     }
 
@@ -82,12 +83,11 @@ public class ServerWarManager {
             getOrCreateWars(controller).add(status);
             getOrCreateWars(aggressor).add(status);
 
+            Server.getInstance().getSendTool().broadcast(
+                    Server.getInstance().getServerSocket().getClients(),
+                    new ReplyPacket(Type.START_WAR, status.toDataString())
+            );
         });
-
-        Server.getInstance().getSendTool().broadcast(
-                Server.getInstance().getServerSocket().getClients(),
-                new ReplyPacket(Type.START_WAR, aggressor.getAbbreviation() + ";" + controller.getAbbreviation())
-        );
 
         return true;
     }
@@ -157,7 +157,26 @@ public class ServerWarManager {
 
         Server.getInstance().getSendTool().broadcast(
                 Server.getInstance().getServerSocket().getClients(),
-                new ReplyPacket(Type.END_WAR, "")
+                new ReplyPacket(Type.END_WAR, status.toDataString())
         );
+    }
+
+    public String serializeWars() {
+
+        StringBuilder sb = new StringBuilder();
+
+        for (Map.Entry<String, Set<WarStatus>> entry : activeWars.entrySet()) {
+
+            String country = entry.getKey();
+
+            for (WarStatus war : entry.getValue()) {
+                sb.append(country)
+                        .append("#")
+                        .append(war.toDataString())
+                        .append("\n");
+            }
+        }
+
+        return sb.toString();
     }
 }

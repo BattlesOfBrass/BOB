@@ -18,6 +18,7 @@ import de.idiotischer.bob.tile.Tile;
 import de.idiotischer.bob.tile.TileManager;
 import de.idiotischer.bob.troop.MoveStatus;
 import de.idiotischer.bob.util.AddressUtil;
+import de.idiotischer.bob.war.WarStatus;
 import it.unimi.dsi.fastutil.Pair;
 
 import java.awt.*;
@@ -153,20 +154,27 @@ public class PacketListener implements ListenerAdapter {
                     //TODO: show popup that a country capped
                 }
                 case END_WAR -> {
+                    WarStatus status = WarStatus.fromString(pack.getMessage(), BOB.getInstance().getCountryManager());
+
+                    status.getAttackers().forEach(c -> BOB.getInstance().getWarManager().endWar(c.getAbbreviation(),status));
+                    status.getDefenders().forEach(c -> BOB.getInstance().getWarManager().endWar(c.getAbbreviation(),status));
+
                     //TODO: show popup that a war ended and start peace conference (oh gosh i need to code that)
                 }
                 case START_WAR -> {
-                    String[] parts = pack.getMessage().split(";");
+                    WarStatus status = WarStatus.fromString(pack.getMessage(), BOB.getInstance().getCountryManager());
 
-                    String aggressorAbbr = parts[0];
-                    String defenderAbbr = parts[1];
+                    status.getAttackers().forEach(c -> {
+                        BOB.getInstance().getWarManager().addWar(c.getAbbreviation(), status);
+                    });
 
-                    Country aggressor = BOB.getInstance().getCountryManager().byAbbreviation(aggressorAbbr);
-                    Country defender = BOB.getInstance().getCountryManager().byAbbreviation(defenderAbbr);
-
-                    if(aggressor == null || defender == null) return;
-
+                    status.getDefenders().forEach(c -> {
+                        BOB.getInstance().getWarManager().addWar(c.getAbbreviation(), status);
+                    });
                     //TODO: show popup that a war happened
+                }
+                case WARS_SYNC -> {
+                    BOB.getInstance().getWarManager().finishReload(pack.getMessage());
                 }
                 case TROOPS_MOVE -> {
                     String[] parts = pack.getMessage().split(";");

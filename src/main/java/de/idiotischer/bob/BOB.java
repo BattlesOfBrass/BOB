@@ -20,6 +20,7 @@ import de.idiotischer.bob.troop.TroopStack;
 import de.idiotischer.bob.util.AddressUtil;
 import de.idiotischer.bob.util.FileUtil;
 import de.idiotischer.bob.util.MainConfigUtil;
+import de.idiotischer.bob.war.WarManager;
 
 import java.awt.*;
 import java.net.MalformedURLException;
@@ -60,6 +61,8 @@ public class BOB {
     private boolean isHost = false;
 
     private TroopManager troopManager;
+
+    private WarManager warManager;
 
     private Server localServer;
     private boolean remoteConnected = false;
@@ -126,6 +129,8 @@ public class BOB {
         this.stateManager = new StateManager();
 
         this.troopManager = new TroopManager();
+
+        this.warManager = new WarManager();
 
         this.awaitingReload = this.scenarioManager.reload().thenRun(() -> {
             this.scenarioSceneLoader.requestScenarioLoad(scenarioManager.getRandom());
@@ -244,6 +249,10 @@ public class BOB {
 
     public GameManager getGameManager() {
         return gameManager;
+    }
+
+    public WarManager getWarManager() {
+        return warManager;
     }
 
     public void setPlayer(UUID uuid) {

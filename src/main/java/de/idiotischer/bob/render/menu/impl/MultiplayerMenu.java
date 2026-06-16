@@ -97,7 +97,7 @@ public class MultiplayerMenu extends JPanel {
                         }
                     });
 
-                    BOB.getInstance().getTroopManager().setSwitchMM(false);
+                    BOB.getInstance().getWarManager().setSwitchMM(false);
                     BOB.getInstance().getMainRenderer().getMenuPanel().setScenarioSelectMenu(menu);
                     BOB.getInstance().getMainRenderer().getMenuPanel().setInScenarioSelect(true);
 

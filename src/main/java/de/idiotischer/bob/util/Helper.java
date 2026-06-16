@@ -10,7 +10,7 @@ public class Helper {
     public static void loadPreview(Scenario scenario, boolean bypass) {
         if(ImageUtil.isSame(scenario.getMapImage(), BOB.getInstance().getMainRenderer().getMap())) return;
 
-        BOB.getInstance().getTroopManager().setSwitchMM(false);
+        BOB.getInstance().getWarManager().setSwitchMM(false);
 
         BOB.getInstance().getScenarioSceneLoader().requestScenarioLoad(scenario);
     }

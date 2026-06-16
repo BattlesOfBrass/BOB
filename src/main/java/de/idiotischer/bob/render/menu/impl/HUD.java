@@ -11,6 +11,7 @@ import de.idiotischer.bob.tile.Tile;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.util.Objects;
 
 public class HUD extends JPanel {
     private boolean isVisible = false;
@@ -46,6 +47,8 @@ public class HUD extends JPanel {
         tabbedPane = new ModernTabbedPane();
         tabbedPane.addTab("Overview", createOverviewPanel());
         tabbedPane.addTab("Industry", createIndustryPanel());
+
+        tabbedPane.setFocusable(false);
 
         sidePanel.add(tabbedPane, BorderLayout.CENTER);
 
@@ -208,6 +211,8 @@ public class HUD extends JPanel {
 
             BOB.getInstance().getSendTool().send(BOB.getInstance().getClient().getChannel(), pack);
 
+            panel.remove(declareWarButton);
+
             //TODO: add war declaration request (with warhelper)
         });
 
@@ -215,8 +220,14 @@ public class HUD extends JPanel {
         panel.add(flagPanel);
         panel.add(Box.createVerticalStrut(5));
         panel.add(namePanel);
-        panel.add(Box.createVerticalStrut(30));
-        panel.add(declareWarButton);
+
+        if(BOB.getInstance().getPlayer() != null && BOB.getInstance().getPlayer().country() != null && currentTile.getController() != null) {
+            if(BOB.getInstance().getWarManager().isAtWar(currentTile.getController(), BOB.getInstance().getPlayer().country())) return panel;
+            if(Objects.equals(BOB.getInstance().getPlayer().country().getAbbreviation(), currentTile.getController().getAbbreviation())) return panel;
+
+            panel.add(Box.createVerticalStrut(30));
+            panel.add(declareWarButton);
+        }
 
         return panel;
     }

@@ -47,6 +47,9 @@ public class ServerPacketListener implements ListenerAdapter {
         } else if(event.getPacket() instanceof RequestPacket pack) {
             //so ping pong like
             switch (pack.getRequestType()) {
+                case WARS_SYNC -> {
+                    Server.getInstance().getSendTool().send(event.getChannel(), new ReplyPacket(Type.WARS_SYNC, Server.getInstance().getWarManager().serializeWars()));
+                }
                 case START_WAR -> {
                     String[] parts = pack.getMessage().split(";");
 
@@ -89,11 +92,13 @@ public class ServerPacketListener implements ListenerAdapter {
 
                     String reply = "troop=" + uuid + ";tile=" + tile.getAbbreviation() + ";type=" + moveStatus.ordinal();
 
-                    if(moveStatus == MoveStatus.NO_CONTROL || moveStatus == MoveStatus.FAILURE || moveStatus == MoveStatus.FAILURE_KICKED) return;
+                    if(moveStatus == MoveStatus.FAILURE_NO_CONTROL || moveStatus == MoveStatus.FAILURE || moveStatus == MoveStatus.FAILURE_KICKED
+                            || moveStatus == MoveStatus.FAILURE_IN_COMBAT || moveStatus == MoveStatus.FAILURE_STARTED_PATHFINDING) return;
 
+                    Server.getInstance().getTroopManager().removePathfinding(troopStack);
                     troopStack.setTile(tile);
 
-                    Server.getInstance().getSendTool().send(event.getChannel(), new ReplyPacket(Type.TROOPS_MOVE, reply));
+                    Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new ReplyPacket(Type.TROOPS_MOVE, reply));
                 }
                 case PLAYER_CHANGE -> {
                     //System.out.println("Player change packet received at: " + System.nanoTime());
