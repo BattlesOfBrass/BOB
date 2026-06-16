@@ -49,7 +49,7 @@ public class TroopManager {
     public void finishMove(UUID troopId, Tile newTile, MoveStatus moveStatus) {
         TroopStack troop = troops.get(troopId);
 
-        requests.getOrDefault(troopId, new CompletableFuture<>() /*I'm too lazy to null handle this*/).complete(Pair.of(troop, Pair.of(newTile, moveStatus)));
+        requests.getOrDefault(troopId, new CompletableFuture<>()/*I'm too lazy to null handle this*/).complete(Pair.of(troop, Pair.of(newTile, moveStatus)));
         requests.remove(troopId);
 
         if(troop == null) return;
@@ -60,7 +60,7 @@ public class TroopManager {
         troop.setTile(newTile);
 
         //theoretically already set in the request on the server
-        newTile.setControllerClient(BOB.getInstance().getClient().getChannel(), BOB.getInstance().getPlayer().country()); //TODO: combine with troop movement
+        newTile.setControllerClient(BOB.getInstance().getClient().getChannel(), troop.getController());
     }
 
     public CompletableFuture<Void> reload() {

@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonReader;
 import de.idiotischer.bob.Server;
 import de.idiotischer.bob.SharedCore;
+import de.idiotischer.bob.combat.CombatStatus;
 import de.idiotischer.bob.country.Country;
 import de.idiotischer.bob.networking.packet.impl.pp.ReplyPacket;
 import de.idiotischer.bob.networking.packet.impl.pp.Type;
@@ -27,9 +28,12 @@ public class ServerTroopManager implements TroopResolver{
     private final ScheduledExecutorService movementExecutor = Executors.newScheduledThreadPool(2);
 
     private final Map<TroopStack, List<Tile>> activePathfindings = new ConcurrentHashMap<>();
+    private final Map<TroopStack, Integer> pausedMovementIndex = new ConcurrentHashMap<>();
 
     public void reload() {
         troopStacks.clear();
+        pausedMovementIndex.clear();
+        activePathfindings.clear();
 
         try (JsonReader reader = new JsonReader(Files.newBufferedReader(Server.getInstance().getScenarioSceneLoader().getCurrentScenario().getTroopConfig()))) {
             JsonElement root = SharedCore.GSON.fromJson(reader, JsonElement.class);
@@ -246,13 +250,17 @@ public class ServerTroopManager implements TroopResolver{
     }
 
     public void startMovement(TroopStack troopStack) {
+        startMovement(troopStack, 1);
+    }
+
+    private void startMovement(TroopStack troopStack, int startIndex) {
         List<Tile> path = activePathfindings.get(troopStack);
 
         if (path == null || path.size() < 2) {
             return;
         }
 
-        final int[] i = {1};
+        final int[] i = {startIndex};
         ScheduledFuture<?>[] scheduledFutures = new ScheduledFuture<?>[1];
 
         scheduledFutures[0] = movementExecutor.scheduleAtFixedRate(() -> {
@@ -281,23 +289,67 @@ public class ServerTroopManager implements TroopResolver{
                     return;
                 }
 
-                if(status == MoveStatus.FAILURE_FIGHT) {
-                    Set<TroopStack> troops = getAt(to);
-                    Set<TroopStack> these = getAt(troopStack.getTile());
+                if (status == MoveStatus.FAILURE_FIGHT) {
 
-                    if(!Server.getInstance().getCombatManager().whoWins(troops, these).contains(troopStack)) {
-                        activePathfindings.remove(troopStack);
-                        scheduledFutures[0].cancel(false);
-                        return;
-                    } else {
-                        Server.getInstance().getTroopManager().removeTroops(troops);
-                    }
+                    Set<TroopStack> enemyStacks = getAt(to);
+                    Set<TroopStack> ownStacks = getAt(troopStack.getTile());
+
+                    CombatStatus combatHere = Server.getInstance().getCombatManager().enterCombat(new ArrayList<>(ownStacks), new ArrayList<>(enemyStacks));
+
+                    if (combatHere == null) return;
+
+                    pausedMovementIndex.put(troopStack, i[0]);
+
+                    Server.getInstance().getCombatManager().onCombatFinished(combat -> {
+
+                        var attackers = combat.getAttackers();
+                        var defenders = combat.getDefenders();
+
+                        List<TroopStack> all = new ArrayList<>();
+                        all.addAll(attackers);
+                        all.addAll(defenders);
+
+                        Set<TroopStack> pushable = getAt(to);
+
+                        if(!pushable.isEmpty()) {
+                            List<Tile> fallbacks = new ArrayList<>(Server.getInstance().getTileManager().findNeighbors(to));
+
+                            fallbacks.removeIf(tile1 -> !Objects.equals(tile1.getController().getAbbreviation(), new ArrayList<>(pushable).getFirst().getController().getAbbreviation()) &&
+                                    !Server.getInstance().getWarManager().fightsTogetherWith(tile1.getController(), new ArrayList<>(pushable).getFirst().getController()));
+
+                            if (!fallbacks.isEmpty()) {
+                                Tile tile = fallbacks.getFirst();
+
+                                pushable.forEach(p -> {
+                                    String reply = "troop=" + getUuid(p) + ";tile=" + tile.getAbbreviation() + ";type=" + MoveStatus.SUCCESS.ordinal();
+
+                                    Server.getInstance().getTroopManager().removePathfinding(p);
+                                    p.setTile(tile);
+
+                                    Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new ReplyPacket(Type.TROOPS_MOVE, reply));
+                                });
+
+                                for (TroopStack stack : all) {
+                                    Integer idx = pausedMovementIndex.remove(stack);
+                                    if (idx != null) {
+                                        startMovement(stack, idx);
+                                    }
+                                }
+                            } else {
+                                pushable.forEach(p -> {
+                                    Server.getInstance().getTroopManager().removeTroop(p);
+                                });
+                            }
+                        }
+                    });
+
+                    scheduledFutures[0].cancel(false);
+                    return;
                 }
 
                 troopStack.setTile(to);
 
                 String reply = "troop=" + getUuid(troopStack) + ";tile=" + to.getAbbreviation() + ";type=" + MoveStatus.SUCCESS_PATHFIND.ordinal();
-
                 Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new ReplyPacket(Type.TROOPS_MOVE, reply));
 
                 i[0]++;
@@ -315,6 +367,7 @@ public class ServerTroopManager implements TroopResolver{
         }, 0, 500, TimeUnit.MILLISECONDS);
     }
 
+
     public void removeTroops(Country country) {
         List<UUID> toRemove = troopStacks.entrySet().stream()
                 .filter(e -> e.getValue().getController() != null
@@ -326,7 +379,17 @@ public class ServerTroopManager implements TroopResolver{
         toRemove.forEach(this::removeTroop);
     }
 
+    public void removeTroop(TroopStack troopStack) {
+        UUID uuid = getUuid(troopStack);
+        removePathfinding(getTroop(uuid));
+        troopStacks.remove(uuid);
+
+        Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new ReplyPacket(Type.TROOP_REMOVE, uuid.toString()));
+    }
+
+
     public void removeTroop(UUID uuid) {
+        removePathfinding(getTroop(uuid));
         troopStacks.remove(uuid);
 
         Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new ReplyPacket(Type.TROOP_REMOVE, uuid.toString()));

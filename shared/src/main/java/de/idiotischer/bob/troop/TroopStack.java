@@ -13,6 +13,14 @@ public class TroopStack extends Troop {
 
     private final List<Troop> troops;
     private Tile tile;
+    private int baseHp = 200;
+    private int baseAttack = 25;
+    private int baseDefense = 10;
+    private int baseOrg = 100;
+    private int hp = baseHp;
+    private int attack = baseAttack;
+    private int defense = baseDefense;
+    private int org = baseOrg;
 
     public TroopStack(String name, Tile tile, Country owner,Country controller, int count, String template) {
         super(name,tile, owner, controller, template);
@@ -89,5 +97,48 @@ public class TroopStack extends Troop {
                 Integer.parseInt(count),
                 template
         ));
+    }
+
+    public int getHp() {
+        return hp * troops.size();
+    }
+
+    public void setHp(int hp) {
+        this.hp = hp;
+    }
+
+    public int getAttack() {
+        return attack * troops.size();
+    }
+
+    public void setAttack(int attack) {
+        this.attack = attack;
+    }
+
+    public int getDefense() {
+        return defense * troops.size();
+    }
+
+    public void setDefense(int defense) {
+        this.defense = defense;
+    }
+
+    public int getOrg() {
+        return org * troops.size();
+    }
+
+    public void setOrg(int org) {
+        this.org = Math.max(0, Math.min(baseOrg, org));
+    }
+
+    public boolean isBroken() {
+        return org <= 0;
+    }
+
+    public void resetAttributes() {
+        this.hp = this.baseHp;
+        this.org = this.baseOrg;
+        this.attack = this.baseAttack;
+        this.defense = this.baseDefense;
     }
 }
