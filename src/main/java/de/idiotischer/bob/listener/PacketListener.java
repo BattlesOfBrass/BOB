@@ -130,6 +130,7 @@ public class PacketListener implements ListenerAdapter {
                     BOB.getInstance().getCombatManager().clear();
                 }
                 case COMBAT_OVER -> {
+                    System.out.println("gfddfgfgdfgd");
                     String uuidString = pack.getMessage();
 
                     UUID uuid;
@@ -139,7 +140,6 @@ public class PacketListener implements ListenerAdapter {
                     } catch (IllegalArgumentException e) {
                         return;
                     }
-
 
                     BOB.getInstance().getCombatManager().remove(uuid);
                 }

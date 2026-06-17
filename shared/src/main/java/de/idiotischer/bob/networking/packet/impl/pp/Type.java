@@ -19,5 +19,6 @@ public enum Type {
     END_WAR,
     CAPITULATE_COUNTRY,
     COMBAT_OVER,
-    CLEAR_COMBATS, WARS_SYNC
+    CLEAR_COMBATS,
+    WARS_SYNC
 }

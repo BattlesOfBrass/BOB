@@ -131,8 +131,13 @@ public class TroopStack extends Troop {
         return hp * troops.size();
     }
 
-    public void setHp(int hp) {
-        this.hp = hp;
+    public void setHp(int totalHp) {
+        int size = troops.size();
+        this.hp = size == 0 ? 0 : totalHp / size;
+
+        if(hp <= 0) {
+            hp = 0;
+        }
     }
 
     public int getAttack() {
@@ -175,6 +180,7 @@ public class TroopStack extends Troop {
     }
 
     public void setAlive(boolean b) {
+        setHp(0);
         this.alive = b;
     }
 }

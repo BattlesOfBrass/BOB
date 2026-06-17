@@ -384,6 +384,14 @@ public class ServerTroopManager implements TroopResolver{
         toRemove.forEach(this::removeTroop);
     }
 
+    public boolean has(TroopStack stack) {
+        return troopStacks.containsKey(getUuid(stack));
+    }
+
+    public boolean has(UUID troop) {
+        return troopStacks.containsKey(troop);
+    }
+
     public void removeTroop(TroopStack troopStack) {
         UUID uuid = getUuid(troopStack);
         removePathfinding(troopStack);
@@ -392,7 +400,6 @@ public class ServerTroopManager implements TroopResolver{
 
         Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new ReplyPacket(Type.TROOP_REMOVE, uuid.toString()));
     }
-
 
     public void removeTroop(UUID uuid) {
         TroopStack troopStack = troopStacks.get(uuid);

@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 public class ServerCombatManager {
     private ScheduledExecutorService executor = Executors.newScheduledThreadPool(2);
 
-    private final Set<CombatStatus> activeCombats = ConcurrentHashMap.newKeySet();
+    private final Set<CombatStatus> activeCombats = new HashSet<>();
     private final Set<Consumer<CombatStatus>> combatListeners = ConcurrentHashMap.newKeySet();
     private final Set<Consumer<TroopStack>> troopDeathListeners = ConcurrentHashMap.newKeySet();
 
@@ -113,6 +113,7 @@ public class ServerCombatManager {
         }
 
         checkRemoved(combat);
+        removeMissingTroops(combat);
 
         Set<TroopStack> attackers = combat.getAttackers();
         Set<TroopStack> defenders = combat.getDefenders();
@@ -136,11 +137,9 @@ public class ServerCombatManager {
     }
 
     private void broadcast(CombatStatus combat) {
-        CombatSyncPacket packet =
-                new CombatSyncPacket(combat, Server.getInstance().getTroopManager());
+        CombatSyncPacket packet = new CombatSyncPacket(combat, Server.getInstance().getTroopManager());
 
-        Server.getInstance().getSendTool()
-                .broadcast(Server.getInstance().getServerSocket().getClients(), packet);
+        Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), packet);
     }
 
     private void checkRemoved(CombatStatus combat) {
@@ -171,6 +170,29 @@ public class ServerCombatManager {
         }
     }
 
+    private void removeMissingTroops(CombatStatus combat) {
+        var troopManager = Server.getInstance().getTroopManager();
+
+        List<TroopStack> toRemove = new ArrayList<>();
+
+        for (TroopStack stack : combat.getAttackers()) {
+            if (!troopManager.has(stack)) {
+                stack.setAlive(false);
+                toRemove.add(stack);
+            }
+        }
+
+        for (TroopStack stack : combat.getDefenders()) {
+            if (!troopManager.has(stack)) {
+                stack.setAlive(false);
+                toRemove.add(stack);
+            }
+        }
+
+        for (TroopStack stack : toRemove) {
+            handleOOH(combat, stack);
+        }
+    }
 
     private void handleOOH(CombatStatus combat, TroopStack stack) {
         combat.getAttackers().remove(stack);
@@ -235,7 +257,7 @@ public class ServerCombatManager {
         combat.getDefenders().forEach(TroopStack::resetAttributes);
 
         combatListeners.forEach(l -> {
-            try { l.accept(combat); } catch (Exception ignored) {}
+            try {l.accept(combat); } catch (Exception ignored) {}
         });
 
         ReplyPacket packet = new ReplyPacket(Type.COMBAT_OVER, combat.getUuid().toString());
@@ -244,19 +266,19 @@ public class ServerCombatManager {
     }
 
     public boolean isInCombat(TroopStack stack) {
-        Set<TroopStack> all = activeCombats.stream()
-                .flatMap(combat -> combat.getAttackers().stream())
-                .collect(Collectors.toSet());
-        all.addAll(activeCombats.stream()
-                .flatMap(combat -> combat.getDefenders().stream())
-                .collect(Collectors.toSet()));
+        Optional<CombatStatus> status = getCombat(stack);
 
+        if(status.isEmpty()) return false;
 
-        return all.contains(stack);
+        boolean isOver = isCombatOver(status.orElse(null));
+
+        boolean finished = status.get().isFinished();
+
+        return isOver && finished;
     }
 
-    public CombatStatus getCombat(TroopStack stack) {
-        return activeCombats.stream().filter(f -> f.getDefenders().contains(stack) || f.getAttackers().contains(stack)).findFirst().get();
+    public Optional<CombatStatus> getCombat(TroopStack stack) {
+        return activeCombats.stream().filter(f -> f.getDefenders().contains(stack) || f.getAttackers().contains(stack)).findFirst();
     }
 
     public Set<CombatStatus> getActiveCombats() {
