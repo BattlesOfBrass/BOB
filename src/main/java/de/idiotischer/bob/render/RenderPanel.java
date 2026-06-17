@@ -217,9 +217,17 @@ public class RenderPanel extends JPanel implements Panel {
         int combatSize = (int) (baseCombatSize * scale);
 
         for (CombatStatus combat : BOB.getInstance().getCombatManager().getActiveCombats()) {
+            if (combat.isFinished()
+                    || combat.getAttackers().isEmpty()
+                    || combat.getDefenders().isEmpty()) {
+                BOB.getInstance().getCombatManager().remove(combat.getUuid());
+                continue;
+            }
+
             activeIds.add(combat.getUuid());
 
             if (combat.getAttackers().isEmpty() || combat.getDefenders().isEmpty()) {
+                BOB.getInstance().getCombatManager().remove(combat.getUuid());
                 continue;
             }
 
@@ -234,7 +242,7 @@ public class RenderPanel extends JPanel implements Panel {
             }
 
             CombatVisualButton combatButton = combatButtons.computeIfAbsent(combat.getUuid(), uuid -> {
-                CombatVisualButton b = new CombatVisualButton(combat);
+                CombatVisualButton b = new CombatVisualButton(uuid);
                 troopLayer.add(b);
                 return b;
             });

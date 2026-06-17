@@ -140,6 +140,7 @@ public class PacketListener implements ListenerAdapter {
                         return;
                     }
 
+
                     BOB.getInstance().getCombatManager().remove(uuid);
                 }
                 case TROOP_REMOVE -> {

@@ -1,17 +1,19 @@
 package de.idiotischer.bob.render.menu.components.button;
 
+import de.idiotischer.bob.BOB;
 import de.idiotischer.bob.combat.CombatStatus;
 import javax.swing.*;
 import java.awt.*;
+import java.util.UUID;
 
 public class CombatVisualButton extends JButton {
-    private CombatStatus status;
+    private UUID status;
     private double dirX;
     private double dirY;
 
     private int battleProgress = 84;
 
-    public CombatVisualButton(CombatStatus status) {
+    public CombatVisualButton(UUID status) {
         this.status = status;
 
         setContentAreaFilled(false);
@@ -81,7 +83,9 @@ public class CombatVisualButton extends JButton {
         Font font = getFont().deriveFont(Font.BOLD, (int)(innerH * 0.75));
         g2.setFont(font);
 
-        String text = String.valueOf(status != null ? status.getPower(status.getAttackers()) : battleProgress);
+        CombatStatus combat = getCombat();
+
+        String text = String.valueOf(combat != null ? combat.getPower(combat.getAttackers()) : battleProgress);
         FontMetrics fm = g2.getFontMetrics();
         int tx = -fm.stringWidth(text) / 2;
         int ty = iy + ((innerH - fm.getHeight()) / 2) + fm.getAscent();
@@ -91,7 +95,11 @@ public class CombatVisualButton extends JButton {
         g2.dispose();
     }
 
-    public CombatStatus getStatus() {
+    public CombatStatus getCombat() {
+        return BOB.getInstance().getCombatManager().getCombat(status);
+    }
+
+    public UUID getStatus() {
         return status;
     }
 

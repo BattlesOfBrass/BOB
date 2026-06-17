@@ -54,10 +54,11 @@ public class TroopValidator {
             else return MoveStatus.FAILURE_STARTED_PATHFINDING;
         }
 
+        if(Server.getInstance().getCombatManager().isInCombat(troopStack)) return MoveStatus.FAILURE_IN_COMBAT;
+
         Set<TroopStack> toStacks = tr.getAt(tile);
 
         if (!toStacks.isEmpty()) {
-
 
             Set<TroopStack> enemyStacks = Server.getInstance().getTroopManager().getAt(tile);
             Set<TroopStack> ownStacks = Server.getInstance().getTroopManager().getAt(troopStack.getTile());

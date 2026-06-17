@@ -283,6 +283,12 @@ public class ServerTroopManager implements TroopResolver{
 
                 MoveStatus status = canTraverse(troopStack.getController(), from, to);
 
+                if(Server.getInstance().getCombatManager().isInCombat(troopStack)) {
+                    activePathfindings.remove(troopStack);
+                    scheduledFutures[0].cancel(false);
+                    return;
+                }
+
                 if (status == MoveStatus.FAILURE) {
                     activePathfindings.remove(troopStack);
                     scheduledFutures[0].cancel(false);
@@ -290,7 +296,6 @@ public class ServerTroopManager implements TroopResolver{
                 }
 
                 if (status == MoveStatus.FAILURE_FIGHT) {
-
                     Set<TroopStack> enemyStacks = getAt(to);
                     Set<TroopStack> ownStacks = getAt(troopStack.getTile());
 
@@ -381,7 +386,8 @@ public class ServerTroopManager implements TroopResolver{
 
     public void removeTroop(TroopStack troopStack) {
         UUID uuid = getUuid(troopStack);
-        removePathfinding(getTroop(uuid));
+        removePathfinding(troopStack);
+        troopStack.setAlive(false);
         troopStacks.remove(uuid);
 
         Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new ReplyPacket(Type.TROOP_REMOVE, uuid.toString()));
@@ -389,23 +395,12 @@ public class ServerTroopManager implements TroopResolver{
 
 
     public void removeTroop(UUID uuid) {
-        removePathfinding(getTroop(uuid));
+        TroopStack troopStack = troopStacks.get(uuid);
+        removePathfinding(troopStack);
+        troopStack.setAlive(false);
         troopStacks.remove(uuid);
 
         Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new ReplyPacket(Type.TROOP_REMOVE, uuid.toString()));
-    }
-
-    public void removeTroops(Set<TroopStack> stacks) {
-        if (stacks == null || stacks.isEmpty()) return;
-
-        for (TroopStack stack : stacks) {
-            if (stack == null) continue;
-
-            UUID uuid = getUuidSafe(stack);
-            if (uuid != null) {
-                removeTroop(uuid);
-            }
-        }
     }
 
     public UUID getUuidSafe(TroopStack troopStack) {

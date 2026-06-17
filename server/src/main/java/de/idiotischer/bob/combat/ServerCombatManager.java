@@ -44,6 +44,13 @@ public class ServerCombatManager {
 
         List<TroopStack> validDefenders = defenders.stream().filter(stack -> !isInCombat(stack)).toList();
 
+        Set<String> attackerSet = new HashSet<>(validAttackers).stream().map(t -> t.getController().getAbbreviation()).collect(Collectors.toSet());
+        for (TroopStack defender : validDefenders) {
+            if (attackerSet.contains(defender.getController().getAbbreviation())) {
+                return null;
+            }
+        }
+
         if (validAttackers.isEmpty() || validDefenders.isEmpty()) return null;
 
         CombatStatus existing = findCombat(validAttackers, validDefenders);
@@ -100,28 +107,57 @@ public class ServerCombatManager {
     }
 
     private void tickCombat(CombatStatus combat) {
-        if (combat.isFinished()) {
+        if (combat.isFinished() || !activeCombats.contains(combat)) {
             cleanupCombat(combat);
             return;
         }
 
-        removeOrg(combat,combat.getAttackers());
-        removeOrg(combat,combat.getDefenders());
+        checkRemoved(combat);
 
-        int totalAttackDamage = combat.getAttackers().stream().filter(s -> !s.isBroken()).mapToInt(TroopStack::getAttack).sum();
-        int totalDefDamage = (int) Math.round(combat.getDefenders().stream().filter(s -> !s.isBroken()).mapToInt(TroopStack::getAttack).sum() * DEFENDER_DAMAGE_NEGATION);
+        Set<TroopStack> attackers = combat.getAttackers();
+        Set<TroopStack> defenders = combat.getDefenders();
 
-        applyDamage(combat, combat.getDefenders(), totalAttackDamage);
-        applyDamage(combat, combat.getAttackers(), totalDefDamage);
+        removeOrg(attackers);
+        removeOrg(defenders);
+
+        int attackDamage = attackers.stream().filter(s -> s.getHp() > 0 && !s.isBroken()).mapToInt(TroopStack::getAttack).sum();
+        int defendDamage = (int) Math.round(defenders.stream().filter(s -> s.getHp() > 0 && !s.isBroken()).mapToInt(TroopStack::getAttack).sum() * DEFENDER_DAMAGE_NEGATION);
+
+        applyDamage(combat, defenders, attackDamage);
+        applyDamage(combat, attackers, defendDamage);
 
         combat.tick();
 
         if (isCombatOver(combat)) {
             cleanupCombat(combat);
+        } else {
+            broadcast(combat);
         }
     }
 
-    private void removeOrg(CombatStatus status, Set<TroopStack> stacks) {
+    private void broadcast(CombatStatus combat) {
+        CombatSyncPacket packet =
+                new CombatSyncPacket(combat, Server.getInstance().getTroopManager());
+
+        Server.getInstance().getSendTool()
+                .broadcast(Server.getInstance().getServerSocket().getClients(), packet);
+    }
+
+    private void checkRemoved(CombatStatus combat) {
+        combat.getAttackers().forEach(c -> {
+            if(!c.isAlive()) {
+                c.setHp(0);
+            }
+        });
+
+        combat.getDefenders().forEach(c -> {
+            if(!c.isAlive()) {
+                c.setHp(0);
+            }
+        });
+    }
+
+    private void removeOrg(Set<TroopStack> stacks) {
         for (TroopStack stack : stacks) {
             if (stack.getHp() <= 0) {
                 //TODO: kick out
@@ -133,11 +169,6 @@ public class ServerCombatManager {
 
             stack.setOrg(newOrg);
         }
-
-
-        CombatSyncPacket packet = new CombatSyncPacket(status, Server.getInstance().getTroopManager());
-
-        Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), packet);
     }
 
 
@@ -187,8 +218,8 @@ public class ServerCombatManager {
     }
 
     private boolean isCombatOver(CombatStatus combat) {
-        boolean attackersDeadOrBroken = combat.getAttackers().stream().allMatch(s -> s.getHp() <= 0 || s.isBroken());
-        boolean defendersDeadOrBroken = combat.getDefenders().stream().allMatch(s -> s.getHp() <= 0 || s.isBroken());
+        boolean attackersDeadOrBroken = combat.getAttackers().stream().allMatch(s -> s.getHp() <= 0 || !s.isAlive()/*|| s.isBroken()*/);
+        boolean defendersDeadOrBroken = combat.getDefenders().stream().allMatch(s -> s.getHp() <= 0 || !s.isAlive()/*|| s.isBroken()*/);
 
         return attackersDeadOrBroken || defendersDeadOrBroken;
     }
@@ -196,20 +227,16 @@ public class ServerCombatManager {
     private void cleanupCombat(CombatStatus combat) {
         activeCombats.remove(combat);
 
-        combat.getAttackers().forEach(TroopStack::resetAttributes);
-        combat.getDefenders().forEach(TroopStack::resetAttributes);
-
         if (combat.getTask() != null) {
             combat.getTask().cancel(false);
         }
 
-        for (Consumer<CombatStatus> listener : combatListeners) {
-            try {
-                listener.accept(combat);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+        combat.getAttackers().forEach(TroopStack::resetAttributes);
+        combat.getDefenders().forEach(TroopStack::resetAttributes);
+
+        combatListeners.forEach(l -> {
+            try { l.accept(combat); } catch (Exception ignored) {}
+        });
 
         ReplyPacket packet = new ReplyPacket(Type.COMBAT_OVER, combat.getUuid().toString());
 

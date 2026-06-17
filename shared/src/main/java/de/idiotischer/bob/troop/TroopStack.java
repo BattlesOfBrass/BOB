@@ -21,6 +21,7 @@ public class TroopStack extends Troop {
     private int attack = baseAttack;
     private int defense = baseDefense;
     private int org = baseOrg;
+    private boolean alive = true;
 
     public TroopStack(String name, Tile tile, Country owner,Country controller, int count, String template) {
         super(name,tile, owner, controller, template);
@@ -74,7 +75,8 @@ public class TroopStack extends Troop {
                 ";hp=" + hp +
                 ";attack=" + attack +
                 ";defense=" + defense +
-                ";org=" + org;
+                ";org=" + org +
+                ";alive=" + alive;
     }
 
     public static Pair<UUID, TroopStack> deserialize(
@@ -120,6 +122,8 @@ public class TroopStack extends Troop {
         stack.defense = Integer.parseInt(values.getOrDefault("defense", String.valueOf(stack.baseDefense)));
         stack.org = Integer.parseInt(values.getOrDefault("org", String.valueOf(stack.baseOrg)));
 
+        stack.alive = Boolean.parseBoolean(values.getOrDefault("alive", "true"));
+
         return Pair.of(uuid, stack);
     }
 
@@ -164,5 +168,13 @@ public class TroopStack extends Troop {
         this.org = this.baseOrg;
         this.attack = this.baseAttack;
         this.defense = this.baseDefense;
+    }
+
+    public boolean isAlive() {
+        return alive;
+    }
+
+    public void setAlive(boolean b) {
+        this.alive = b;
     }
 }

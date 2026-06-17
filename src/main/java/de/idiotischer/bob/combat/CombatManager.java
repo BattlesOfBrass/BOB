@@ -17,7 +17,7 @@ public class CombatManager {
 
     public void addStatus(CombatStatus status) {
         remove(status.getUuid());
-        activeCombats.add(status);
+        if(!status.isFinished()) activeCombats.add(status);
     }
 
     public void remove(UUID uuid) {
@@ -42,6 +42,10 @@ public class CombatManager {
 
     public CombatStatus getCombat(TroopStack stack) {
         return activeCombats.stream().filter(f -> f.getDefenders().contains(stack) || f.getAttackers().contains(stack)).findFirst().get();
+    }
+
+    public CombatStatus getCombat(UUID stack) {
+        return activeCombats.stream().filter(f -> f.getUuid().equals(stack)).findFirst().get();
     }
 
     public Set<CombatStatus> getActiveCombats() {
