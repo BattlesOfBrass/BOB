@@ -1,5 +1,6 @@
 package de.idiotischer.bob;
 
+import de.idiotischer.bob.combat.CombatManager;
 import de.idiotischer.bob.country.CountryManager;
 import de.idiotischer.bob.debug.Debugger;
 import de.idiotischer.bob.game.GameManager;
@@ -70,6 +71,7 @@ public class BOB {
     private boolean initialized = false;
     private GameManager gameManager;
     private StateManager stateManager;
+    private CombatManager combatManager;
 
     public static void main(String[] args) {
         new BOB();
@@ -131,6 +133,8 @@ public class BOB {
         this.troopManager = new TroopManager();
 
         this.warManager = new WarManager();
+
+        this.combatManager = new CombatManager();
 
         this.awaitingReload = this.scenarioManager.reload().thenRun(() -> {
             this.scenarioSceneLoader.requestScenarioLoad(scenarioManager.getRandom());
@@ -257,5 +261,9 @@ public class BOB {
 
     public void setPlayer(UUID uuid) {
         this.player = playerManager.createPlayer(client.getChannel(), uuid, AddressUtil.getThisAddress(client.getChannel()));
+    }
+
+    public CombatManager getCombatManager() {
+        return combatManager;
     }
 }

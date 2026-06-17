@@ -1,8 +1,10 @@
 package de.idiotischer.bob.render;
 
 import de.idiotischer.bob.BOB;
+import de.idiotischer.bob.combat.CombatStatus;
 import de.idiotischer.bob.map.FloodFill;
 import de.idiotischer.bob.render.menu.Panel;
+import de.idiotischer.bob.render.menu.components.button.CombatVisualButton;
 import de.idiotischer.bob.render.menu.components.button.TroopVisualButton;
 import de.idiotischer.bob.render.menu.impl.HUD;
 import de.idiotischer.bob.render.menu.impl.ESCMenu;
@@ -32,6 +34,8 @@ public class RenderPanel extends JPanel implements Panel {
     private boolean escMenu = false;
 
     public Set<TroopVisualButton> selected = new HashSet<>();
+
+    private final Map<UUID, CombatVisualButton> combatButtons = new HashMap<>();
 
     public RenderPanel(BufferedImage map, MainRenderer renderer) {
         this.renderer = renderer;
@@ -82,6 +86,7 @@ public class RenderPanel extends JPanel implements Panel {
         }
 
         updateTroopButtons(g2);
+        updateCombatButtons();
 
         g2.setTransform(screenTransform);
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -187,6 +192,79 @@ public class RenderPanel extends JPanel implements Panel {
 
         troopLayer.revalidate();
         troopLayer.repaint();
+    }
+
+    private TroopVisualButton getButton(TroopStack stack) {
+        for (Component c : troopLayer.getComponents()) {
+            if (c instanceof TroopVisualButton button
+                    && button.getStack() == stack) {
+                return button;
+            }
+        }
+        return null;
+    }
+
+    private void updateCombatButtons() {
+        Set<UUID> activeIds = new HashSet<>();
+
+        double zoom = renderer.getCamera().getZoom();
+
+        double scale = 1.0 / Math.max(zoom, 0.1);
+        scale = Math.min(scale, 1.05);
+        scale = Math.max(scale, 1.0);
+
+        int baseCombatSize = 60;
+        int combatSize = (int) (baseCombatSize * scale);
+
+        for (CombatStatus combat : BOB.getInstance().getCombatManager().getActiveCombats()) {
+            activeIds.add(combat.getUuid());
+
+            if (combat.getAttackers().isEmpty() || combat.getDefenders().isEmpty()) {
+                continue;
+            }
+
+            TroopStack attacker = new ArrayList<>(combat.getAttackers()).getFirst();
+            TroopStack defender = new ArrayList<>(combat.getDefenders()).getFirst();
+
+            TroopVisualButton atkButton = getButton(attacker);
+            TroopVisualButton defButton = getButton(defender);
+
+            if (atkButton == null || defButton == null) {
+                continue;
+            }
+
+            CombatVisualButton combatButton = combatButtons.computeIfAbsent(combat.getUuid(), uuid -> {
+                CombatVisualButton b = new CombatVisualButton(combat);
+                troopLayer.add(b);
+                return b;
+            });
+
+            Rectangle a = atkButton.getBounds();
+            Rectangle d = defButton.getBounds();
+
+            int ax = a.x + a.width / 2;
+            int ay = a.y + a.height / 2;
+
+            int dx = d.x + d.width / 2;
+            int dy = d.y + d.height / 2;
+
+            int centerX = (ax + dx) / 2;
+            int centerY = (ay + dy) / 2;
+
+            combatButton.setDirection(ax, ay, dx, dy);
+
+            combatButton.setBounds(centerX - combatSize / 2, centerY - combatSize / 2, combatSize, combatSize);
+        }
+
+        combatButtons.entrySet().removeIf(entry -> {
+            boolean remove = !activeIds.contains(entry.getKey());
+
+            if (remove) {
+                troopLayer.remove(entry.getValue());
+            }
+
+            return remove;
+        });
     }
 
     /*private void drawTroops(Graphics2D g2) {

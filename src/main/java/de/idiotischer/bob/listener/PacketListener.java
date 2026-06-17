@@ -126,6 +126,22 @@ public class PacketListener implements ListenerAdapter {
             BOB.getInstance().getTileManager().registerTile(tile);
         } else if(event.getPacket() instanceof ReplyPacket pack) {
             switch (pack.getReplyType()) {
+                case CLEAR_COMBATS -> {
+                    BOB.getInstance().getCombatManager().clear();
+                }
+                case COMBAT_OVER -> {
+                    String uuidString = pack.getMessage();
+
+                    UUID uuid;
+
+                    try {
+                        uuid = UUID.fromString(uuidString);
+                    } catch (IllegalArgumentException e) {
+                        return;
+                    }
+
+                    BOB.getInstance().getCombatManager().remove(uuid);
+                }
                 case TROOP_REMOVE -> {
                     String uuidString = pack.getMessage();
 
@@ -310,6 +326,10 @@ public class PacketListener implements ListenerAdapter {
                                     Map.Entry::getValue
                             )), true
             );
+        } else if(event.getPacket() instanceof CombatSyncPacket pack) {
+            BOB.getInstance().getCombatManager().addStatus(pack.getStatus(BOB.getInstance().getTroopManager()));
+        } else if(event.getPacket() instanceof CombatsSyncPacket pack) {
+            BOB.getInstance().getCombatManager().addStatus(pack.getPackets().stream().map(p -> p.getStatus(BOB.getInstance().getTroopManager())).toList());
         }
     }
 }

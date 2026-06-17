@@ -1,5 +1,6 @@
 package de.idiotischer.bob.combat;
 
+import de.idiotischer.bob.troop.TroopResolver;
 import de.idiotischer.bob.troop.TroopStack;
 
 import java.util.*;
@@ -15,8 +16,10 @@ public class CombatStatus {
 
     private boolean finished;
     private ScheduledFuture<?> task;
+    private final UUID uuid;
 
-    public CombatStatus(Set<TroopStack> attackers, Set<TroopStack> defenders) {
+    public CombatStatus(UUID uuid, Set<TroopStack> attackers, Set<TroopStack> defenders) {
+        this.uuid = uuid;
         this.attackers = new HashSet<>(attackers);
         this.defenders = new HashSet<>(defenders);
         this.baseAttackers = new HashSet<>(attackers);
@@ -56,8 +59,11 @@ public class CombatStatus {
         }
     }
 
-    private int getStrength(Set<TroopStack> side) {
+    public int getStrength(Set<TroopStack> side) {
         return side.stream().mapToInt(TroopStack::getHp).sum();
+    }
+    public int getPower(Set<TroopStack> side) {
+        return side.stream().mapToInt(TroopStack::getAttack).sum();
     }
 
     public boolean contains(TroopStack stack) {
@@ -112,5 +118,75 @@ public class CombatStatus {
 
     public Set<TroopStack> getBaseAttackers() {
         return baseAttackers;
+    }
+
+    public String toDataString(TroopResolver resolver) {
+        return uuid.toString() + ";" + finished + ";" +
+                serializeStacks(attackers,resolver) + ";" +
+                serializeStacks(defenders,resolver) + ";" +
+                serializeStacks(baseAttackers,resolver) + ";" +
+                serializeStacks(baseDefenders,resolver);
+    }
+
+    private String serializeStacks(Set<TroopStack> stacks, TroopResolver resolver) {
+        StringBuilder sb = new StringBuilder();
+
+        int i = 0;
+        for (TroopStack stack : stacks) {
+            sb.append(resolver.getUuid(stack).toString());
+
+            if (++i < stacks.size()) {
+                sb.append("|");
+            }
+        }
+
+        return sb.toString();
+    }
+
+    public static CombatStatus fromDataString(String data, TroopResolver resolver) {
+        String[] split = data.split(";", -1);
+
+        UUID uuid = UUID.fromString(split[0]);
+        boolean finished = Boolean.parseBoolean(split[1]);
+
+        Set<TroopStack> attackers = deserializeStacks(split[2], resolver);
+        Set<TroopStack> defenders = deserializeStacks(split[3], resolver);
+        Set<TroopStack> baseAttackers = deserializeStacks(split[4], resolver);
+        Set<TroopStack> baseDefenders = deserializeStacks(split[5], resolver);
+
+        CombatStatus status = new CombatStatus(uuid, attackers, defenders);
+
+        status.baseAttackers.clear();
+        status.baseAttackers.addAll(baseAttackers);
+
+        status.baseDefenders.clear();
+        status.baseDefenders.addAll(baseDefenders);
+
+        status.finished = finished;
+
+        return status;
+    }
+
+    private static Set<TroopStack> deserializeStacks(String data, TroopResolver resolver) {
+        Set<TroopStack> result = new HashSet<>();
+
+        if (data == null || data.isEmpty()) {
+            return result;
+        }
+
+        for (String uuidString : data.split("\\|")) {
+            UUID uuid = UUID.fromString(uuidString);
+
+            TroopStack stack = resolver.getTroop(uuid);
+            if (stack != null) {
+                result.add(stack);
+            }
+        }
+
+        return result;
+    }
+
+    public UUID getUuid() {
+        return uuid;
     }
 }

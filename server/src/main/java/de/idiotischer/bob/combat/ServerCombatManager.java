@@ -1,16 +1,21 @@
 package de.idiotischer.bob.combat;
 
+import de.idiotischer.bob.Server;
+import de.idiotischer.bob.networking.packet.impl.CombatSyncPacket;
+import de.idiotischer.bob.networking.packet.impl.pp.ReplyPacket;
+import de.idiotischer.bob.networking.packet.impl.pp.Type;
 import de.idiotischer.bob.troop.TroopStack;
+import de.idiotischer.bob.util.UUIDUtil;
 
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class ServerCombatManager {
     private ScheduledExecutorService executor = Executors.newScheduledThreadPool(2);
 
     private final Set<CombatStatus> activeCombats = ConcurrentHashMap.newKeySet();
-    private final ConcurrentMap<TroopStack, CombatStatus> troopCombatMap = new ConcurrentHashMap<>();
     private final Set<Consumer<CombatStatus>> combatListeners = ConcurrentHashMap.newKeySet();
     private final Set<Consumer<TroopStack>> troopDeathListeners = ConcurrentHashMap.newKeySet();
 
@@ -27,7 +32,8 @@ public class ServerCombatManager {
         }
 
         activeCombats.clear();
-        troopCombatMap.clear();
+
+        Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new ReplyPacket(Type.CLEAR_COMBATS));
 
         executor.shutdownNow();
         executor = Executors.newScheduledThreadPool(2);
@@ -47,16 +53,19 @@ public class ServerCombatManager {
             return existing;
         }
 
-        CombatStatus combat = new CombatStatus(new HashSet<>(validAttackers), new HashSet<>(validDefenders));
+        UUID id = UUIDUtil.getUnused(activeCombats.stream().map(CombatStatus::getUuid).collect(Collectors.toSet()));
+
+        CombatStatus combat = new CombatStatus(id, new HashSet<>(validAttackers), new HashSet<>(validDefenders));
 
         activeCombats.add(combat);
-
-        validAttackers.forEach(stack -> troopCombatMap.put(stack, combat));
-        validDefenders.forEach(stack -> troopCombatMap.put(stack, combat));
 
         ScheduledFuture<?> future = executor.scheduleAtFixedRate(() -> tickCombat(combat), 0, 1, TimeUnit.SECONDS);
 
         combat.setTask(future);
+
+        CombatSyncPacket packet = new CombatSyncPacket(combat, Server.getInstance().getTroopManager());
+
+        Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), packet);
 
         return combat;
     }
@@ -64,13 +73,15 @@ public class ServerCombatManager {
     private void mergeIntoCombat(CombatStatus combat, List<TroopStack> attackers, List<TroopStack> defenders) {
         for (TroopStack stack : attackers) {
             combat.addAttacker(stack);
-            troopCombatMap.put(stack, combat);
         }
 
         for (TroopStack stack : defenders) {
             combat.addDefender(stack);
-            troopCombatMap.put(stack, combat);
         }
+
+        CombatSyncPacket packet = new CombatSyncPacket(combat, Server.getInstance().getTroopManager());
+
+        Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), packet);
     }
 
     private CombatStatus findCombat(List<TroopStack> attackers, List<TroopStack> defenders) {
@@ -85,10 +96,7 @@ public class ServerCombatManager {
 
         Object tile = tiles.iterator().next();
 
-        return activeCombats.stream()
-                .filter(c -> !c.isFinished() && !c.getAttackers().isEmpty() && new ArrayList<>(c.getAttackers()).getFirst().getTile().equals(tile))
-                .findFirst()
-                .orElse(null);
+        return activeCombats.stream().filter(c -> !c.isFinished() && !c.getAttackers().isEmpty() && new ArrayList<>(c.getAttackers()).getFirst().getTile().equals(tile)).findFirst().orElse(null);
     }
 
     private void tickCombat(CombatStatus combat) {
@@ -97,8 +105,8 @@ public class ServerCombatManager {
             return;
         }
 
-        removeOrg(combat.getAttackers());
-        removeOrg(combat.getDefenders());
+        removeOrg(combat,combat.getAttackers());
+        removeOrg(combat,combat.getDefenders());
 
         int totalAttackDamage = combat.getAttackers().stream().filter(s -> !s.isBroken()).mapToInt(TroopStack::getAttack).sum();
         int totalDefDamage = (int) Math.round(combat.getDefenders().stream().filter(s -> !s.isBroken()).mapToInt(TroopStack::getAttack).sum() * DEFENDER_DAMAGE_NEGATION);
@@ -113,22 +121,29 @@ public class ServerCombatManager {
         }
     }
 
-    private void removeOrg(Set<TroopStack> stacks) {
+    private void removeOrg(CombatStatus status, Set<TroopStack> stacks) {
         for (TroopStack stack : stacks) {
-            if (stack.getHp() <= 0) continue;
+            if (stack.getHp() <= 0) {
+                //TODO: kick out
+                continue;
+            }
 
             int oldOrg = stack.getOrg();
             int newOrg = oldOrg - ORG_RM_PER_TICK;
 
             stack.setOrg(newOrg);
         }
+
+
+        CombatSyncPacket packet = new CombatSyncPacket(status, Server.getInstance().getTroopManager());
+
+        Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), packet);
     }
+
 
     private void handleOOH(CombatStatus combat, TroopStack stack) {
         combat.getAttackers().remove(stack);
         combat.getDefenders().remove(stack);
-
-        troopCombatMap.remove(stack);
 
         for (Consumer<TroopStack> listener : troopDeathListeners) {
             try {
@@ -137,6 +152,10 @@ public class ServerCombatManager {
                 e.printStackTrace();
             }
         }
+
+        CombatSyncPacket packet = new CombatSyncPacket(combat, Server.getInstance().getTroopManager());
+
+        Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), packet);
     }
 
     private void applyDamage(CombatStatus combat, Set<TroopStack> stacks, int damage) {
@@ -161,6 +180,10 @@ public class ServerCombatManager {
         for (TroopStack deadStack : dead) {
             handleOOH(combat, deadStack);
         }
+
+        CombatSyncPacket packet = new CombatSyncPacket(combat, Server.getInstance().getTroopManager());
+
+        Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), packet);
     }
 
     private boolean isCombatOver(CombatStatus combat) {
@@ -176,9 +199,6 @@ public class ServerCombatManager {
         combat.getAttackers().forEach(TroopStack::resetAttributes);
         combat.getDefenders().forEach(TroopStack::resetAttributes);
 
-        combat.getAttackers().forEach(troopCombatMap::remove);
-        combat.getDefenders().forEach(troopCombatMap::remove);
-
         if (combat.getTask() != null) {
             combat.getTask().cancel(false);
         }
@@ -190,31 +210,26 @@ public class ServerCombatManager {
                 e.printStackTrace();
             }
         }
-    }
 
-    public boolean joinCombat(CombatStatus combat, TroopStack stack, boolean attackerSide) {
-        if (combat == null || combat.isFinished()) return false;
-        if (isInCombat(stack)) return false;
+        ReplyPacket packet = new ReplyPacket(Type.COMBAT_OVER, combat.getUuid().toString());
 
-
-        if (attackerSide) combat.addAttacker(stack);
-        else combat.addDefender(stack);
-
-        troopCombatMap.put(stack, combat);
-
-        return true;
+        Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), packet);
     }
 
     public boolean isInCombat(TroopStack stack) {
-        return troopCombatMap.containsKey(stack);
+        Set<TroopStack> all = activeCombats.stream()
+                .flatMap(combat -> combat.getAttackers().stream())
+                .collect(Collectors.toSet());
+        all.addAll(activeCombats.stream()
+                .flatMap(combat -> combat.getDefenders().stream())
+                .collect(Collectors.toSet()));
+
+
+        return all.contains(stack);
     }
 
     public CombatStatus getCombat(TroopStack stack) {
-        return troopCombatMap.get(stack);
-    }
-
-    public Optional<CombatStatus> findCombat(TroopStack stack) {
-        return Optional.ofNullable(troopCombatMap.get(stack));
+        return activeCombats.stream().filter(f -> f.getDefenders().contains(stack) || f.getAttackers().contains(stack)).findFirst().get();
     }
 
     public Set<CombatStatus> getActiveCombats() {

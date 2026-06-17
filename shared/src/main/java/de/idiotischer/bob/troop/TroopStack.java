@@ -66,10 +66,22 @@ public class TroopStack extends Troop {
                 ";owner=" + getOwner().getAbbreviation() +
                 ";controller=" + getController().getAbbreviation() +
                 ";tile=" + tile.getAbbreviation() +
-                ";template=" + template;
+                ";template=" + template +
+                ";baseHp=" + baseHp +
+                ";baseAttack=" + baseAttack +
+                ";baseDefense=" + baseDefense +
+                ";baseOrg=" + baseOrg +
+                ";hp=" + hp +
+                ";attack=" + attack +
+                ";defense=" + defense +
+                ";org=" + org;
     }
 
-    public static Pair<UUID,TroopStack> deserialize(String data, CountryResolver countryResolver, TileResolver tileResolver) {
+    public static Pair<UUID, TroopStack> deserialize(
+            String data,
+            CountryResolver countryResolver,
+            TileResolver tileResolver
+    ) {
         Map<String, String> values = new HashMap<>();
 
         for (String part : data.split(";")) {
@@ -81,7 +93,7 @@ public class TroopStack extends Troop {
 
         UUID uuid = UUID.fromString(values.get("uuid"));
         String name = values.get("name");
-        String count = values.get("count");
+        int count = Integer.parseInt(values.get("count"));
 
         Country owner = countryResolver.byAbbreviation(values.get("owner"));
         Country controller = countryResolver.byAbbreviation(values.get("controller"));
@@ -89,14 +101,26 @@ public class TroopStack extends Troop {
 
         String template = values.get("template");
 
-        return Pair.of(uuid,new TroopStack(
+        TroopStack stack = new TroopStack(
                 name,
                 tile,
                 owner,
                 controller,
-                Integer.parseInt(count),
+                count,
                 template
-        ));
+        );
+
+        stack.baseHp = Integer.parseInt(values.getOrDefault("baseHp", "200"));
+        stack.baseAttack = Integer.parseInt(values.getOrDefault("baseAttack", "25"));
+        stack.baseDefense = Integer.parseInt(values.getOrDefault("baseDefense", "10"));
+        stack.baseOrg = Integer.parseInt(values.getOrDefault("baseOrg", "100"));
+
+        stack.hp = Integer.parseInt(values.getOrDefault("hp", String.valueOf(stack.baseHp)));
+        stack.attack = Integer.parseInt(values.getOrDefault("attack", String.valueOf(stack.baseAttack)));
+        stack.defense = Integer.parseInt(values.getOrDefault("defense", String.valueOf(stack.baseDefense)));
+        stack.org = Integer.parseInt(values.getOrDefault("org", String.valueOf(stack.baseOrg)));
+
+        return Pair.of(uuid, stack);
     }
 
     public int getHp() {

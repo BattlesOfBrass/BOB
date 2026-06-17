@@ -1,11 +1,13 @@
 package de.idiotischer.bob.troop;
 
 import de.idiotischer.bob.BOB;
+import de.idiotischer.bob.Server;
 import de.idiotischer.bob.country.Country;
 import de.idiotischer.bob.networking.packet.impl.pp.RequestPacket;
 import de.idiotischer.bob.networking.packet.impl.pp.Type;
 import de.idiotischer.bob.render.menu.impl.select.ScenarioSelectMenu;
 import de.idiotischer.bob.tile.Tile;
+import de.idiotischer.bob.tile.TileResolver;
 import de.idiotischer.bob.util.UUIDUtil;
 import it.unimi.dsi.fastutil.Pair;
 
@@ -13,8 +15,9 @@ import javax.swing.*;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
-public class TroopManager {
+public class TroopManager implements TroopResolver{
 
     private final Map<UUID, TroopStack> troops = new HashMap<>();
 
@@ -40,10 +43,97 @@ public class TroopManager {
         return future;
     }
 
+    @Override
+    public List<Tile> findPath(TroopStack troopStack, Tile destination, TileResolver resolver) {
+        Country troopController = troopStack.getController();
+
+        Map<Tile, Tile> previous = new HashMap<>();
+        Set<Tile> visited = new HashSet<>();
+        Queue<Tile> queue = new LinkedList<>();
+
+        Tile start = troopStack.getTile();
+
+        queue.add(start);
+        visited.add(start);
+
+        while (!queue.isEmpty()) {
+            Tile current = queue.poll();
+
+            if (current.equals(destination)) {
+                LinkedList<Tile> path = new LinkedList<>();
+
+                Tile step = destination;
+
+                while (step != null) {
+                    path.addFirst(step);
+                    step = previous.get(step);
+                }
+
+                return path;
+            }
+
+            for (Tile neighbour : resolver.findNeighbors(current)) {
+
+                if (visited.contains(neighbour)) {
+                    continue;
+                }
+
+                if (canTraverse(troopController, current, neighbour) == MoveStatus.FAILURE) {
+                    continue;
+                }
+
+                visited.add(neighbour);
+                previous.put(neighbour, current);
+                queue.add(neighbour);
+            }
+        }
+
+        return null;
+    }
+
+    @Override
+    public MoveStatus canTraverse(Country troopController, Tile from, Tile to) {
+        Country fromController = from.getController();
+        Country toController = to.getController();
+
+        if(!Objects.equals(toController.getAbbreviation(), troopController.getAbbreviation())) {
+            if (!Server.getInstance().getWarManager().isAtWar(troopController, toController)) return MoveStatus.FAILURE;
+        }
+
+        if(Server.getInstance().getWarManager().fightsTogetherWith(troopController, fromController) ||
+                Server.getInstance().getWarManager().isAtWar(fromController, toController)) {
+            if(!Objects.equals(fromController.getAbbreviation(), toController.getAbbreviation()) &&
+                    !Objects.equals(fromController.getAbbreviation(), troopController.getAbbreviation())) {
+                return MoveStatus.FAILURE;
+            }
+        }
+
+        if(hasStack(to)) {
+            if(Server.getInstance().getWarManager().isEnemy(troopController, toController)) {
+                return MoveStatus.FAILURE_FIGHT;
+            }
+        }
+
+        return MoveStatus.SUCCESS;
+    }
+
+    public Set<TroopStack> getAt(Tile tile) {
+        return troops.values().stream().filter(s -> s.getTile().equals(tile)).collect(Collectors.toSet());
+    }
+
+    public boolean hasStack(Tile tile) {
+        return getAt(tile) != null && !getAt(tile).isEmpty();
+    }
+
+
     public UUID getUuid(TroopStack troopStack) {
         var uuid = troops.entrySet().stream().filter(entry -> entry.getValue() == troopStack).findFirst().get();
 
         return uuid.getKey();
+    }
+
+    public TroopStack getTroop(UUID uuid) {
+        return troops.get(uuid);
     }
 
     public void finishMove(UUID troopId, Tile newTile, MoveStatus moveStatus) {
