@@ -1,16 +1,19 @@
 package de.idiotischer.bob.combat;
 
 import de.idiotischer.bob.Server;
+import de.idiotischer.bob.country.Country;
 import de.idiotischer.bob.networking.packet.impl.CombatSyncPacket;
 import de.idiotischer.bob.networking.packet.impl.pp.ReplyPacket;
 import de.idiotischer.bob.networking.packet.impl.pp.Type;
 import de.idiotischer.bob.troop.TroopStack;
 import de.idiotischer.bob.util.UUIDUtil;
+import de.idiotischer.bob.war.WarStatus;
 
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ServerCombatManager {
     private ScheduledExecutorService executor = Executors.newScheduledThreadPool(2);
@@ -91,6 +94,21 @@ public class ServerCombatManager {
         Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), packet);
     }
 
+    public void removeByWar(WarStatus war) {
+        Set<String> attackers = war.getAttackers().stream().map(Country::getAbbreviation).collect(Collectors.toSet());
+
+        Set<String> defenders = war.getDefenders().stream().map(Country::getAbbreviation).collect(Collectors.toSet());
+
+        for (CombatStatus combat : new ArrayList<>(activeCombats)) {
+            boolean normal = combat.getAttackers().stream().anyMatch(t -> attackers.contains(t.getController().getAbbreviation())) && combat.getDefenders().stream().anyMatch(t -> defenders.contains(t.getController().getAbbreviation()));
+            boolean reversed = combat.getAttackers().stream().anyMatch(t -> defenders.contains(t.getController().getAbbreviation())) && combat.getDefenders().stream().anyMatch(t -> attackers.contains(t.getController().getAbbreviation()));
+
+            if (normal || reversed) {
+                cleanupCombat(combat);
+            }
+        }
+    }
+
     private CombatStatus findCombat(List<TroopStack> attackers, List<TroopStack> defenders) {
         Set<Object> tiles = new HashSet<>();
 
@@ -133,6 +151,25 @@ public class ServerCombatManager {
             cleanupCombat(combat);
         } else {
             broadcast(combat);
+        }
+    }
+
+    public void removeByCountry(Country country) {
+        for (CombatStatus combat : new ArrayList<>(activeCombats)) {
+            List<TroopStack> toRemove = Stream.concat(
+                            combat.getAttackers().stream(),
+                            combat.getDefenders().stream()
+                    )
+                    .filter(stack -> Objects.equals(stack.getController().getAbbreviation(), country.getAbbreviation()))
+                    .toList();
+
+            for (TroopStack stack : toRemove) {
+                handleOOH(combat, stack);
+            }
+
+            if (isCombatOver(combat)) {
+                cleanupCombat(combat);
+            }
         }
     }
 

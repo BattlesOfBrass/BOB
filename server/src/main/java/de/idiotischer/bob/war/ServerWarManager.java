@@ -157,6 +157,8 @@ public class ServerWarManager {
                             .forEach(c -> c.setControllerForAll(Server.getInstance().getServerSocket().getClients(), aggressor));
                     Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(),
                             new ReplyPacket(Type.CAPITULATE_COUNTRY, aggressor.getAbbreviation() + ";" + defender.getAbbreviation()));
+
+
                 });
             }
 
@@ -172,6 +174,8 @@ public class ServerWarManager {
     }
 
     private void endWar(WarStatus status) {
+        Server.getInstance().getCombatManager().removeByWar(status);
+
         for (Country c : status.getAttackers()) {
             Set<WarStatus> wars = activeWars.get(c.getAbbreviation());
             if (wars != null) {
@@ -186,10 +190,7 @@ public class ServerWarManager {
             }
         }
 
-        Server.getInstance().getSendTool().broadcast(
-                Server.getInstance().getServerSocket().getClients(),
-                new ReplyPacket(Type.END_WAR, status.toDataString())
-        );
+        Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new ReplyPacket(Type.END_WAR, status.toDataString()));
     }
 
     public String serializeWars() {
