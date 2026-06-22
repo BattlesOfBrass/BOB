@@ -189,4 +189,29 @@ public class CombatStatus {
     public UUID getUuid() {
         return uuid;
     }
+
+    public Side whoWon() {
+        if (!finished) {
+            return Side.NONE;
+        }
+
+        boolean attackersAlive = attackers.stream().anyMatch(s -> s.isAlive() && s.getHp() > 0);
+        boolean defendersAlive = defenders.stream().anyMatch(s -> s.isAlive() && s.getHp() > 0);
+
+        if (attackersAlive && !defendersAlive) {
+            return Side.ATTACKER;
+        }
+
+        if (defendersAlive && !attackersAlive) {
+            return Side.DEFENDER;
+        }
+
+        return Side.NONE;
+    }
+
+    public enum Side {
+        NONE,
+        ATTACKER,
+        DEFENDER,
+    }
 }

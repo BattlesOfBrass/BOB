@@ -306,13 +306,19 @@ public class ServerTroopManager implements TroopResolver{
                     pausedMovementIndex.put(troopStack, i[0]);
 
                     Server.getInstance().getCombatManager().onCombatFinished(combat -> {
-
                         var attackers = combat.getAttackers();
                         var defenders = combat.getDefenders();
 
                         List<TroopStack> all = new ArrayList<>();
                         all.addAll(attackers);
                         all.addAll(defenders);
+
+                        //if(combat.whoWon() == CombatStatus.Side.DEFENDER) {
+                        //    for (TroopStack stack : all) {
+                        //        pausedMovementIndex.remove(stack);
+                        //    }
+                        //    return;
+                        //}
 
                         Set<TroopStack> pushable = getAt(to);
 

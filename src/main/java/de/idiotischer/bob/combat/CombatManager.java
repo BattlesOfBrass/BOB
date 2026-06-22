@@ -6,10 +6,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.stream.Collectors;
 
 public class CombatManager {
-    private final Set<CombatStatus> activeCombats = new HashSet<>();
+    private final Set<CombatStatus> activeCombats = ConcurrentHashMap.newKeySet();
 
     public void addStatus(List<CombatStatus> statuses) {
         statuses.forEach(this::addStatus);
@@ -41,11 +43,11 @@ public class CombatManager {
     }
 
     public CombatStatus getCombat(TroopStack stack) {
-        return activeCombats.stream().filter(f -> f.getDefenders().contains(stack) || f.getAttackers().contains(stack)).findFirst().get();
+        return activeCombats.stream().filter(f -> f.getDefenders().contains(stack) || f.getAttackers().contains(stack)).findFirst().orElse(null);
     }
 
     public CombatStatus getCombat(UUID stack) {
-        return activeCombats.stream().filter(f -> f.getUuid().equals(stack)).findFirst().get();
+        return activeCombats.stream().filter(f -> f.getUuid().equals(stack)).findFirst().orElse(null);
     }
 
     public Set<CombatStatus> getActiveCombats() {

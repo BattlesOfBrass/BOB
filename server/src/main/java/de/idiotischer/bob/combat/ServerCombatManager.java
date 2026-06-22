@@ -5,6 +5,8 @@ import de.idiotischer.bob.country.Country;
 import de.idiotischer.bob.networking.packet.impl.CombatSyncPacket;
 import de.idiotischer.bob.networking.packet.impl.pp.ReplyPacket;
 import de.idiotischer.bob.networking.packet.impl.pp.Type;
+import de.idiotischer.bob.tile.Tile;
+import de.idiotischer.bob.troop.MoveStatus;
 import de.idiotischer.bob.troop.TroopStack;
 import de.idiotischer.bob.util.UUIDUtil;
 import de.idiotischer.bob.war.WarStatus;
@@ -20,7 +22,7 @@ public class ServerCombatManager {
 
     private final Set<CombatStatus> activeCombats = new HashSet<>();
     private final Set<Consumer<CombatStatus>> combatListeners = ConcurrentHashMap.newKeySet();
-    private final Set<Consumer<TroopStack>> troopDeathListeners = ConcurrentHashMap.newKeySet();
+    private final Set<Consumer<TroopStack>> troopOutOfHealthListeners = ConcurrentHashMap.newKeySet();
 
     private static final double DEFENDER_DAMAGE_NEGATION = 0.4;
     private static final int ORG_RM_PER_TICK = 5;
@@ -136,8 +138,8 @@ public class ServerCombatManager {
         Set<TroopStack> attackers = combat.getAttackers();
         Set<TroopStack> defenders = combat.getDefenders();
 
-        removeOrg(attackers);
-        //removeOrg(defenders); i dont think this is called on defenders in hoi4
+        removeOrg(combat, attackers, 2);
+        removeOrg(combat, defenders, 0); //i dont think this is called on defenders the way its done on attackers in hoi4
 
         int attackDamage = attackers.stream().filter(s -> s.getHp() > 0 && !s.isBroken()).mapToInt(TroopStack::getAttack).sum();
         int defendDamage = (int) Math.round(defenders.stream().filter(s -> s.getHp() > 0 && !s.isBroken()).mapToInt(TroopStack::getAttack).sum() * DEFENDER_DAMAGE_NEGATION);
@@ -193,17 +195,20 @@ public class ServerCombatManager {
         });
     }
 
-    private void removeOrg(Set<TroopStack> stacks) {
+    private void removeOrg(CombatStatus combat, Set<TroopStack> stacks, int extra) {
         for (TroopStack stack : stacks) {
             if (stack.getHp() <= 0) {
-                //TODO: kick out
                 continue;
             }
 
             int oldOrg = stack.getOrg();
-            int newOrg = oldOrg - ORG_RM_PER_TICK;
+            int newOrg = oldOrg - ORG_RM_PER_TICK - extra;
 
             stack.setOrg(newOrg);
+
+            if (stack.getOrg() <= 0) {
+                handleOOH(combat, stack);
+            }
         }
     }
 
@@ -235,7 +240,7 @@ public class ServerCombatManager {
         combat.getAttackers().remove(stack);
         combat.getDefenders().remove(stack);
 
-        for (Consumer<TroopStack> listener : troopDeathListeners) {
+        for (Consumer<TroopStack> listener : troopOutOfHealthListeners) {
             try {
                 listener.accept(stack);
             } catch (Exception e) {
@@ -246,6 +251,25 @@ public class ServerCombatManager {
         CombatSyncPacket packet = new CombatSyncPacket(combat, Server.getInstance().getTroopManager());
 
         Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), packet);
+
+        List<Tile> fallbacks = new ArrayList<>(Server.getInstance().getTileManager().findNeighbors(stack.getTile()));
+
+        fallbacks.removeIf(tile ->
+                !Objects.equals(tile.getController().getAbbreviation(), stack.getController().getAbbreviation()) && !Server.getInstance().getWarManager().fightsTogetherWith(tile.getController(), stack.getController())
+        );
+
+        if (!fallbacks.isEmpty()) {
+            Tile fallback = fallbacks.getFirst();
+
+            String reply = "troop=" + Server.getInstance().getTroopManager().getUuid(stack) + ";tile=" + fallback.getAbbreviation() + ";type=" + MoveStatus.SUCCESS.ordinal();
+
+            Server.getInstance().getTroopManager().removePathfinding(stack);
+            stack.setTile(fallback);
+
+            Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new ReplyPacket(Type.TROOPS_MOVE, reply));
+        } else {
+            Server.getInstance().getTroopManager().removeTroop(stack);
+        }
     }
 
     private void applyDamage(CombatStatus combat, Set<TroopStack> stacks, int damage) {
@@ -347,6 +371,6 @@ public class ServerCombatManager {
     }
 
     public void onTroopDeath(Consumer<TroopStack> callback) {
-        troopDeathListeners.add(callback);
+        troopOutOfHealthListeners.add(callback);
     }
 }
