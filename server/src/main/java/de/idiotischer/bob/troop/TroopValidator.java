@@ -42,76 +42,13 @@ public class TroopValidator {
             if(!Server.getInstance().getWarManager().fightsTogetherWith(troopController, tileController)) return MoveStatus.FAILURE;
         }
 
-        if (!neighbours.contains(tile)) {
+        List<Tile> path = Server.getInstance().getTroopManager().findPath(troopStack,tile,resolver);
+        Server.getInstance().getTroopManager().addTroopPath(troopStack,path);
+        Server.getInstance().getTroopManager().startMovement(troopStack);
 
-            List<Tile> path = Server.getInstance().getTroopManager().findPath(troopStack,tile,resolver);
-            Server.getInstance().getTroopManager().addTroopPath(troopStack,path);
-            Server.getInstance().getTroopManager().startMovement(troopStack);
+        boolean pathFound = path != null;
 
-            boolean pathFound = path != null;
-
-            if (!pathFound) return MoveStatus.FAILURE;
-            else return MoveStatus.FAILURE_STARTED_PATHFINDING;
-        }
-
-        if(Server.getInstance().getCombatManager().isInCombat(troopStack)) return MoveStatus.FAILURE_IN_COMBAT;
-
-        Set<TroopStack> toStacks = tr.getAt(tile);
-
-        if (!toStacks.isEmpty()) {
-
-            Set<TroopStack> enemyStacks = Server.getInstance().getTroopManager().getAt(tile);
-            Set<TroopStack> ownStacks = Server.getInstance().getTroopManager().getAt(troopStack.getTile());
-
-            CombatStatus combatHere = Server.getInstance().getCombatManager().enterCombat(new ArrayList<>(ownStacks), new ArrayList<>(enemyStacks));
-
-            if (combatHere != null) {
-
-                Server.getInstance().getCombatManager().onCombatFinished(combat -> {
-
-                    var attackers = combat.getAttackers();
-                    var defenders = combat.getDefenders();
-
-                    List<TroopStack> all = new ArrayList<>();
-                    all.addAll(attackers);
-                    all.addAll(defenders);
-
-                    Set<TroopStack> pushable = Server.getInstance().getTroopManager().getAt(tile);
-
-                    if(!pushable.isEmpty()) {
-                        List<Tile> fallbacks = new ArrayList<>(Server.getInstance().getTileManager().findNeighbors(tile));
-
-                        fallbacks.removeIf(tile1 -> !Objects.equals(tile1.getController().getAbbreviation(), new ArrayList<>(pushable).getFirst().getController().getAbbreviation()) &&
-                                !Server.getInstance().getWarManager().fightsTogetherWith(tile1.getController(), new ArrayList<>(pushable).getFirst().getController()));
-
-                        if(!fallbacks.isEmpty()) {
-                            Tile tile2 = fallbacks.getFirst();
-
-                            pushable.forEach(p -> {
-                                String reply = "troop=" + Server.getInstance().getTroopManager().getUuid(p) + ";tile=" + tile2.getAbbreviation() + ";type=" + MoveStatus.SUCCESS.ordinal();
-
-                                Server.getInstance().getTroopManager().removePathfinding(p);
-                                p.setTile(tile);
-
-                                Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new ReplyPacket(Type.TROOPS_MOVE, reply));
-                            });
-                        } else {
-                            pushable.forEach(p -> {Server.getInstance().getTroopManager().removeTroop(p);});
-                        }
-                    }
-
-                });
-
-                return MoveStatus.FAILURE_FIGHT;
-            }
-        }
-        if(mover == null) {
-            //do smth else
-            return MoveStatus.SUCCESS;
-        }
-
-        if(!Objects.equals(mover.country().getAbbreviation(), troopController.getAbbreviation())) return MoveStatus.FAILURE_NO_CONTROL;
-
-        return MoveStatus.SUCCESS;
+        if (!pathFound) return MoveStatus.FAILURE;
+        else return MoveStatus.FAILURE_STARTED_PATHFINDING;
     }
 }

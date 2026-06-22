@@ -130,7 +130,6 @@ public class PacketListener implements ListenerAdapter {
                     BOB.getInstance().getCombatManager().clear();
                 }
                 case COMBAT_OVER -> {
-                    System.out.println("gfddfgfgdfgd");
                     String uuidString = pack.getMessage();
 
                     UUID uuid;

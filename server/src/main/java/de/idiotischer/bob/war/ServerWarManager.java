@@ -194,7 +194,6 @@ public class ServerWarManager {
     }
 
     public String serializeWars() {
-
         StringBuilder sb = new StringBuilder();
 
         for (Map.Entry<String, Set<WarStatus>> entry : activeWars.entrySet()) {
@@ -202,10 +201,7 @@ public class ServerWarManager {
             String country = entry.getKey();
 
             for (WarStatus war : entry.getValue()) {
-                sb.append(country)
-                        .append("#")
-                        .append(war.toDataString())
-                        .append("\n");
+                sb.append(country).append("#").append(war.toDataString()).append("\n");
             }
         }
 

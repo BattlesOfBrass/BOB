@@ -137,7 +137,7 @@ public class ServerCombatManager {
         Set<TroopStack> defenders = combat.getDefenders();
 
         removeOrg(attackers);
-        removeOrg(defenders);
+        //removeOrg(defenders); i dont think this is called on defenders in hoi4
 
         int attackDamage = attackers.stream().filter(s -> s.getHp() > 0 && !s.isBroken()).mapToInt(TroopStack::getAttack).sum();
         int defendDamage = (int) Math.round(defenders.stream().filter(s -> s.getHp() > 0 && !s.isBroken()).mapToInt(TroopStack::getAttack).sum() * DEFENDER_DAMAGE_NEGATION);

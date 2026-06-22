@@ -16,7 +16,7 @@ public class TroopStack extends Troop {
     private int baseHp = 200;
     private int baseAttack = 25;
     private int baseDefense = 10;
-    private int baseOrg = 100;
+    private int baseOrg = 50;
     private int hp = baseHp;
     private int attack = baseAttack;
     private int defense = baseDefense;
