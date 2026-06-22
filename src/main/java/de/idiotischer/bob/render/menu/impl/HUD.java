@@ -1,16 +1,19 @@
 package de.idiotischer.bob.render.menu.impl;
 
 import de.idiotischer.bob.BOB;
+import de.idiotischer.bob.country.Country;
 import de.idiotischer.bob.networking.packet.impl.pp.RequestPacket;
 import de.idiotischer.bob.networking.packet.impl.pp.Type;
-import de.idiotischer.bob.render.menu.components.HUDTopBar;
-import de.idiotischer.bob.render.menu.components.ModernTabbedPane;
+import de.idiotischer.bob.render.menu.components.*;
 import de.idiotischer.bob.render.menu.components.button.BOBButton;
 import de.idiotischer.bob.tile.Tile;
+import it.unimi.dsi.fastutil.Pair;
 
 import javax.swing.*;
+import javax.swing.text.DefaultFormatter;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.util.List;
 import java.util.Objects;
 
 public class HUD extends JPanel {
@@ -75,19 +78,63 @@ public class HUD extends JPanel {
         JPanel panel = new JPanel();
         panel.setOpaque(false);
         panel.setFocusable(false);
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
-        JLabel label = new JLabel();
-        label.setForeground(Color.WHITE);
+        JPanel flagPanel = new JPanel(new BorderLayout());
+        flagPanel.setOpaque(false);
+        flagPanel.setMaximumSize(new Dimension(140, 90));
+        flagPanel.setPreferredSize(new Dimension(140, 90));
+        flagPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        if (currentTile != null) {
-            if (currentTile.getController().getPlayer().uuid() == BOB.getInstance().getPlayer().uuid()) {
-                label.setText("Your country overview");
-            } else {
-                label.setText("Foreign country overview");
+        flagPanel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(180, 180, 180), 2),
+                BorderFactory.createEmptyBorder(3, 3, 3, 3)
+        ));
+
+        JLabel flagLabel = new JLabel();
+        flagLabel.setHorizontalAlignment(SwingConstants.CENTER);
+
+        if (currentMode != null &&
+                currentTile != null &&
+                currentTile.getController() != null) {
+
+            BufferedImage flagIcon = currentTile.getController().getFlagImage();
+            if (flagIcon != null) {
+                Image scaled = flagIcon.getScaledInstance(130, 80, Image.SCALE_SMOOTH);
+                flagLabel.setIcon(new ImageIcon(scaled));
             }
         }
 
-        panel.add(label);
+        flagPanel.add(flagLabel, BorderLayout.CENTER);
+
+        JLabel countryName = new JLabel(currentTile == null ? "None" : currentTile.getController().countryName());
+        countryName.setForeground(Color.WHITE);
+        countryName.setFont(countryName.getFont().deriveFont(Font.BOLD, 20f));
+        countryName.setAlignmentX(Component.CENTER_ALIGNMENT);
+        countryName.setHorizontalAlignment(SwingConstants.CENTER);
+        countryName.setFocusable(false);
+
+        JPanel namePanel = new JPanel();
+        namePanel.setOpaque(false);
+        namePanel.setLayout(new BoxLayout(namePanel, BoxLayout.X_AXIS));
+        namePanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        namePanel.add(Box.createHorizontalGlue());
+        namePanel.add(countryName);
+        namePanel.add(Box.createHorizontalGlue());
+        namePanel.setFocusable(false);
+
+        panel.add(Box.createVerticalStrut(10));
+        panel.add(flagPanel);
+        panel.add(Box.createVerticalStrut(5));
+        panel.add(namePanel);
+
+        if(BOB.getInstance().getPlayer() != null && BOB.getInstance().getPlayer().country() != null && currentTile.getController() != null) {
+            if(BOB.getInstance().getWarManager().isAtWar(currentTile.getController(), BOB.getInstance().getPlayer().country())) return panel;
+            if(Objects.equals(BOB.getInstance().getPlayer().country().getAbbreviation(), currentTile.getController().getAbbreviation())) return panel;
+
+            panel.add(Box.createVerticalStrut(30));
+        }
+
         return panel;
     }
 
@@ -97,7 +144,7 @@ public class HUD extends JPanel {
         if (currentTile == null) {
             newMode = TabMode.NONE;
         } else {
-            boolean ownCountry = currentTile.getController() != null && currentTile.getController().getPlayer() != null && currentTile.getController() == BOB.getInstance().getPlayer().country()/*currentTile.getController().getPlayer().uuid() == BOB.getInstance().getPlayer().uuid()*/;
+            boolean ownCountry = currentTile.getController() != null && Objects.equals(currentTile.getController().getAbbreviation(), BOB.getInstance().getPlayer().country().getAbbreviation())/*currentTile.getController().getPlayer().uuid() == BOB.getInstance().getPlayer().uuid()*/;
             newMode = ownCountry ? TabMode.OWN : TabMode.FOREIGN;
         }
 
@@ -129,11 +176,95 @@ public class HUD extends JPanel {
         JPanel panel = new JPanel();
         panel.setOpaque(false);
         panel.setFocusable(false);
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
-        JLabel label = new JLabel("Deployment");
-        label.setForeground(Color.WHITE);
+        JLabel title = new JLabel("Deployment");
+        title.setForeground(Color.WHITE);
+        title.setAlignmentX(Component.CENTER_ALIGNMENT);
+        title.setFont(title.getFont().deriveFont(Font.BOLD, 18));
 
-        panel.add(label);
+        List<Pair<String, String>> strings = BOB.getInstance().getTileManager().getTiles(BOB.getInstance().getPlayer().country());
+
+        JComboBox<Pair<String, String>> locationDropdown = new JComboBox<Pair<String, String>>(strings.toArray(new Pair[0]));
+
+        locationDropdown.setUI(new ModernComboBoxUI());
+        locationDropdown.setMaximumSize(new Dimension(200, 30));
+        locationDropdown.setAlignmentX(Component.CENTER_ALIGNMENT);
+        locationDropdown.setFocusable(false);
+
+        JLabel selectedLabel = new JLabel("Selected: " + (strings.isEmpty() ? "None" : strings.getFirst().value()));
+
+        selectedLabel.setForeground(Color.LIGHT_GRAY);
+        selectedLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        selectedLabel.setFocusable(false);
+
+        locationDropdown.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+
+                if (value instanceof Pair<?, ?> pair) if (pair.value() instanceof String s) label.setText(s);
+
+                return label;
+            }
+        });
+
+        locationDropdown.addActionListener(e -> {
+            String selected = ((Pair<String, String>) locationDropdown.getSelectedItem()).value();
+            selectedLabel.setText("Selected: " + selected);
+        });
+
+        JSpinner divisionSpinner = new JSpinner(new SpinnerNumberModel(1, 1, 5, 1));
+        divisionSpinner.setMaximumSize(new Dimension(80, 30));
+        JSpinner.NumberEditor editor = new JSpinner.NumberEditor(divisionSpinner);
+        divisionSpinner.setEditor(editor);
+
+        JFormattedTextField tf = editor.getTextField();
+        tf.setHorizontalAlignment(JTextField.CENTER);
+        tf.setFocusable(false);
+
+        DefaultFormatter formatter = (DefaultFormatter) tf.getFormatter();
+        formatter.setAllowsInvalid(false);
+        formatter.setCommitsOnValidEdit(true);
+
+        divisionSpinner.setAlignmentX(Component.CENTER_ALIGNMENT);
+        divisionSpinner.setUI(new ModernSpinnerUI());
+        divisionSpinner.setFocusable(false);
+
+        ((JSpinner.DefaultEditor) divisionSpinner.getEditor()).getTextField().setHorizontalAlignment(JTextField.CENTER);
+
+        JButton spawnTroopButton = new BOBButton("Spawn", Color.WHITE, Color.BLACK, Color.DARK_GRAY.darker(), Color.LIGHT_GRAY, 16, 5);
+
+        spawnTroopButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        spawnTroopButton.setFocusable(false);
+
+        spawnTroopButton.addActionListener(e -> {
+            Pair<String, String> selectedPair = (Pair<String, String>) locationDropdown.getSelectedItem();
+
+            if (selectedPair == null) return;
+
+            String selectedTile = selectedPair.key();
+            if (selectedTile == null || selectedTile.isEmpty()) return;
+
+            int divisions = (Integer) divisionSpinner.getValue();
+
+            RequestPacket packet = new RequestPacket(Type.SPAWN_TROOP, selectedTile + ";" + BOB.getInstance().getPlayer().country().getAbbreviation() + ";" + divisions);
+            BOB.getInstance().getSendTool().send(BOB.getInstance().getClient().getChannel(), packet);
+        });
+
+        panel.add(Box.createVerticalStrut(10));
+        panel.add(title);
+        panel.add(Box.createVerticalStrut(10));
+        panel.add(divisionSpinner);
+        panel.add(Box.createVerticalStrut(10));
+        panel.add(selectedLabel);
+
+        panel.add(Box.createVerticalStrut(10));
+        panel.add(locationDropdown);
+
+        panel.add(Box.createVerticalStrut(15));
+        panel.add(spawnTroopButton);
+
         return panel;
     }
 

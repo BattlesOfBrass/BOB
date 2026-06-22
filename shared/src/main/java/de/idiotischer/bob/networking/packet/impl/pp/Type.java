@@ -20,5 +20,6 @@ public enum Type {
     CAPITULATE_COUNTRY,
     COMBAT_OVER,
     CLEAR_COMBATS,
-    WARS_SYNC
+    WARS_SYNC,
+    SPAWN_TROOP, /*test thing, will be removed*/
 }

@@ -7,6 +7,7 @@ import de.idiotischer.bob.Server;
 import de.idiotischer.bob.SharedCore;
 import de.idiotischer.bob.combat.CombatStatus;
 import de.idiotischer.bob.country.Country;
+import de.idiotischer.bob.networking.packet.impl.TroopStackSyncPacket;
 import de.idiotischer.bob.networking.packet.impl.pp.ReplyPacket;
 import de.idiotischer.bob.networking.packet.impl.pp.Type;
 import de.idiotischer.bob.tile.Tile;
@@ -109,33 +110,11 @@ public class ServerTroopManager implements TroopResolver{
     }
 
     public void addTroopStack(TroopStack troop) {
-        troopStacks.putIfAbsent(UUIDUtil.getUnused(troopStacks.keySet()), troop);
-    }
+        UUID uuid = UUIDUtil.getUnused(troopStacks.keySet());
 
-    public void addTroop(Troop troop) {
-        troops.add(troop);
+        troopStacks.putIfAbsent(uuid, troop);
 
-        updateStacks();
-    }
-
-    private void updateStacks() {
-        troopStacks.clear();
-
-        for (Troop troop : troops) {
-
-            TroopStack stack = troopStacks.values().stream()
-                    .filter(s ->
-                            s.getTemplate().equals(troop.getTemplate()) &&
-                                    s.getController().equals(troop.getController()) && s.getTile().equals(troop.getTile()))
-                    .findFirst()
-                    .orElseGet(() -> {
-                        TroopStack newStack = new TroopStack(troop.getTile(),troop.getController(),new ArrayList<>());
-                        troopStacks.put(UUIDUtil.getUnused(troopStacks.keySet()),newStack);
-                        return newStack;
-                    });
-
-            stack.getTroops().add(troop);
-        }
+        Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new TroopStackSyncPacket(uuid, troop));
     }
 
     public Set<TroopStack> getAt(Tile tile) {

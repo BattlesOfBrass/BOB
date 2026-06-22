@@ -47,6 +47,22 @@ public class ServerPacketListener implements ListenerAdapter {
         } else if(event.getPacket() instanceof RequestPacket pack) {
             //so ping pong like
             switch (pack.getRequestType()) {
+                case SPAWN_TROOP -> {
+                    String[] strings = pack.getMessage().split(";");
+
+                    String tileString = strings[0];
+                    String ownerString = strings[1];
+                    int count = Integer.parseInt(strings[2]);
+
+                    Tile tile = Server.getInstance().getTileManager().byAbbreviation(tileString);
+                    Country owner = Server.getInstance().getCountryManager().byAbbreviation(ownerString);
+
+                    if(tile == null || owner == null) return;
+
+                    TroopStack stack = new TroopStack("dojfsnsdoi", tile,owner,owner,count, "none");
+
+                    Server.getInstance().getTroopManager().addTroopStack(stack);
+                }
                 case WARS_SYNC -> {
                     Server.getInstance().getSendTool().send(event.getChannel(), new ReplyPacket(Type.WARS_SYNC, Server.getInstance().getWarManager().serializeWars()));
                 }

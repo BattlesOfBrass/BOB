@@ -7,6 +7,7 @@ import de.idiotischer.bob.networking.packet.impl.pp.RequestPacket;
 import de.idiotischer.bob.networking.packet.impl.pp.Type;
 import de.idiotischer.bob.render.menu.impl.select.ScenarioSelectMenu;
 import de.idiotischer.bob.util.PosUtil;
+import it.unimi.dsi.fastutil.Pair;
 
 import javax.swing.*;
 import java.awt.*;
@@ -160,10 +161,16 @@ public class TileManager implements TileResolver {
         return neighbors;
     }
 
+    public List<Pair<String, String>> getTiles(Country country) {
+        return tileSet.stream().filter(t -> Objects.equals(t.getController().getAbbreviation(), country.getAbbreviation())).map(t -> Pair.of(t.getAbbreviation(), t.getName())).collect(Collectors.toList());
+    }
 
+    public List<String> getTilesControlled(Country country) {
+        return tileSet.stream().filter(t -> Objects.equals(t.getController().getAbbreviation(), country.getAbbreviation())).map(Tile::getName).collect(Collectors.toList());
+    }
 
     public List<String> getTiles() {
-        return tileSet.stream().map(Tile::toString).collect(Collectors.toList());
+        return tileSet.stream().map(Tile::getName).collect(Collectors.toList());
     }
 
     //public Tile getTileAt(int x, int y) {
