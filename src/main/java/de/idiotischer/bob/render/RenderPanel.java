@@ -95,9 +95,29 @@ public class RenderPanel extends JPanel implements Panel {
     }
 
     public void updateTroopButtons(Graphics2D g2) {
-        List<TroopStack> visible = new ArrayList<>(BOB.getInstance()
-                        .getTroopManager()
-                        .getVisible(BOB.getInstance().getPlayer().country()).values());
+        List<TroopStack> visible = new ArrayList<>(BOB.getInstance().getTroopManager().getVisible(BOB.getInstance().getPlayer().country()).values());
+
+        if(isPeaceConference()) visible.clear();
+
+        if(isPeaceConference()) {
+            List<Component> toRemove = new ArrayList<>();
+
+            for (Component c : troopLayer.getComponents()) {
+                if (c instanceof TroopVisualButton button) {
+                    toRemove.add(c);
+                    selected.remove(button);
+
+                }
+            }
+
+            for (Component c : toRemove) {
+                troopLayer.remove(c);
+            }
+
+            selected.clear();
+
+            return;
+        }
 
         AffineTransform transform = renderer.getCamera().getTransform();
 
@@ -122,6 +142,7 @@ public class RenderPanel extends JPanel implements Panel {
                 }
             }
         }
+
         for (Component c : toRemove) {
             troopLayer.remove(c);
         }
@@ -206,6 +227,14 @@ public class RenderPanel extends JPanel implements Panel {
 
     private void updateCombatButtons() {
         Set<UUID> activeIds = new HashSet<>();
+
+        if(isPeaceConference()) {
+            combatButtons.forEach((key, value) -> troopLayer.remove(value));
+
+            combatButtons.clear();
+
+            return;
+        }
 
         double zoom = renderer.getCamera().getZoom();
 
@@ -362,5 +391,9 @@ public class RenderPanel extends JPanel implements Panel {
 
     public JPanel getTroopLayer() {
         return troopLayer;
+    }
+
+    public boolean isPeaceConference() {
+        return false;
     }
 }
