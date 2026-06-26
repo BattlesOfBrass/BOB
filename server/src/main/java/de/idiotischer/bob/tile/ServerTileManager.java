@@ -6,6 +6,7 @@ import com.google.gson.stream.JsonReader;
 import de.idiotischer.bob.Server;
 import de.idiotischer.bob.SharedCore;
 import de.idiotischer.bob.country.Country;
+import de.idiotischer.bob.util.ImageUtil;
 import de.idiotischer.bob.util.PosUtil;
 
 import java.awt.*;
@@ -226,8 +227,7 @@ public class ServerTileManager implements TileResolver {
                     if (x < 0 || y < 0 || x >= width || y >= height) {
                         break;
                     }
-
-                    int rgb = map.getRGB(x, y);
+                    int rgb = ImageUtil.get(map,x,y);
 
                     if (borderColors.contains(rgb)) {
                         enteredBorder = true;

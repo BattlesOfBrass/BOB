@@ -52,7 +52,7 @@ public class PosUtil {
             if (visited[x][y]) continue;
             visited[x][y] = true;
 
-            int rgb = surface.getRGB(x, y);
+            int rgb = ImageUtil.get(surface, x, y);
 
             if (unusableRgb.contains(rgb)) {
                 continue;

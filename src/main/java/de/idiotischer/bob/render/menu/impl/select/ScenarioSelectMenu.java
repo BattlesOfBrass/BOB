@@ -1,7 +1,6 @@
 package de.idiotischer.bob.render.menu.impl.select;
 
 import de.idiotischer.bob.BOB;
-import de.idiotischer.bob.map.FloodFill;
 import de.idiotischer.bob.render.MenuPanel;
 import de.idiotischer.bob.render.menu.components.ModernScrollBarUI;
 import de.idiotischer.bob.render.menu.components.button.BOBButton;
@@ -11,8 +10,6 @@ import de.idiotischer.bob.util.ImageUtil;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 
 public class ScenarioSelectMenu extends JPanel {
@@ -133,7 +130,13 @@ public class ScenarioSelectMenu extends JPanel {
             MenuPanel p = BOB.getInstance().getMainRenderer().getMenuPanel();
 
             BufferedImage mapImg = p.getFrame() == null ? selectedScenario.getMapImage() : p.getFrame();
-            BufferedImage backgroundImage = selectedScenario.getBackgroundImage().getSubimage(0, 0, mapImg.getWidth(), mapImg.getHeight());
+            BufferedImage bg = selectedScenario.getBackgroundImage();
+
+            int w = Math.min(mapImg.getWidth(), bg.getWidth());
+            int h = Math.min(mapImg.getHeight(), bg.getHeight());
+
+            BufferedImage backgroundImage = bg.getSubimage(0, 0, w, h);
+
             int drawW = imgFrameWidth - 20;
             int drawH = (int)(drawW * ((double)mapImg.getHeight() / mapImg.getWidth()));
 

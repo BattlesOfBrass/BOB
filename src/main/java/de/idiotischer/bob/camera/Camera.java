@@ -10,8 +10,8 @@ public class Camera {
     private double y = 0;
     private double zoom = 1.0;
 
-    private final int mapWidth;
-    private final int mapHeight;
+    private int mapWidth;
+    private int mapHeight;
 
     private int viewportWidth;
     private int viewportHeight;
@@ -87,7 +87,7 @@ public class Camera {
         zoom *= factor;
 
         double min = getMinZoom();
-        zoom = Math.max(min, Math.min(zoom, 20));
+        zoom = Math.max(min, Math.min(zoom, getMaxZoom()));
 
         x = worldX * zoom - pivotX;
         y = worldY * zoom - pivotY;
@@ -95,6 +95,19 @@ public class Camera {
         wasAtMinZoom = (Math.abs(zoom - min) < 0.001);
 
         clamp();
+    }
+
+    private double getMaxZoom() {
+        if (viewportWidth <= 0 || viewportHeight <= 0) return 1.0;
+
+        double minZoom = getMinZoom();
+
+        double maxByWidth = viewportWidth / (mapWidth / 6.0);
+        double maxByHeight = viewportHeight / (mapHeight / 6.0);
+
+        double maxZoom = Math.min(maxByWidth, maxByHeight);
+
+        return Math.max(minZoom, maxZoom);
     }
 
     public void clamp() {
@@ -190,5 +203,10 @@ public class Camera {
 
     public int getMapHeight() {
         return mapHeight;
+    }
+
+    public void setMapSize(int width, int height) {
+        this.mapWidth = width;
+        this.mapHeight = height;
     }
 }

@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.file.*;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 import org.jetbrains.annotations.ApiStatus;
@@ -13,6 +14,9 @@ import org.jetbrains.annotations.NotNull;
 
 //TODO: placeholder aus github asets fetchen
 public class FileUtil {
+    private static final Set<String> EXCLUDED_PREFIXES = Set.of("native/", "net/","META-INF/", "assets/native/", "lib/native/");
+
+    private static final Set<String> EXCLUDED_FILES = Set.of(".DS_Store");
 
     public static Path getJarDir() {
         try {
@@ -71,6 +75,8 @@ public class FileUtil {
         for (ClassPath.ResourceInfo resource : classPath.getResources()) {
             String resourceName = resource.getResourceName();
 
+            if (isExcluded(resourceName)) continue;
+
             if (
                 resourceName.startsWith(prefix) &&
                 !resourceName.endsWith(".class") &&
@@ -103,6 +109,16 @@ public class FileUtil {
                 }
             }
         }
+    }
+
+    private static boolean isExcluded(String resourceName) {
+        for (String prefix : EXCLUDED_PREFIXES) {
+            if (resourceName.startsWith(prefix)) {
+                return true;
+            }
+        }
+
+        return EXCLUDED_FILES.contains(resourceName);
     }
 
     @ApiStatus.Obsolete

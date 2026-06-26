@@ -5,6 +5,7 @@ import de.idiotischer.bob.camera.Camera;
 import de.idiotischer.bob.render.menu.Panel;
 import de.idiotischer.bob.render.menu.components.button.TroopVisualButton;
 import de.idiotischer.bob.tile.Tile;
+import de.idiotischer.bob.util.ImageUtil;
 
 import javax.swing.*;
 import java.awt.*;
@@ -12,8 +13,6 @@ import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.util.*;
 import java.util.List;
-
-import static de.idiotischer.bob.util.ImageUtil.deepCopy;
 
 public class MainRenderer extends Thread {
     private boolean running = true;
@@ -299,14 +298,24 @@ public class MainRenderer extends Thread {
 
 
     private void handleMovement(double deltaTime) {
-        double speed = 100;
-
         double dx = 0;
         double dy = 0;
 
-        if (keysPressed.contains(KeyEvent.VK_SHIFT)) speed += 100;
+        double mapW = camera.getMapWidth();
+        double mapH = camera.getMapHeight();
 
-        speed *= camera.getZoom() / 0.97;
+        double mapDiag = Math.sqrt(mapW * mapW + mapH * mapH);
+
+        double defaultDiag = 2000.0;
+        double defaultSpeed = 200.0;
+
+        double speed = defaultSpeed * (mapDiag / defaultDiag);
+
+        if (keysPressed.contains(KeyEvent.VK_SHIFT)) {
+            speed *= 1.8;
+        }
+
+        speed *= camera.getZoom();
 
         if (keysPressed.contains(KeyEvent.VK_W)) dy -= speed * deltaTime;
         if (keysPressed.contains(KeyEvent.VK_S)) dy += speed * deltaTime;
@@ -438,23 +447,25 @@ public class MainRenderer extends Thread {
     public BufferedImage getMap() { return renderMap; }
 
     public void setMap(BufferedImage map) {
-        this.logicMap = deepCopy(map);
+        this.logicMap = ImageUtil.deepCopy(map);
 
-        this.renderMap = new BufferedImage(
-                logicMap.getWidth(),
-                logicMap.getHeight(),
-                BufferedImage.TYPE_INT_ARGB
-        );
-
+        this.renderMap = new BufferedImage(logicMap.getWidth(), logicMap.getHeight(), BufferedImage.TYPE_INT_ARGB);
         this.renderGraphics = renderMap.createGraphics();
 
-        this.background = BOB.getInstance().getScenarioSceneLoader()
-                .getCurrentScenario().getBackgroundImage()
-                .getSubimage(0, 0, map.getWidth(), map.getHeight());
+        BufferedImage src = BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getBackgroundImage();
+
+        int w = Math.min(map.getWidth(), src.getWidth());
+        int h = Math.min(map.getHeight(), src.getHeight());
+
+        this.background = src.getSubimage(0, 0, w, h);
 
         this.visualBorderOverlay = new BufferedImage(map.getWidth(), map.getHeight(), BufferedImage.TYPE_INT_ARGB);
 
-        if (camera == null) camera = new Camera(map.getWidth(), map.getHeight());
+        if (camera == null) {
+            camera = new Camera(map.getWidth(), map.getHeight());
+        } else {
+            camera.setMapSize(map.getWidth(), map.getHeight());
+        }
         if (renderPanel != null){
             camera.setViewportSize(renderPanel.getWidth(), renderPanel.getHeight());
         }

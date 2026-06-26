@@ -5,6 +5,7 @@ import de.craftsblock.cnet.modules.packets.common.packet.Packet;
 import de.craftsblock.craftscore.buffer.BufferUtil;
 import de.idiotischer.bob.scenario.Scenario;
 import de.idiotischer.bob.util.FileUtil;
+import de.idiotischer.bob.util.LZ4Util;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -22,7 +23,7 @@ import java.util.List;
 
 //TODO: alle assets wie flaggen für das scenario etc syncen
 //TODO: optimize data usage
-public class ScenarioSyncPacket implements Packet, de.idiotischer.bob.networking.packet.Packet {
+public class ScenarioSyncPacket implements de.idiotischer.bob.networking.packet.Packet {
 
     private String abbreviation;
     private String name;
@@ -38,6 +39,9 @@ public class ScenarioSyncPacket implements Packet, de.idiotischer.bob.networking
     private byte[] tilesJson;
     private byte[] statesJson;
     private byte[] troopsJson;
+
+    private transient byte[] cachedMapImage;
+    private transient byte[] cachedBackgroundImage;
 
     public ScenarioSyncPacket() {}
 
@@ -56,96 +60,29 @@ public class ScenarioSyncPacket implements Packet, de.idiotischer.bob.networking
         this.tilesJson = scenario.isTilesConfigDefault() ? null : FileUtil.readFile(scenario.getTilesConfig());
         this.statesJson = scenario.isStatesConfigDefault() ? null : FileUtil.readFile(scenario.getStatesConfig());
         this.troopsJson = scenario.isTroopConfigDefault() ? null : FileUtil.readFile(scenario.getTroopConfig());
-    }
 
-    @Override
-    public void write(BufferUtil buffer) {
-        try {
-            buffer.putUtf(abbreviation);
-            buffer.putUtf(name);
-
-            buffer.getRaw().putInt(takenColors.size());
-            for (Color c : takenColors) buffer.getRaw().putInt(c.getRGB());
-
-            buffer.getRaw().putInt(borderColors.size());
-            for (Color c : borderColors) buffer.getRaw().putInt(c.getRGB());
-
-            if (mapImage != null) {
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                ImageIO.write(mapImage, "png", baos); //add support for svg and webp etc which is better
-                byte[] imageData = baos.toByteArray();
-
-                buffer.getRaw().putInt((imageData.length));
-                buffer.getRaw().put(imageData);
-            } else {
-                buffer.getRaw().putInt(0);
-            }
-
-            if (backgroundImage != null) {
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                ImageIO.write(backgroundImage, "png", baos); //add support for svg and webp etc which is better
-                byte[] imageData = baos.toByteArray();
-
-                buffer.getRaw().putInt((imageData.length));
-                buffer.getRaw().put(imageData);
-            } else {
-                buffer.getRaw().putInt(0);
-            }
-
-            writeBytes(buffer.getRaw(), unusableJson);
-            writeBytes(buffer.getRaw(), countriesJson);
-            writeBytes(buffer.getRaw(), tilesJson);
-            writeBytes(buffer.getRaw(), statesJson);
-            writeBytes(buffer.getRaw(), troopsJson);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        buildCache();
     }
 
     @Override
     public void write(ByteBuffer buffer) {
-        try {
-            writeString(buffer, abbreviation);
-            writeString(buffer, name);
+        writeString(buffer, abbreviation);
+        writeString(buffer, name);
 
-            buffer.putInt(takenColors.size());
-            for (Color c : takenColors) buffer.putInt(c.getRGB());
+        buffer.putInt(takenColors.size());
+        for (Color c : takenColors) buffer.putInt(c.getRGB());
 
-            buffer.putInt(borderColors.size());
-            for (Color c : borderColors) buffer.putInt(c.getRGB());
+        buffer.putInt(borderColors.size());
+        for (Color c : borderColors) buffer.putInt(c.getRGB());
 
-            if (mapImage != null) {
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                ImageIO.write(mapImage, "png", baos); //add support for svg and webp etc which is better
-                byte[] imageData = baos.toByteArray();
+        writeBytes(buffer, cachedMapImage);
+        writeBytes(buffer, cachedBackgroundImage);
 
-                buffer.putInt((imageData.length));
-                buffer.put(imageData);
-            } else {
-                buffer.putInt(0);
-            }
-
-            if (backgroundImage != null) {
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                ImageIO.write(backgroundImage, "png", baos); //add support for svg and webp etc which is better
-                byte[] imageData = baos.toByteArray();
-
-                buffer.putInt((imageData.length));
-                buffer.put(imageData);
-            } else {
-                buffer.putInt(0);
-            }
-
-            writeBytes(buffer, unusableJson);
-            writeBytes(buffer, countriesJson);
-            writeBytes(buffer, tilesJson);
-            writeBytes(buffer, statesJson);
-            writeBytes(buffer, troopsJson);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        writeBytes(buffer, unusableJson);
+        writeBytes(buffer, countriesJson);
+        writeBytes(buffer, tilesJson);
+        writeBytes(buffer, statesJson);
+        writeBytes(buffer, troopsJson);
     }
 
     @Override
@@ -166,33 +103,53 @@ public class ScenarioSyncPacket implements Packet, de.idiotischer.bob.networking
             borderColors.add(new Color(buffer.getInt()));
         }
 
-        int imageLength = buffer.getInt();
-        if (imageLength > 0) {
-            byte[] imageData = new byte[imageLength];
-            buffer.get(imageData);
+        byte[] mapBytes = readBytes(buffer);
+        if (mapBytes.length > 0) {
             try {
-                this.mapImage = ImageIO.read(new ByteArrayInputStream(imageData));
+                this.mapImage = ImageIO.read(new ByteArrayInputStream(mapBytes));
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }
-        int imageLength2 = buffer.getInt();
-        if (imageLength2 > 0) {
-            byte[] imageData = new byte[imageLength2];
-            buffer.get(imageData);
-            try {
-                this.backgroundImage = ImageIO.read(new ByteArrayInputStream(imageData));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        } else {
+            this.mapImage = null;
         }
 
+        byte[] bgBytes = readBytes(buffer);
+        if (bgBytes.length > 0) {
+            try {
+                this.backgroundImage = ImageIO.read(new ByteArrayInputStream(bgBytes));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+            this.backgroundImage = null;
+        }
 
         this.unusableJson = readBytes(buffer);
         this.countriesJson = readBytes(buffer);
         this.tilesJson = readBytes(buffer);
         this.statesJson = readBytes(buffer);
         this.troopsJson = readBytes(buffer);
+    }
+
+    public void buildCache() {
+        try {
+            if (mapImage != null && cachedMapImage == null) {
+                cachedMapImage = encode(mapImage);
+            }
+
+            if (backgroundImage != null && cachedBackgroundImage == null) {
+                cachedBackgroundImage = encode(backgroundImage);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private byte[] encode(BufferedImage img) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageIO.write(img, "webp", baos);
+        return baos.toByteArray();
     }
 
     public Path applyToDisk2() {
@@ -359,8 +316,4 @@ public class ScenarioSyncPacket implements Packet, de.idiotischer.bob.networking
         return countriesJson;
     }
 
-    @Override
-    public void handle(Networker networker) {
-
-    }
 }

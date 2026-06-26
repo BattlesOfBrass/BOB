@@ -43,6 +43,9 @@ dependencies {
     implementation("de.craftsblock.craftsnet.modules.websocketpackets:common:1.1.2-pre5")
     implementation("de.craftsblock.craftscore:event")
 
+    implementation("at.yawk.lz4:lz4-java:1.11.0")
+    implementation("com.github.gotson:webp-imageio:0.2.2")
+
     implementation("com.google.code.gson:gson:2.13.2")
 
     api(project(":shared"))
@@ -100,7 +103,9 @@ tasks.register("buildPreRun") {
         Files.copy(jarFile.toPath(), destFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
     }
 }
-
+val args = listOf(
+    "--enable-native-access=ALL-UNNAMED"
+)
 tasks.register<Exec>("jpackageMain") {
     group = "distribution"
     description = "Creates a native app-image for the current platform using jpackage"
@@ -130,13 +135,15 @@ tasks.register<Exec>("jpackageMain") {
 
     commandLine(
         jpackageBin,
-        "--type",        "app-image",
-        "--name",        "BOB",
+        "--type", "app-image",
+        "--name", "BOB",
         "--app-version", jpackageVersion,
-        "--input",       inputDir.absolutePath,
-        "--main-jar",    "BOB-main.jar",
-        "--icon",        iconFile.absolutePath,
-        "--dest",        outputDir.absolutePath
+        "--input", inputDir.absolutePath,
+        "--main-jar", "BOB-main.jar",
+        "--icon", iconFile.absolutePath,
+        "--dest", outputDir.absolutePath,
+
+        "--java-options", "--enable-native-access=ALL-UNNAMED"
     )
 }
 
@@ -170,6 +177,7 @@ tasks.register<Exec>("appimageMain") {
         appRun.writeText(
             "#!/bin/bash\n" +
                     "APPDIR=\"\$(dirname \"\$(readlink -f \"\$0\")\")\"\n" +
+                    "export JAVA_TOOL_OPTIONS=\"--enable-native-access=ALL-UNNAMED\"\n" +
                     "exec \"\$APPDIR/bin/BOB\" \"\$@\"\n"
         )
         appRun.setExecutable(true)
@@ -188,12 +196,17 @@ java {
     }
 }
 
-tasks.register<Exec>("runApp") {
+tasks.register<JavaExec>("runApp") {
     dependsOn("buildPreRun")
 
+    group = "run"
+
     workingDir = file("$projectDir/run")
-    executable = "/bin/bash"
-    args("$projectDir/run/start.sh")
+
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass.set("de.idiotischer.bob.BOB")
+
+    jvmArgs = args
 }
 
 tasks.jar {

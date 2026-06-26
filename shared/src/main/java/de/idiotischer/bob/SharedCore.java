@@ -2,6 +2,7 @@ package de.idiotischer.bob;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.luciad.imageio.webp.WebP;
 import de.craftsblock.craftscore.buffer.BufferUtil;
 import de.craftsblock.craftscore.event.ListenerRegistry;
 import de.idiotischer.bob.networking.communication.SendTool;
@@ -23,6 +24,8 @@ public class SharedCore {
     private static final int maxNameLength = 16;
 
     public SharedCore() {
+        WebP.loadNativeLibrary();
+
         this.registry = new PacketRegistry(this);
 
         configs = FileUtil.getConfigDir();

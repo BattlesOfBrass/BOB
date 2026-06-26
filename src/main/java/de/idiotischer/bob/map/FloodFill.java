@@ -1,12 +1,12 @@
 package de.idiotischer.bob.map;
 
 import de.idiotischer.bob.BOB;
+import de.idiotischer.bob.util.ImageUtil;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.*;
 import java.util.List;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 //TODO: when tiles are fully implemented in the json use them instead of comparign colors
 public class FloodFill {
@@ -48,7 +48,7 @@ public class FloodFill {
 
         if (x < 0 || y < 0 || x >= width || y >= height) return;
 
-        int oldRGB = refMap.getRGB(x, y);
+        int oldRGB = ImageUtil.get(refMap, x, y);
         Color old = new Color(oldRGB, true);
 
         int newRGB = newColor.getRGB();
@@ -67,7 +67,7 @@ public class FloodFill {
             if (px < 0 || py < 0 || px >= width || py >= height) continue;
             if (visited[px][py]) continue;
 
-            int currentRGB = refMap.getRGB(px, py);
+            int currentRGB = ImageUtil.get(refMap, px, py);
             Color currentColor = new Color(currentRGB, true);
 
             visited[px][py] = true;
@@ -90,7 +90,8 @@ public class FloodFill {
 
             if (currentRGB != oldRGB) continue;
 
-            surface.setRGB(px, py, newRGB);
+            ImageUtil.set(surface, px, py, newRGB);
+            //surface.setRGB(px, py, newRGB);
 
             stack.push(new int[]{px + 1, py});
             stack.push(new int[]{px - 1, py});
@@ -163,7 +164,7 @@ public class FloodFill {
             }
 
             if (isBorder) {
-                surface.setRGB(px, py, newRGB);
+                ImageUtil.set(surface, px, py, newRGB);
             }
 
             stack.push(new int[]{px + 1, py});
@@ -204,7 +205,7 @@ public class FloodFill {
                 int nx = n[0], ny = n[1];
                 if (nx < 0 || nx >= width || ny < 0 || ny >= height) {
                     isBorder = true;
-                    surface.setRGB(nx, ny, borderColor.getRGB());
+                    ImageUtil.set(surface, nx, ny, borderColor.getRGB());
                     break;
                 }
                 Color neighborColor = new Color(referenceSurface.getRGB(nx, ny), true);
@@ -280,7 +281,7 @@ public class FloodFill {
                 continue;
             }
 
-            surface.setRGB(px, py, newColor.getRGB());
+            ImageUtil.set(surface, px, py, newColor.getRGB());
 
             stack.push(new int[]{px + 1, py});
             stack.push(new int[]{px - 1, py});

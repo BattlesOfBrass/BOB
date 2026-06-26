@@ -53,6 +53,16 @@ public class ImageUtil {
         );
     }
 
+    public static void set(BufferedImage image, int x, int y, int rgb) {
+        int[] pixels = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
+        pixels[y * image.getWidth() + x] = rgb;
+    }
+
+    //TODO: optimize too but the way from the set method break the get for some reason so we cant use that
+    public static int get(BufferedImage image, int x, int y) {
+        return image.getRGB(x, y);
+    }
+
     //public static boolean isSame(BufferedImage img1, BufferedImage img2) throws IOException {
     //    if (img1.getWidth() != img2.getWidth() || img1.getHeight() != img2.getHeight()) {
     //        return false;
@@ -68,6 +78,21 @@ public class ImageUtil {
 //
     //    return true;
     //}
+
+    private BufferedImage scaleFit(BufferedImage src, int targetHeight) {
+        double scale = (double) targetHeight / src.getHeight();
+        int newWidth = (int) (src.getWidth() * scale);
+
+        Image scaled = src.getScaledInstance(newWidth, targetHeight, Image.SCALE_SMOOTH);
+
+        BufferedImage out = new BufferedImage(newWidth, targetHeight, BufferedImage.TYPE_INT_ARGB);
+
+        Graphics2D g2d = out.createGraphics();
+        g2d.drawImage(scaled, 0, 0, null);
+        g2d.dispose();
+
+        return out;
+    }
 
     public static BufferedImage makeRoundedCorner(BufferedImage image, int cornerRadius) {
         int w = image.getWidth();
@@ -95,11 +120,29 @@ public class ImageUtil {
         return output;
     }
 
+    public static BufferedImage deepCopyAndFit(BufferedImage source, int targetHeight) {
+        double scale = (double) targetHeight / source.getHeight();
+        int newWidth = (int) (source.getWidth() * scale);
+
+        BufferedImage copy = new BufferedImage(newWidth, targetHeight, BufferedImage.TYPE_INT_ARGB);
+
+        Graphics2D g = copy.createGraphics();
+
+        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        g.drawImage(source, 0, 0, newWidth, targetHeight, null);
+        g.dispose();
+
+        return copy;
+    }
+
     public static BufferedImage deepCopy(BufferedImage source) {
         BufferedImage copy = new BufferedImage(
                 source.getWidth(),
                 source.getHeight(),
-                source.getType()
+                BufferedImage.TYPE_INT_ARGB
         );
 
         Graphics2D g = copy.createGraphics();

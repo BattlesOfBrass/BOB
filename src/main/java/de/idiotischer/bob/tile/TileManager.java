@@ -6,6 +6,7 @@ import de.idiotischer.bob.country.Country;
 import de.idiotischer.bob.networking.packet.impl.pp.RequestPacket;
 import de.idiotischer.bob.networking.packet.impl.pp.Type;
 import de.idiotischer.bob.render.menu.impl.select.ScenarioSelectMenu;
+import de.idiotischer.bob.util.ImageUtil;
 import de.idiotischer.bob.util.PosUtil;
 import it.unimi.dsi.fastutil.Pair;
 
@@ -241,10 +242,10 @@ public class TileManager implements TileResolver {
             //    BOB.getInstance().getMainRenderer().getVisualBorderOverlay().setRGB(px.x,px.y, tile.getController().countryColor().darker().getRGB());
             //});
             PosUtil.getPossiblePos(taken.stream().map(Color::getRGB).collect(Collectors.toSet()), BOB.getInstance().getMainRenderer().getLogicMap(), pos.x, pos.y).forEach(px -> {
-                BOB.getInstance().getMainRenderer().getLogicMap().setRGB(px.x,px.y, tile.getController().countryColor().getRGB());
+                ImageUtil.set(BOB.getInstance().getMainRenderer().getLogicMap(), px.x,px.y, tile.getController().countryColor().getRGB());
             });
 
-            BOB.getInstance().getMainRenderer().getLogicMap().setRGB(pos.x,pos.y, tile.getController().countryColor().getRGB());
+            ImageUtil.set(BOB.getInstance().getMainRenderer().getLogicMap(), pos.x,pos.y, tile.getController().countryColor().getRGB());
             BOB.getInstance().getMainRenderer().syncBuffers();
         });
     }
@@ -254,10 +255,10 @@ public class TileManager implements TileResolver {
 
         tile.getPoints().forEach(pos -> {
             PosUtil.getPossiblePos(taken.stream().map(Color::getRGB).collect(Collectors.toSet()), BOB.getInstance().getMainRenderer().getLogicMap(), pos.x, pos.y).forEach(px -> {
-                BOB.getInstance().getMainRenderer().getLogicMap().setRGB(px.x,px.y, color.getRGB());
+                ImageUtil.set(BOB.getInstance().getMainRenderer().getLogicMap(), px.x,px.y, color.getRGB());
             });
 
-            BOB.getInstance().getMainRenderer().getLogicMap().setRGB(pos.x,pos.y, color.getRGB());
+            ImageUtil.set(BOB.getInstance().getMainRenderer().getLogicMap(), pos.x,pos.y, color.getRGB());
 
             BOB.getInstance().getMainRenderer().syncBuffers();
         });

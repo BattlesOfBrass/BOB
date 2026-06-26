@@ -1,6 +1,5 @@
 package de.idiotischer.bob.render.menu.components.button;
 
-import de.idiotischer.bob.util.ImageUtil;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.RoundRectangle2D;
