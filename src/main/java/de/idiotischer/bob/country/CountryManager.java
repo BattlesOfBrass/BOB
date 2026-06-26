@@ -112,6 +112,16 @@ public class CountryManager implements CountryResolver{
                 .toList();
     }
 
+    @Override
+    public boolean isAllied(Country a, Country b) {
+        return false;
+    }
+
+    @Override
+    public boolean anyAlliedWith(List<Country> testers, Country country) {
+        return testers.stream().anyMatch(c -> isAllied(c, country));
+    }
+
     //public List<Country> getMajors() {
     //    return getCountrySet().stream().filter(Country::isMajor).toList();
     //}

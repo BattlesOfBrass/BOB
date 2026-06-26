@@ -152,6 +152,16 @@ public class ServerCountryManager implements CountryResolver {
                 .toList();
     }
 
+
+    public boolean isAllied(Country a, Country b) {
+        return false;
+    }
+
+    @Override
+    public boolean anyAlliedWith(List<Country> testers, Country country) {
+        return false;
+    }
+
     public List<Country> getOnSelectScreen() {
         return getCountries().stream()
                 .filter(Country::isSelectScreen)
