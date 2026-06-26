@@ -201,9 +201,11 @@ tasks.register<JavaExec>("runApp") {
 
     group = "run"
 
-    workingDir = file("$projectDir/run")
+    val runDir = runOutputDir.get().asFile
+    val jarFile = runDir.resolve(tasks.shadowJar.get().archiveFileName.get())
 
-    classpath = sourceSets["main"].runtimeClasspath
+    workingDir = runDir
+    classpath = files(jarFile)
     mainClass.set("de.idiotischer.bob.BOB")
 
     jvmArgs = args
