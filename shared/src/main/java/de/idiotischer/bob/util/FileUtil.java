@@ -14,9 +14,9 @@ import org.jetbrains.annotations.NotNull;
 
 //TODO: placeholder aus github asets fetchen
 public class FileUtil {
-    //private static final Set<String> EXCLUDED_PREFIXES = Set.of("native/", "net/","META-INF/", "assets/native/", "lib/native/");
+    private static final Set<String> EXCLUDED_PREFIXES = Set.of("native/", "net/","META-INF/", "assets/native/", "lib/native/");
 
-    //private static final Set<String> EXCLUDED_FILES = Set.of(".DS_Store");
+    private static final Set<String> EXCLUDED_FILES = Set.of(".DS_Store");
 
     public static Path getJarDir() {
         try {
@@ -39,9 +39,11 @@ public class FileUtil {
     }
 
 
-    public static CompletableFuture<Void> replaceIfNotExistingAsync(ClassLoader resourceRoot) {
+    public static CompletableFuture<Void> replaceIfNotExistingAsync(
+        ClassLoader resourceRoot
+    ) {
         return CompletableFuture.runAsync(() ->
-                replaceIfNotExisting(resourceRoot)
+            replaceIfNotExisting(resourceRoot)
         );
     }
 
@@ -54,18 +56,18 @@ public class FileUtil {
     }
 
     //TODO: copy empty folders too (urgent)
-    //TODO: fix wrong files are created (ibnstead of just map.png for mdoernday it creates states etc)
+    //TODO: fix wrong files are created (ibnstead of just map.png for mdoernday it creates tiles etc)
     public static void extractFolder(
-            ClassLoader resourceRoot,
-            @NotNull String folderName
+        ClassLoader resourceRoot,
+        @NotNull String folderName
     ) throws Exception {
         ClassPath classPath = ClassPath.from(resourceRoot);
 
         //TODO wenn internet zugang dann von github assets holen
 
         String prefix = folderName.startsWith("/")
-                ? folderName.substring(1)
-                : folderName;
+            ? folderName.substring(1)
+            : folderName;
         if (!prefix.isEmpty() && !prefix.endsWith("/")) {
             prefix += "/";
         }
@@ -73,10 +75,12 @@ public class FileUtil {
         for (ClassPath.ResourceInfo resource : classPath.getResources()) {
             String resourceName = resource.getResourceName();
 
+            if (isExcluded(resourceName)) continue;
+
             if (
-                    resourceName.startsWith(prefix) &&
-                            !resourceName.endsWith(".class") &&
-                            !resourceName.startsWith("META-INF/")
+                resourceName.startsWith(prefix) &&
+                !resourceName.endsWith(".class") &&
+                !resourceName.startsWith("META-INF/")
             ) {
                 Path destination = getJarDir().resolve(resourceName);
 
@@ -88,23 +92,33 @@ public class FileUtil {
 
                         try (InputStream is = resource.url().openStream()) {
                             Files.copy(
-                                    is,
-                                    destination,
-                                    StandardCopyOption.REPLACE_EXISTING
+                                is,
+                                destination,
+                                StandardCopyOption.REPLACE_EXISTING
                             );
                             System.out.println("Extracted: " + resourceName);
                         }
                     }
                 } catch (Exception e) {
                     System.err.println(
-                            "Failed to extract " +
-                                    resourceName +
-                                    ": " +
-                                    e.getMessage()
+                        "Failed to extract " +
+                            resourceName +
+                            ": " +
+                            e.getMessage()
                     );
                 }
             }
         }
+    }
+
+    private static boolean isExcluded(String resourceName) {
+        for (String prefix : EXCLUDED_PREFIXES) {
+            if (resourceName.startsWith(prefix)) {
+                return true;
+            }
+        }
+
+        return EXCLUDED_FILES.contains(resourceName);
     }
 
     @ApiStatus.Obsolete
