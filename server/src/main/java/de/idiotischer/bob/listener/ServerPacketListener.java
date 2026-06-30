@@ -21,6 +21,8 @@ import de.idiotischer.bob.util.AddressUtil;
 import it.unimi.dsi.fastutil.Pair;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class ServerPacketListener implements ListenerAdapter {
@@ -120,27 +122,33 @@ public class ServerPacketListener implements ListenerAdapter {
                                 new ReplyPacket(Type.TROOPS_MOVE, reply)
                         );
                     } else if (firstPart[0].equals("troops")) {
+                        List<String> statuses = new ArrayList<>();
+
                         for (String uuidString : firstPart[1].split(",")) {
                             UUID uuid = UUID.fromString(uuidString);
 
                             TroopStack troopStack = Server.getInstance().getTroopManager().getTroop(uuid);
-                            if (troopStack == null)
-                                continue;
 
-                            MoveStatus moveStatus = TroopValidator.validate(p, troopStack, tile, Server.getInstance().getTroopManager(), Server.getInstance().getTileManager());
+                            MoveStatus moveStatus;
 
-                            String reply = "troop=" + uuid + ";tile=" + tile.getAbbreviation() + ";type=" + moveStatus.ordinal();
+                            if (troopStack == null) {
+                                moveStatus = MoveStatus.FAILURE;
+                            } else {
+                                moveStatus = TroopValidator.validate(p, troopStack, tile, Server.getInstance().getTroopManager(), Server.getInstance().getTileManager());
 
-                            if (moveStatus == MoveStatus.FAILURE_FIGHT || moveStatus == MoveStatus.FAILURE_NO_CONTROL || moveStatus == MoveStatus.FAILURE || moveStatus == MoveStatus.FAILURE_KICKED || moveStatus == MoveStatus.FAILURE_IN_COMBAT || moveStatus == MoveStatus.FAILURE_STARTED_PATHFINDING) {
-                                Server.getInstance().getSendTool().send(event.getChannel(), new ReplyPacket(Type.TROOPS_MOVE, reply));
-                                continue;
+                                if (moveStatus != MoveStatus.FAILURE_FIGHT && moveStatus != MoveStatus.FAILURE_NO_CONTROL && moveStatus != MoveStatus.FAILURE
+                                        && moveStatus != MoveStatus.FAILURE_KICKED && moveStatus != MoveStatus.FAILURE_IN_COMBAT && moveStatus != MoveStatus.FAILURE_STARTED_PATHFINDING) {
+                                    Server.getInstance().getTroopManager().removePathfinding(troopStack);
+                                    troopStack.setTile(tile);
+                                }
                             }
 
-                            Server.getInstance().getTroopManager().removePathfinding(troopStack);
-                            troopStack.setTile(tile);
-
-                            Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new ReplyPacket(Type.TROOPS_MOVE, reply));
+                            statuses.add(String.valueOf(moveStatus.ordinal()));
                         }
+
+                        String reply = "troops=" + firstPart[1] + ";tile=" + tile.getAbbreviation() + ";types=" + String.join(",", statuses);
+
+                        Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new ReplyPacket(Type.TROOPS_MOVE, reply));
                     }
                 }case PLAYER_CHANGE -> {
                     //System.out.println("Player change packet received at: " + System.nanoTime());

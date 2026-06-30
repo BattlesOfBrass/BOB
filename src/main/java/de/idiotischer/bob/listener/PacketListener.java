@@ -199,18 +199,32 @@ public class PacketListener implements ListenerAdapter {
                     String[] tilePart = parts[1].split("=");
                     String[] statusPart = parts[2].split("=");
 
-                    MoveStatus status = MoveStatus.values()[Integer.parseInt(statusPart[1])];
                     Tile tile = BOB.getInstance().getTileManager().byAbbreviation(tilePart[1]);
 
                     if (troopPart[0].equals("troop")) {
                         UUID uuid = UUID.fromString(troopPart[1]);
-                        BOB.getInstance().getTroopManager().finishMove(uuid, tile, status);
-                    } else if (troopPart[0].equals("troops")) {
-                        Set<UUID> uuids = Arrays.stream(troopPart[1].split(","))
-                                .map(UUID::fromString)
-                                .collect(Collectors.toSet());
 
-                        BOB.getInstance().getTroopManager().finishMoveAll(uuids, tile, status);
+                        MoveStatus status =
+                                MoveStatus.values()[Integer.parseInt(statusPart[1])];
+
+                        BOB.getInstance().getTroopManager().finishMove(uuid, tile, status);
+                    }
+
+                    else if (troopPart[0].equals("troops")) {
+
+                        String[] uuids = troopPart[1].split(",");
+                        String[] statuses = statusPart[1].split(",");
+
+                        Map<UUID, MoveStatus> results = new HashMap<>();
+
+                        for (int i = 0; i < uuids.length; i++) {
+                            UUID uuid = UUID.fromString(uuids[i]);
+                            MoveStatus status = MoveStatus.values()[Integer.parseInt(statuses[i])];
+
+                            results.put(uuid, status);
+                        }
+
+                        BOB.getInstance().getTroopManager().finishMoveAll(results, tile);
                     }
                 }
                 case TILE_CHANGE -> {

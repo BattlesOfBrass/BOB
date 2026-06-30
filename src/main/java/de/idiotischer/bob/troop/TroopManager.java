@@ -147,34 +147,36 @@ public class TroopManager implements TroopResolver{
         return troops.get(uuid);
     }
 
-    public void finishMoveAll(Set<UUID> troopIds, Tile newTile, MoveStatus moveStatus) {
-        Set<Pair<TroopStack, Pair<Tile, MoveStatus>>> result = new HashSet<>();
+    public void finishMoveAll(Map<UUID, MoveStatus> results, Tile newTile) {
+        Set<Pair<TroopStack, Pair<Tile, MoveStatus>>> resultSet = new HashSet<>();
 
-        for (UUID troopId : troopIds) {
+        for (var entry : results.entrySet()) {
+            UUID troopId = entry.getKey();
+            MoveStatus moveStatus = entry.getValue();
+
             TroopStack troop = troops.get(troopId);
 
-            result.add(Pair.of(troop, Pair.of(newTile, moveStatus)));
+            resultSet.add(Pair.of(troop, Pair.of(newTile, moveStatus)));
 
             if (troop == null || newTile == null)
                 continue;
 
-            if(moveStatus == MoveStatus.FAILURE_FIGHT || moveStatus == MoveStatus.FAILURE_NO_CONTROL || moveStatus == MoveStatus.FAILURE || moveStatus == MoveStatus.FAILURE_KICKED
-                    || moveStatus == MoveStatus.FAILURE_IN_COMBAT || moveStatus == MoveStatus.FAILURE_STARTED_PATHFINDING)
+            if (moveStatus == MoveStatus.FAILURE_FIGHT || moveStatus == MoveStatus.FAILURE_NO_CONTROL || moveStatus == MoveStatus.FAILURE
+                    || moveStatus == MoveStatus.FAILURE_KICKED || moveStatus == MoveStatus.FAILURE_IN_COMBAT || moveStatus == MoveStatus.FAILURE_STARTED_PATHFINDING)
                 continue;
-
 
             troop.setTile(newTile);
 
             newTile.setControllerClient(BOB.getInstance().getClient().getChannel(), troop.getController());
         }
 
-        CompletableFuture<Set<Pair<TroopStack, Pair<Tile, MoveStatus>>>> future = bundledRequests.remove(troopIds);
+        CompletableFuture<Set<Pair<TroopStack, Pair<Tile, MoveStatus>>>> future =
+                bundledRequests.remove(new HashSet<>(results.keySet()));
 
         if (future != null) {
-            future.complete(result);
+            future.complete(resultSet);
         }
     }
-
     public void finishMove(UUID troopId, Tile newTile, MoveStatus moveStatus) {
         TroopStack troop = troops.get(troopId);
 
