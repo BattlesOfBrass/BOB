@@ -25,15 +25,26 @@ public class TroopManager implements TroopResolver{
 
     private Map<UUID, CompletableFuture<Pair<TroopStack, Pair<Tile, MoveStatus>>>> requests = new HashMap<>();
 
-    public TroopManager() {
-        //reload();
+    private final Map<Set<UUID>, CompletableFuture<Set<Pair<TroopStack, Pair<Tile, MoveStatus>>>>> bundledRequests = new HashMap<>();
+
+    public CompletableFuture<Set<Pair<TroopStack, Pair<Tile, MoveStatus>>>> moveAll(Set<TroopStack> troops, Tile tile) {
+        CompletableFuture<Set<Pair<TroopStack, Pair<Tile, MoveStatus>>>> future = new CompletableFuture<>();
+
+        Set<UUID> uuids = troops.stream().map(this::getUuid).collect(Collectors.toSet());
+
+        bundledRequests.put(uuids, future);
+
+        String uuidString = uuids.stream().map(UUID::toString).collect(Collectors.joining(","));
+
+        BOB.getInstance().getSendTool().send(BOB.getInstance().getClient().getChannel(), new RequestPacket(Type.TROOPS_MOVE, "troops=" + uuidString + ";tile=" + tile.getAbbreviation()));
+
+        return future;
     }
 
     public CompletableFuture<Pair<TroopStack, Pair<Tile, MoveStatus>>> move(TroopStack selected, Tile newTile) {
         UUID uuid = getUuid(selected);
 
-        CompletableFuture<Pair<TroopStack, Pair<Tile, MoveStatus>>> future =
-                new CompletableFuture<>();
+        CompletableFuture<Pair<TroopStack, Pair<Tile, MoveStatus>>> future = new CompletableFuture<>();
 
         //requests.remove(uuid); could possibly cause bugs?
         requests.put(uuid, future);
@@ -136,6 +147,34 @@ public class TroopManager implements TroopResolver{
         return troops.get(uuid);
     }
 
+    public void finishMoveAll(Set<UUID> troopIds, Tile newTile, MoveStatus moveStatus) {
+        Set<Pair<TroopStack, Pair<Tile, MoveStatus>>> result = new HashSet<>();
+
+        for (UUID troopId : troopIds) {
+            TroopStack troop = troops.get(troopId);
+
+            result.add(Pair.of(troop, Pair.of(newTile, moveStatus)));
+
+            if (troop == null || newTile == null)
+                continue;
+
+            if(moveStatus == MoveStatus.FAILURE_FIGHT || moveStatus == MoveStatus.FAILURE_NO_CONTROL || moveStatus == MoveStatus.FAILURE || moveStatus == MoveStatus.FAILURE_KICKED
+                    || moveStatus == MoveStatus.FAILURE_IN_COMBAT || moveStatus == MoveStatus.FAILURE_STARTED_PATHFINDING)
+                continue;
+
+
+            troop.setTile(newTile);
+
+            newTile.setControllerClient(BOB.getInstance().getClient().getChannel(), troop.getController());
+        }
+
+        CompletableFuture<Set<Pair<TroopStack, Pair<Tile, MoveStatus>>>> future = bundledRequests.remove(troopIds);
+
+        if (future != null) {
+            future.complete(result);
+        }
+    }
+
     public void finishMove(UUID troopId, Tile newTile, MoveStatus moveStatus) {
         TroopStack troop = troops.get(troopId);
 
@@ -201,4 +240,5 @@ public class TroopManager implements TroopResolver{
     public List<TroopStack> getAll() {
         return new ArrayList<>(troops.values());
     }
+
 }

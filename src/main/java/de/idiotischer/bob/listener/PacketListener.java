@@ -195,17 +195,23 @@ public class PacketListener implements ListenerAdapter {
                 case TROOPS_MOVE -> {
                     String[] parts = pack.getMessage().split(";");
 
-                    String[] uuidPart = parts[0].split("=");
+                    String[] troopPart = parts[0].split("=");
                     String[] tilePart = parts[1].split("=");
                     String[] statusPart = parts[2].split("=");
 
-                    MoveStatus s = MoveStatus.values()[Integer.parseInt(statusPart[1])];
+                    MoveStatus status = MoveStatus.values()[Integer.parseInt(statusPart[1])];
+                    Tile tile = BOB.getInstance().getTileManager().byAbbreviation(tilePart[1]);
 
-                    Tile t = BOB.getInstance().getTileManager().byAbbreviation(tilePart[1]);
+                    if (troopPart[0].equals("troop")) {
+                        UUID uuid = UUID.fromString(troopPart[1]);
+                        BOB.getInstance().getTroopManager().finishMove(uuid, tile, status);
+                    } else if (troopPart[0].equals("troops")) {
+                        Set<UUID> uuids = Arrays.stream(troopPart[1].split(","))
+                                .map(UUID::fromString)
+                                .collect(Collectors.toSet());
 
-                    UUID uuid = UUID.fromString(uuidPart[1]);
-
-                    BOB.getInstance().getTroopManager().finishMove(uuid, t, s);
+                        BOB.getInstance().getTroopManager().finishMoveAll(uuids, tile, status);
+                    }
                 }
                 case TILE_CHANGE -> {
                     String s = pack.getMessage();

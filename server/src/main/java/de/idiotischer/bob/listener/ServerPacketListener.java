@@ -91,32 +91,58 @@ public class ServerPacketListener implements ListenerAdapter {
                 case TROOPS_MOVE -> {
                     String[] parts = pack.getMessage().split(";");
 
-                    String[] uuidPart = parts[0].split("=");
+                    String[] firstPart = parts[0].split("=");
                     String[] tilePart = parts[1].split("=");
 
-                    UUID uuid = UUID.fromString(uuidPart[1]);
-
                     Tile tile = Server.getInstance().getTileManager().byAbbreviation(tilePart[1]);
-                    TroopStack troopStack = Server.getInstance().getTroopManager().getTroop(uuid);
-
-                    if(troopStack == null) return;
-                    if(tile == null) return;
+                    if (tile == null) return;
 
                     Player p = Server.getInstance().getPlayerManager().resolve(event.getChannel());
 
-                    MoveStatus moveStatus = TroopValidator.validate(p, troopStack,tile, Server.getInstance().getTroopManager(), Server.getInstance().getTileManager());
+                    if (firstPart[0].equals("troop")) {
+                        UUID uuid = UUID.fromString(firstPart[1]);
 
-                    String reply = "troop=" + uuid + ";tile=" + tile.getAbbreviation() + ";type=" + moveStatus.ordinal();
+                        TroopStack troopStack = Server.getInstance().getTroopManager().getTroop(uuid);
+                        if (troopStack == null) return;
 
-                    if(moveStatus == MoveStatus.FAILURE_FIGHT || moveStatus == MoveStatus.FAILURE_NO_CONTROL || moveStatus == MoveStatus.FAILURE || moveStatus == MoveStatus.FAILURE_KICKED
-                            || moveStatus == MoveStatus.FAILURE_IN_COMBAT || moveStatus == MoveStatus.FAILURE_STARTED_PATHFINDING) return;
+                        MoveStatus moveStatus = TroopValidator.validate(p, troopStack, tile, Server.getInstance().getTroopManager(), Server.getInstance().getTileManager());
 
-                    Server.getInstance().getTroopManager().removePathfinding(troopStack);
-                    troopStack.setTile(tile);
+                        String reply = "troop=" + uuid + ";tile=" + tile.getAbbreviation() + ";type=" + moveStatus.ordinal();
 
-                    Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new ReplyPacket(Type.TROOPS_MOVE, reply));
-                }
-                case PLAYER_CHANGE -> {
+                        if (moveStatus == MoveStatus.FAILURE_FIGHT || moveStatus == MoveStatus.FAILURE_NO_CONTROL || moveStatus == MoveStatus.FAILURE || moveStatus == MoveStatus.FAILURE_KICKED || moveStatus == MoveStatus.FAILURE_IN_COMBAT || moveStatus == MoveStatus.FAILURE_STARTED_PATHFINDING)
+                            return;
+
+                        Server.getInstance().getTroopManager().removePathfinding(troopStack);
+                        troopStack.setTile(tile);
+
+                        Server.getInstance().getSendTool().broadcast(
+                                Server.getInstance().getServerSocket().getClients(),
+                                new ReplyPacket(Type.TROOPS_MOVE, reply)
+                        );
+                    } else if (firstPart[0].equals("troops")) {
+                        for (String uuidString : firstPart[1].split(",")) {
+                            UUID uuid = UUID.fromString(uuidString);
+
+                            TroopStack troopStack = Server.getInstance().getTroopManager().getTroop(uuid);
+                            if (troopStack == null)
+                                continue;
+
+                            MoveStatus moveStatus = TroopValidator.validate(p, troopStack, tile, Server.getInstance().getTroopManager(), Server.getInstance().getTileManager());
+
+                            String reply = "troop=" + uuid + ";tile=" + tile.getAbbreviation() + ";type=" + moveStatus.ordinal();
+
+                            if (moveStatus == MoveStatus.FAILURE_FIGHT || moveStatus == MoveStatus.FAILURE_NO_CONTROL || moveStatus == MoveStatus.FAILURE || moveStatus == MoveStatus.FAILURE_KICKED || moveStatus == MoveStatus.FAILURE_IN_COMBAT || moveStatus == MoveStatus.FAILURE_STARTED_PATHFINDING) {
+                                Server.getInstance().getSendTool().send(event.getChannel(), new ReplyPacket(Type.TROOPS_MOVE, reply));
+                                continue;
+                            }
+
+                            Server.getInstance().getTroopManager().removePathfinding(troopStack);
+                            troopStack.setTile(tile);
+
+                            Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new ReplyPacket(Type.TROOPS_MOVE, reply));
+                        }
+                    }
+                }case PLAYER_CHANGE -> {
                     //System.out.println("Player change packet received at: " + System.nanoTime());
                     //System.out.println(pack.getMessage());
                     //Server.getInstance().getPlayerManager().getPlayers().forEach(p -> System.out.println(p.uuid().toString()));

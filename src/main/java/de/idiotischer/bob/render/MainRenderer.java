@@ -13,6 +13,7 @@ import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.util.*;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class MainRenderer extends Thread {
     private boolean running = true;
@@ -363,13 +364,14 @@ public class MainRenderer extends Thread {
         }
 
         if(BOB.getInstance().getPlayer().country() == null) return;
+        BOB.getInstance().getTroopManager().moveAll(troops.stream().map(TroopVisualButton::getStack).collect(Collectors.toSet()), tile);
+        //troops.forEach(c -> {
+        //    BOB.getInstance().getTroopManager().move(c.getStack(), tile);
+        //    //renderPanel.selected.add(c); maybe
 
-        troops.forEach(c -> {
-            BOB.getInstance().getTroopManager().move(c.getStack(), tile);
-            //renderPanel.selected.add(c); maybe
+        //    if(BOB.getInstance().isDebug()) System.out.println("moved stacks to new loc: " + tile.getName());
+        //});
 
-            if(BOB.getInstance().isDebug()) System.out.println("moved stacks to new loc: " + tile.getName());
-        });
         renderPanel.repaint();
     }
 
