@@ -4,6 +4,7 @@ import java.awt.*;
 import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
+import java.awt.image.VolatileImage;
 
 public class ImageUtil {
     public static BufferedImage makeRoundedCorner(Image image, int width, int height, int cornerRadius) {
@@ -25,6 +26,21 @@ public class ImageUtil {
         return output;
     }
 
+    public static VolatileImage btv(BufferedImage image) {
+        if (image == null) return null;
+
+        GraphicsConfiguration gc = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
+
+        VolatileImage volatileImage = gc.createCompatibleVolatileImage(image.getWidth(), image.getHeight(), Transparency.TRANSLUCENT);
+
+        Graphics2D g2 = volatileImage.createGraphics();
+        g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);
+
+        g2.drawImage(image, 0, 0, null);
+        g2.dispose();
+
+        return volatileImage;
+    }
     private static BufferedImage toIntARGB(BufferedImage img) {
         if (img.getType() == BufferedImage.TYPE_INT_ARGB) {
             return img;

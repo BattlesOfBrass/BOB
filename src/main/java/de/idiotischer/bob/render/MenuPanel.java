@@ -10,6 +10,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
+import java.awt.image.VolatileImage;
 
 public class MenuPanel extends JPanel implements Panel {
 
@@ -21,11 +22,9 @@ public class MenuPanel extends JPanel implements Panel {
     private final CardLayout layout;
     private MenuTile currentTile;
 
-    // cache renderer (avoid repeated singleton calls)
     private final MainRenderer renderer;
 
-    // cached scaled images
-    private BufferedImage scaledBackground;
+    private VolatileImage scaledBackground;
     private BufferedImage scaledOverlay;
 
     private int cachedW = -1;
@@ -40,9 +39,7 @@ public class MenuPanel extends JPanel implements Panel {
         this.mpMenu = new MultiplayerMenu();
         this.startMenu = new StartMenu();
 
-        this.scenarioMenu = wrap(new ScenarioSelectMenu(
-                BOB.getInstance().getScenarioSceneLoader().getCurrentScenario()
-        ));
+        this.scenarioMenu = wrap(new ScenarioSelectMenu(BOB.getInstance().getScenarioSceneLoader().getCurrentScenario()));
 
         this.add(wrap(startMenu), "START");
         this.add(scenarioMenu, "SCENARIO");
@@ -55,10 +52,7 @@ public class MenuPanel extends JPanel implements Panel {
         this.currentTile = MenuTile.START;
         updateMenuVisibility();
 
-        getInputMap(WHEN_IN_FOCUSED_WINDOW).put(
-                KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
-                "escape"
-        );
+        getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "escape");
 
         getActionMap().put("escape", new AbstractAction() {
             @Override
@@ -115,8 +109,6 @@ public class MenuPanel extends JPanel implements Panel {
         return renderer.getLogicMap();
     }
 
-    // ---- PERFORMANCE: scale images only when needed ----
-
     private void updateCachedImages(int w, int h) {
         if (w <= 0 || h <= 0) return;
 
@@ -146,6 +138,30 @@ public class MenuPanel extends JPanel implements Panel {
         return out;
     }
 
+    private VolatileImage scale(VolatileImage src, int w, int h) {
+        if (src == null || w <= 0 || h <= 0) return null;
+
+        GraphicsConfiguration gc = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
+        VolatileImage out = gc.createCompatibleVolatileImage(w, h, Transparency.TRANSLUCENT);
+
+        do {
+            int status = src.validate(gc);
+
+            if (status == VolatileImage.IMAGE_INCOMPATIBLE) return null;
+
+
+            Graphics2D g2 = out.createGraphics();
+
+            g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+
+            g2.drawImage(src, 0, 0, w, h, null);
+            g2.dispose();
+
+        } while (out.contentsLost());
+
+        return out;
+    }
+
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -160,9 +176,10 @@ public class MenuPanel extends JPanel implements Panel {
 
         if (scaledBackground != null) g2.drawImage(scaledBackground, 0, 0, null);
 
+        if (scaledBackground != null) g2.drawImage(scaledBackground, 0, 0, null);
+
         BufferedImage frame = getFrame();
         if (frame != null) g2.drawImage(frame, 0, 0, w, h, null);
-
 
         if (scaledOverlay != null) g2.drawImage(scaledOverlay, 0, 0, null);
 

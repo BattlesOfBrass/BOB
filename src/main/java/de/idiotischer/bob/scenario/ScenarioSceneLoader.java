@@ -39,6 +39,7 @@ public class ScenarioSceneLoader {
 
         if(setMap) BOB.getInstance().getMainRenderer().setMap(this.currentScenario.getMapImage());
 
+
         //TODO: bald nur noch fetchen
         BOB.getInstance().getCountryManager().reload();
 

@@ -11,6 +11,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
+import java.awt.image.VolatileImage;
 import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -23,7 +24,7 @@ public class MainRenderer extends Thread {
     private Graphics2D renderGraphics;
 
     private RenderPanel renderPanel;
-    private BufferedImage background;
+    private VolatileImage background;
     private BufferedImage visualBorderOverlay;
 
     private Point dragStart = null;
@@ -104,6 +105,7 @@ public class MainRenderer extends Thread {
 
         super.start();
     }
+
 
     @Override
     public void run() {
@@ -451,7 +453,13 @@ public class MainRenderer extends Thread {
     public void setMap(BufferedImage map) {
         this.logicMap = ImageUtil.deepCopy(map);
 
-        this.renderMap = new BufferedImage(logicMap.getWidth(), logicMap.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        GraphicsConfiguration gc = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
+        this.renderMap = gc.createCompatibleImage(logicMap.getWidth(), logicMap.getHeight(), Transparency.TRANSLUCENT);
+
+        Graphics2D g = renderMap.createGraphics();
+        g.drawImage(logicMap, 0, 0, null);
+        g.dispose();
+
         this.renderGraphics = renderMap.createGraphics();
 
         BufferedImage src = BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getBackgroundImage();
@@ -459,16 +467,17 @@ public class MainRenderer extends Thread {
         int w = Math.min(map.getWidth(), src.getWidth());
         int h = Math.min(map.getHeight(), src.getHeight());
 
-        this.background = src.getSubimage(0, 0, w, h);
+        this.background = ImageUtil.btv(src.getSubimage(0, 0, w, h));
 
-        this.visualBorderOverlay = new BufferedImage(map.getWidth(), map.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        this.visualBorderOverlay = gc.createCompatibleImage(map.getWidth(), map.getHeight(), Transparency.TRANSLUCENT);
 
         if (camera == null) {
             camera = new Camera(map.getWidth(), map.getHeight());
         } else {
             camera.setMapSize(map.getWidth(), map.getHeight());
         }
-        if (renderPanel != null){
+
+        if (renderPanel != null) {
             camera.setViewportSize(renderPanel.getWidth(), renderPanel.getHeight());
         }
 
@@ -516,7 +525,7 @@ public class MainRenderer extends Thread {
         return logicMap;
     }
 
-    public BufferedImage getBackground() {
+    public VolatileImage getBackground() {
         return background;
     }
 }

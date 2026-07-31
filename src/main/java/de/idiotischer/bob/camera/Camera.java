@@ -2,6 +2,7 @@ package de.idiotischer.bob.camera;
 
 import org.jetbrains.annotations.ApiStatus;
 
+import java.awt.*;
 import java.awt.geom.AffineTransform;
 
 public class Camera {
@@ -154,6 +155,17 @@ public class Camera {
     //            offsetY = Math.max(0, Math.min(offsetY, scaledHeight - panelHeight));
     //        }
     //    }
+    public Rectangle getVisibleWorldBounds(int viewportWidth, int viewportHeight) {
+        int x1 = screenToWorldX(0);
+        int y1 = screenToWorldY(0);
+
+        int x2 = screenToWorldX(viewportWidth);
+        int y2 = screenToWorldY(viewportHeight);
+
+        return new Rectangle(x1, y1, x2 - x1, y2 - y1);
+    }
+
+
 
     public double getMinZoom() {
         if (viewportWidth <= 0 || viewportHeight <= 0) return 1.0;

@@ -134,13 +134,8 @@ public class ScenarioSyncPacket implements de.idiotischer.bob.networking.packet.
 
     public void buildCache() {
         try {
-            if (mapImage != null && cachedMapImage == null) {
-                cachedMapImage = encode(mapImage);
-            }
-
-            if (backgroundImage != null && cachedBackgroundImage == null) {
-                cachedBackgroundImage = encode(backgroundImage);
-            }
+            cachedMapImage = mapImage == null ? null : encode(mapImage);
+            cachedBackgroundImage = backgroundImage == null ? null : encode(backgroundImage);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -179,11 +174,12 @@ public class ScenarioSyncPacket implements de.idiotischer.bob.networking.packet.
                 }
             }
 
+            Path backgroundPath = targetDir.resolve("background.png");
+
             if (backgroundImage != null) {
-                Path mapPath = targetDir.resolve("background.png");
-                if (Files.notExists(mapPath)) {
-                    ImageIO.write(backgroundImage, "png", mapPath.toFile());
-                }
+                ImageIO.write(backgroundImage, "png", backgroundPath.toFile());
+            } else {
+                Files.deleteIfExists(backgroundPath);
             }
 
         } catch (IOException e) {
@@ -223,11 +219,12 @@ public class ScenarioSyncPacket implements de.idiotischer.bob.networking.packet.
                 }
             }
 
+            Path backgroundPath = targetDir.resolve("background.png");
+
             if (backgroundImage != null) {
-                Path mapPath = targetDir.resolve("background.png");
-                if (Files.notExists(mapPath)) {
-                    ImageIO.write(backgroundImage, "png", mapPath.toFile());
-                }
+                ImageIO.write(backgroundImage, "png", backgroundPath.toFile());
+            } else {
+                Files.deleteIfExists(backgroundPath);
             }
         } catch (IOException e) {
             e.printStackTrace();

@@ -75,14 +75,46 @@ public class RenderPanel extends JPanel implements Panel {
 
         g2.transform(renderer.getCamera().getTransform());
 
-        if (BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getBackgroundImage() != null) {
-            g2.drawImage(BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getBackgroundImage(), 0, 0, null);
+        Rectangle visible = renderer.getCamera().getVisibleWorldBounds(getWidth(), getHeight());
+
+        if (BOB.getInstance().getMainRenderer().getBackground() != null) {
+            g2.drawImage(
+                    BOB.getInstance().getMainRenderer().getBackground(),
+                    visible.x, visible.y,
+                    visible.x + visible.width,
+                    visible.y + visible.height,
+                    visible.x,
+                    visible.y,
+                    visible.x + visible.width,
+                    visible.y + visible.height,
+                    null
+            );
         }
 
-        g2.drawImage(renderer.getMap(), 0, 0, null);
+        g2.drawImage(
+                renderer.getMap(),
+                visible.x, visible.y,
+                visible.x + visible.width,
+                visible.y + visible.height,
+                visible.x,
+                visible.y,
+                visible.x + visible.width,
+                visible.y + visible.height,
+                null
+        );
 
         if (renderer.getVisualBorderOverlay() != null) {
-            g2.drawImage(renderer.getVisualBorderOverlay(), 0, 0, null);
+            g2.drawImage(
+                    renderer.getVisualBorderOverlay(),
+                    visible.x, visible.y,
+                    visible.x + visible.width,
+                    visible.y + visible.height,
+                    visible.x,
+                    visible.y,
+                    visible.x + visible.width,
+                    visible.y + visible.height,
+                    null
+            );
         }
 
         updateTroopButtons(g2);
