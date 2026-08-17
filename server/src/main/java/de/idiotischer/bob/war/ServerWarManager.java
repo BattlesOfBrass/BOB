@@ -124,7 +124,6 @@ public class ServerWarManager {
     }
 
     public void checkWarOver(Country aggressor, Country defender, Tile tile) {
-
         Set<WarStatus> wars = getWars(aggressor);
 
         for (WarStatus war : new HashSet<>(wars)) {
@@ -153,27 +152,24 @@ public class ServerWarManager {
                 defender.setCapitulated(true, (v) -> {
                     Server.getInstance().getTroopManager().removeTroops(defender);
                     //TODO: only replace tiles without enemy troops
-                    Server.getInstance().getCountryManager().getControlled(defender)
-                            .forEach(c -> c.setControllerForAll(Server.getInstance().getServerSocket().getClients(), aggressor));
-                    Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(),
-                            new ReplyPacket(Type.CAPITULATE_COUNTRY, aggressor.getAbbreviation() + ";" + defender.getAbbreviation()));
-
-
+                    Server.getInstance().getCountryManager().getControlled(defender).forEach(c -> c.setControllerForAll(Server.getInstance().getServerSocket().getClients(), aggressor));
+                    Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new ReplyPacket(Type.CAPITULATE_COUNTRY, aggressor.getAbbreviation() + ";" + defender.getAbbreviation()));
                 });
             }
 
             boolean defendersDead = war.getDefenders().stream().allMatch(Country::isCapitulated);
             boolean attackersDead = war.getAttackers().stream().allMatch(Country::isCapitulated);
 
-            if (defendersDead || attackersDead
-                    || war.getDefenders().isEmpty()
-                    || war.getAttackers().isEmpty()) {
-                endWar(war);
+            if (defendersDead || attackersDead || war.getDefenders().isEmpty() || war.getAttackers().isEmpty()) {
+                boolean hasAttackersWon = !attackersDead;
+                endWar(war, hasAttackersWon);
             }
         }
     }
 
-    private void endWar(WarStatus status) {
+    private void endWar(WarStatus status, boolean hasAttackingWon) {
+        status.end();
+        status.setAttackingWon(hasAttackingWon);
         Server.getInstance().getCombatManager().removeByWar(status);
 
         for (Country c : status.getAttackers()) {

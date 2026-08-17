@@ -14,6 +14,8 @@ public class WarStatus {
     private String abbr;
     private Set<Country> attackers;
     private Set<Country> defenders;
+    private boolean hasAttackingWon;
+    private boolean ended = true;
 
     public WarStatus(Map<Country, Integer> baseVP, Map<Country, Integer> currentVP, String name, String abbr, Set<Country> attackers, Set<Country> defenders) {
         this.baseVP = baseVP;
@@ -65,14 +67,8 @@ public class WarStatus {
     }
 
     public String toDataString() {
-
-        String attackersStr = attackers.stream()
-                .map(c -> c.getAbbreviation() + ":" + currentVP.getOrDefault(c, 0))
-                .collect(Collectors.joining(","));
-
-        String defendersStr = defenders.stream()
-                .map(c -> c.getAbbreviation() + ":" + currentVP.getOrDefault(c, 0))
-                .collect(Collectors.joining(","));
+        String attackersStr = attackers.stream().map(c -> c.getAbbreviation() + ":" + currentVP.getOrDefault(c, 0)).collect(Collectors.joining(","));
+        String defendersStr = defenders.stream().map(c -> c.getAbbreviation() + ":" + currentVP.getOrDefault(c, 0)).collect(Collectors.joining(","));
 
         return abbr + "|" + name + "|"
                 + attackersStr + "|"
@@ -117,5 +113,21 @@ public class WarStatus {
         }
 
         return new WarStatus(baseVP, currentVP, name, abbr, attackers, defenders);
+    }
+
+    public void setAttackingWon(boolean hasAttackingWon) {
+        this.hasAttackingWon = hasAttackingWon;
+    }
+
+    public boolean hasAttackingWon() {
+        return hasAttackingWon;
+    }
+
+    public void end() {
+        this.ended = true;
+    }
+
+    public boolean isEnded() {
+        return ended;
     }
 }

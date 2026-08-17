@@ -5,7 +5,7 @@ import de.idiotischer.bob.war.WarStatus;
 
 public class ServerConferenceManager {
     public void createFor(WarStatus status) {
-        ConferenceStatus conference = null;
+        PeaceConference conference = null;
         //
         //
         //
