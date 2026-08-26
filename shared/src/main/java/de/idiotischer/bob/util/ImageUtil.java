@@ -1,10 +1,15 @@
 package de.idiotischer.bob.util;
 
+import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import java.awt.image.VolatileImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.ByteBuffer;
 
 public class ImageUtil {
     public static BufferedImage makeRoundedCorner(Image image, int width, int height, int cornerRadius) {
@@ -209,4 +214,65 @@ public class ImageUtil {
     //    double scale = Math.min(scaleX, scaleY);
     //    return (int) (originalSize * scale);
     //}
+
+    public static void writeImage(ByteBuffer buffer, BufferedImage image) throws IOException {
+        if (image == null) {
+            buffer.putInt(0);
+            return;
+        }
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageIO.write(image, "png", baos);
+
+        byte[] imageData = baos.toByteArray();
+
+        buffer.putInt(imageData.length);
+        buffer.put(imageData);
+    }
+
+    public static BufferedImage readImage(ByteBuffer buffer) {
+        int imageLength = buffer.getInt();
+
+        if (imageLength <= 0) {
+            return null;
+        }
+
+        byte[] imageData = new byte[imageLength];
+        buffer.get(imageData);
+
+        try {
+            return ImageIO.read(new ByteArrayInputStream(imageData));
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static VolatileImage createLowMipmap(VolatileImage source, GraphicsConfiguration config) {
+        int targetW = source.getWidth() / 4;
+        int targetH = source.getHeight() / 4;
+
+        BufferedImage mipmap = config.createCompatibleImage(source.getWidth(), source.getHeight(), source.getTransparency());
+        Graphics2D g = mipmap.createGraphics();
+
+        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        g.drawImage(source, 0, 0, source.getWidth(), source.getHeight(), 0, 0, source.getWidth(), source.getHeight(), null);
+        g.dispose();
+
+        return ImageUtil.btv(mipmap);
+    }
+
+    public static BufferedImage createLowMipmap(BufferedImage source, GraphicsConfiguration config) {
+        int targetW = source.getWidth() / 4;
+        int targetH = source.getHeight() / 4;
+
+        BufferedImage mipmap = config.createCompatibleImage(source.getWidth(), source.getHeight(), source.getTransparency());
+        Graphics2D g = mipmap.createGraphics();
+
+        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        g.drawImage(source, 0, 0, source.getWidth(), source.getHeight(), 0, 0, source.getWidth(), source.getHeight(), null);
+        g.dispose();
+
+        return mipmap;
+    }
 }

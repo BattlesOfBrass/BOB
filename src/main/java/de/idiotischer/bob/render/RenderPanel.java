@@ -11,6 +11,7 @@ import de.idiotischer.bob.render.menu.impl.ESCMenu;
 import de.idiotischer.bob.troop.Troop;
 import de.idiotischer.bob.troop.TroopDrawer;
 import de.idiotischer.bob.troop.TroopStack;
+import de.idiotischer.bob.util.ImageUtil;
 
 import javax.swing.*;
 import java.awt.*;
@@ -18,6 +19,7 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.awt.image.VolatileImage;
 import java.util.*;
 import java.util.List;
 
@@ -64,66 +66,96 @@ public class RenderPanel extends JPanel implements Panel {
         renderer.getCamera().zoomToMin();
     }
 
+    private BufferedImage cachedLowMap = null;
+    private VolatileImage cachedLowBackground = null;
+    private BufferedImage cachedLowOverlay = null;
+
+    private BufferedImage lastKnownMapRef = null;
+    private VolatileImage lastKnownBgRef = null;
+    private BufferedImage lastOverlayRef = null;
+
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        if (renderer.getMap() == null) return;
+        BufferedImage currentMap = renderer.getMap();
+        if (currentMap == null) return;
 
         Graphics2D g2 = (Graphics2D) g;
+
+        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+        g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);
+
         AffineTransform screenTransform = g2.getTransform();
 
-        g2.transform(renderer.getCamera().getTransform());
+        AffineTransform cameraTransform = renderer.getCamera().getTransform();
+        double scaleX = cameraTransform.getScaleX();
+        g2.transform(cameraTransform);
 
         Rectangle visible = renderer.getCamera().getVisibleWorldBounds(getWidth(), getHeight());
 
-        if (BOB.getInstance().getMainRenderer().getBackground() != null) {
-            g2.drawImage(
-                    BOB.getInstance().getMainRenderer().getBackground(),
-                    visible.x, visible.y,
-                    visible.x + visible.width,
-                    visible.y + visible.height,
-                    visible.x,
-                    visible.y,
-                    visible.x + visible.width,
-                    visible.y + visible.height,
-                    null
-            );
+        boolean useLow = (scaleX <= 0.25);
+
+        VolatileImage currentBg = BOB.getInstance().getMainRenderer().getBackground();
+        BufferedImage currentOverlay = renderer.getVisualBorderOverlay();
+
+        boolean mapChanged = (currentMap != lastKnownMapRef);
+
+        if (useLow && (cachedLowMap == null || mapChanged)) {
+            GraphicsConfiguration gfxConfig = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
+
+            cachedLowMap = ImageUtil.createLowMipmap(currentMap, gfxConfig);
+            lastKnownMapRef = currentMap;
+
+            if (currentBg != null) {
+                cachedLowBackground = ImageUtil.createLowMipmap(currentBg, gfxConfig);
+                lastKnownBgRef = currentBg;
+            }
+            if (currentOverlay != null) {
+                cachedLowOverlay = ImageUtil.createLowMipmap(currentOverlay, gfxConfig);
+                lastOverlayRef = currentOverlay;
+            }
         }
 
-        g2.drawImage(
-                renderer.getMap(),
-                visible.x, visible.y,
-                visible.x + visible.width,
-                visible.y + visible.height,
-                visible.x,
-                visible.y,
-                visible.x + visible.width,
-                visible.y + visible.height,
-                null
-        );
+        if (useLow && currentBg != null && currentBg != lastKnownBgRef) {
+            GraphicsConfiguration gfxConfig = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
+            cachedLowBackground = ImageUtil.createLowMipmap(currentBg, gfxConfig);
+            lastKnownBgRef = currentBg;
+        }
+        if (useLow && currentOverlay != null && currentOverlay != lastOverlayRef) {
+            GraphicsConfiguration gfxConfig = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
+            cachedLowOverlay = ImageUtil.createLowMipmap(currentOverlay, gfxConfig);
+            lastOverlayRef = currentOverlay;
+        }
 
-        if (renderer.getVisualBorderOverlay() != null) {
-            g2.drawImage(
-                    renderer.getVisualBorderOverlay(),
-                    visible.x, visible.y,
-                    visible.x + visible.width,
-                    visible.y + visible.height,
-                    visible.x,
-                    visible.y,
-                    visible.x + visible.width,
-                    visible.y + visible.height,
-                    null
-            );
+        int x2 = visible.x + visible.width;
+        int y2 = visible.y + visible.height;
+
+        if (currentBg != null) {
+            VolatileImage bgToDraw = useLow ? cachedLowBackground : currentBg;
+            g2.drawImage(bgToDraw, visible.x, visible.y, x2, y2, visible.x, visible.y, x2, y2, null);
+        }
+
+        BufferedImage mapToDraw = useLow ? cachedLowMap : currentMap;
+        g2.drawImage(mapToDraw, visible.x, visible.y, x2, y2, visible.x, visible.y, x2, y2, null);
+
+        if (currentOverlay != null) {
+            BufferedImage overlayToDraw = useLow ? cachedLowOverlay : currentOverlay;
+            g2.drawImage(overlayToDraw, visible.x, visible.y, x2, y2, visible.x, visible.y, x2, y2, null);
         }
 
         updateTroopButtons(g2);
-        updateCombatButtons();
 
         g2.setTransform(screenTransform);
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        //handleDragOverlay(g2);
+        SwingUtilities.invokeLater(this::updateCombatButtons);
+    }
+
+    public void invalidateMapCache() {
+        this.cachedLowMap = null;
+        this.cachedLowBackground = null;
+        this.cachedLowOverlay = null;
     }
 
     public void updateTroopButtons(Graphics2D g2) {
@@ -166,31 +198,25 @@ public class RenderPanel extends JPanel implements Panel {
         int height = (int) (baseHeight * scale);
 
         List<Component> toRemove = new ArrayList<>();
-        for (Component c : troopLayer.getComponents()) {
-            if (c instanceof TroopVisualButton button) {
-                if (!visible.contains(button.getStack())) {
-                    toRemove.add(c);
-                    selected.remove(button);
-                }
+        for (Component c : troopLayer.getComponents())
+            if (c instanceof TroopVisualButton button) if (!visible.contains(button.getStack())) {
+                toRemove.add(c);
+                selected.remove(button);
             }
-        }
 
-        for (Component c : toRemove) {
-            troopLayer.remove(c);
-        }
+        for (Component c : toRemove) troopLayer.remove(c);
 
         for (int i = 0; i < visible.size(); i++) {
             TroopStack stack = visible.get(i);
 
             TroopVisualButton button = null;
 
-            for (Component c : troopLayer.getComponents()) {
-                if (c instanceof TroopVisualButton troopButton
-                        && troopButton.getStack() == stack) {
+            for (Component c : troopLayer.getComponents())
+                if (c instanceof TroopVisualButton troopButton && troopButton.getStack() == stack) {
                     button = troopButton;
                     break;
                 }
-            }
+
 
             if (button == null) {
                 button = new TroopVisualButton(stack);
@@ -206,15 +232,10 @@ public class RenderPanel extends JPanel implements Panel {
 
                         if(!Objects.equals(finalButton1.getStack().getController().getAbbreviation(), BOB.getInstance().getPlayer().country().getAbbreviation())) return;
 
-                        if (!shiftHeld) {
-                            selected.clear();
-                        }
+                        if (!shiftHeld) selected.clear();
 
-                        if (alreadySelected) {
-                            selected.remove(finalButton);
-                        } else {
-                            selected.add(finalButton);
-                        }
+                        if (alreadySelected) selected.remove(finalButton);
+                        else selected.add(finalButton);
                     }
                 });
 
@@ -228,19 +249,12 @@ public class RenderPanel extends JPanel implements Panel {
             int stackIndexOnTile = 0;
             for (int j = 0; j < i; j++) {
                 TroopStack other = visible.get(j);
-                if (other.getTile() == stack.getTile()) {
-                    stackIndexOnTile++;
-                }
+                if (other.getTile() == stack.getTile()) stackIndexOnTile++;
             }
 
             int yOffset = (stackIndexOnTile * (height + 2));
 
-            button.setBounds(
-                    screen.x - width / 2,
-                    screen.y - height / 2 - yOffset,
-                    width,
-                    height
-            );
+            button.setBounds(screen.x - width / 2, screen.y - height / 2 - yOffset, width, height);
         }
 
         troopLayer.revalidate();
@@ -248,12 +262,8 @@ public class RenderPanel extends JPanel implements Panel {
     }
 
     private TroopVisualButton getButton(TroopStack stack) {
-        for (Component c : troopLayer.getComponents()) {
-            if (c instanceof TroopVisualButton button
-                    && button.getStack() == stack) {
-                return button;
-            }
-        }
+        for (Component c : troopLayer.getComponents())
+            if (c instanceof TroopVisualButton button && button.getStack() == stack) return button;
         return null;
     }
 
@@ -262,9 +272,7 @@ public class RenderPanel extends JPanel implements Panel {
 
         if(isPeaceConference()) {
             combatButtons.forEach((key, value) -> troopLayer.remove(value));
-
             combatButtons.clear();
-
             return;
         }
 
@@ -278,9 +286,7 @@ public class RenderPanel extends JPanel implements Panel {
         int combatSize = (int) (baseCombatSize * scale);
 
         for (CombatStatus combat : BOB.getInstance().getCombatManager().getActiveCombats()) {
-            if (combat.isFinished()
-                    || combat.getAttackers().isEmpty()
-                    || combat.getDefenders().isEmpty()) {
+            if (combat.isFinished() || combat.getAttackers().isEmpty() || combat.getDefenders().isEmpty()) {
                 BOB.getInstance().getCombatManager().remove(combat.getUuid());
                 continue;
             }
@@ -298,9 +304,8 @@ public class RenderPanel extends JPanel implements Panel {
             TroopVisualButton atkButton = getButton(attacker);
             TroopVisualButton defButton = getButton(defender);
 
-            if (atkButton == null || defButton == null) {
-                continue;
-            }
+            if (atkButton == null || defButton == null) continue;
+
 
             CombatVisualButton combatButton = combatButtons.computeIfAbsent(combat.getUuid(), uuid -> {
                 CombatVisualButton b = new CombatVisualButton(uuid);
@@ -328,9 +333,7 @@ public class RenderPanel extends JPanel implements Panel {
         combatButtons.entrySet().removeIf(entry -> {
             boolean remove = !activeIds.contains(entry.getKey());
 
-            if (remove) {
-                troopLayer.remove(entry.getValue());
-            }
+            if (remove) troopLayer.remove(entry.getValue());
 
             return remove;
         });
@@ -380,9 +383,8 @@ public class RenderPanel extends JPanel implements Panel {
         this.escMenu = on;
         this.escOverlay.setVisible(on);
 
-        if(on) {
-            getHud().visible(false);
-        }
+        if(on) getHud().visible(false);
+
 
         this.revalidate();
         //this.repaint();

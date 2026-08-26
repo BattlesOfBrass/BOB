@@ -5,10 +5,12 @@ import de.idiotischer.bob.render.menu.Panel;
 import de.idiotischer.bob.render.menu.impl.MultiplayerMenu;
 import de.idiotischer.bob.render.menu.impl.select.ScenarioSelectMenu;
 import de.idiotischer.bob.render.menu.impl.StartMenu;
+import de.idiotischer.bob.util.ImageUtil;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.awt.image.VolatileImage;
 
@@ -162,28 +164,91 @@ public class MenuPanel extends JPanel implements Panel {
         return out;
     }
 
+    private BufferedImage cachedLowMap = null;
+    private VolatileImage cachedLowBackground = null;
+    private BufferedImage cachedLowOverlay = null;
+
+    private BufferedImage lastKnownMapRef = null;
+    private VolatileImage lastKnownBgRef = null;
+    private BufferedImage lastOverlayRef = null;
+
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        int w = getWidth();
-        int h = getHeight();
-
-        updateCachedImages(w, h);
+        BufferedImage currentMap = renderer.getMap();
+        if (currentMap == null) return;
 
         Graphics2D g2 = (Graphics2D) g;
+
+        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+        g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);
+
+        AffineTransform screenTransform = g2.getTransform();
+
+        AffineTransform cameraTransform = renderer.getCamera().getTransform();
+        double scaleX = cameraTransform.getScaleX();
+        g2.transform(cameraTransform);
+
+        Rectangle visible = renderer.getCamera().getVisibleWorldBounds(getWidth(), getHeight());
+
+        boolean useLow = (scaleX <= 0.25);
+
+        VolatileImage currentBg = BOB.getInstance().getMainRenderer().getBackground();
+        BufferedImage currentOverlay = renderer.getVisualBorderOverlay();
+
+        boolean mapChanged = (currentMap != lastKnownMapRef);
+
+        if (useLow && (cachedLowMap == null || mapChanged)) {
+            GraphicsConfiguration gfxConfig = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
+
+            cachedLowMap = ImageUtil.createLowMipmap(currentMap, gfxConfig);
+            lastKnownMapRef = currentMap;
+
+            if (currentBg != null) {
+                cachedLowBackground = ImageUtil.createLowMipmap(currentBg, gfxConfig);
+                lastKnownBgRef = currentBg;
+            }
+            if (currentOverlay != null) {
+                cachedLowOverlay = ImageUtil.createLowMipmap(currentOverlay, gfxConfig);
+                lastOverlayRef = currentOverlay;
+            }
+        }
+
+        if (useLow && currentBg != null && currentBg != lastKnownBgRef) {
+            GraphicsConfiguration gfxConfig = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
+            cachedLowBackground = ImageUtil.createLowMipmap(currentBg, gfxConfig);
+            lastKnownBgRef = currentBg;
+        }
+        if (useLow && currentOverlay != null && currentOverlay != lastOverlayRef) {
+            GraphicsConfiguration gfxConfig = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
+            cachedLowOverlay = ImageUtil.createLowMipmap(currentOverlay, gfxConfig);
+            lastOverlayRef = currentOverlay;
+        }
+
+        int x2 = visible.x + visible.width;
+        int y2 = visible.y + visible.height;
+
+        if (currentBg != null) {
+            VolatileImage bgToDraw = useLow ? cachedLowBackground : currentBg;
+            g2.drawImage(bgToDraw, visible.x, visible.y, x2, y2, visible.x, visible.y, x2, y2, null);
+        }
+
+        BufferedImage mapToDraw = useLow ? cachedLowMap : currentMap;
+        g2.drawImage(mapToDraw, visible.x, visible.y, x2, y2, visible.x, visible.y, x2, y2, null);
+
+        if (currentOverlay != null) {
+            BufferedImage overlayToDraw = useLow ? cachedLowOverlay : currentOverlay;
+            g2.drawImage(overlayToDraw, visible.x, visible.y, x2, y2, visible.x, visible.y, x2, y2, null);
+        }
+
+        g2.setTransform(screenTransform);
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+    }
 
-        if (scaledBackground != null) g2.drawImage(scaledBackground, 0, 0, null);
-
-        if (scaledBackground != null) g2.drawImage(scaledBackground, 0, 0, null);
-
-        BufferedImage frame = getFrame();
-        if (frame != null) g2.drawImage(frame, 0, 0, w, h, null);
-
-        if (scaledOverlay != null) g2.drawImage(scaledOverlay, 0, 0, null);
-
-        g2.setColor(new Color(255, 255, 255, 70));
-        g2.fillRect(0, 0, w, h);
+    public void invalidateMapCache() {
+        this.cachedLowMap = null;
+        this.cachedLowBackground = null;
+        this.cachedLowOverlay = null;
     }
 }

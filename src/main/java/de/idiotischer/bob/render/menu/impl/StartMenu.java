@@ -1,14 +1,12 @@
 package de.idiotischer.bob.render.menu.impl;
 
 import de.idiotischer.bob.BOB;
-import de.idiotischer.bob.render.menu.Menu;
 import de.idiotischer.bob.render.menu.components.button.BOBButton;
-import de.idiotischer.bob.render.menu.impl.select.ScenarioSelectMenu;
 
 import javax.swing.*;
 import java.awt.*;
 
-public class StartMenu extends JPanel implements Menu {
+public class StartMenu extends JPanel {
 
     //ButtonComp start = new ButtonComp("Select Start", Color.WHITE, Color.DARK_GRAY,true,0,100,150,50, 16,16, 15, Color.DARK_GRAY.brighter(), Color.BLACK, true,(b) -> {
     //    System.out.println("clicked mm");

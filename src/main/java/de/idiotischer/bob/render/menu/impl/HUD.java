@@ -94,10 +94,7 @@ public class HUD extends JPanel {
         JLabel flagLabel = new JLabel();
         flagLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
-        if (currentMode != null &&
-                currentTile != null &&
-                currentTile.getController() != null) {
-
+        if (currentMode != null && currentTile != null && currentTile.getController() != null) {
             BufferedImage flagIcon = currentTile.getController().getFlagImage();
             if (flagIcon != null) {
                 Image scaled = flagIcon.getScaledInstance(130, 80, Image.SCALE_SMOOTH);
