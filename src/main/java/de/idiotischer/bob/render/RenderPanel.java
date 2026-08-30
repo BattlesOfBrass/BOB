@@ -166,17 +166,13 @@ public class RenderPanel extends JPanel implements Panel {
         if(isPeaceConference()) {
             List<Component> toRemove = new ArrayList<>();
 
-            for (Component c : troopLayer.getComponents()) {
+            for (Component c : troopLayer.getComponents())
                 if (c instanceof TroopVisualButton button) {
                     toRemove.add(c);
                     selected.remove(button);
-
                 }
-            }
 
-            for (Component c : toRemove) {
-                troopLayer.remove(c);
-            }
+            for (Component c : toRemove) troopLayer.remove(c);
 
             selected.clear();
 

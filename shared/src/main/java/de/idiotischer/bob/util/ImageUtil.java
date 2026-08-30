@@ -249,9 +249,6 @@ public class ImageUtil {
     }
 
     public static VolatileImage createLowMipmap(VolatileImage source, GraphicsConfiguration config) {
-        int targetW = source.getWidth() / 4;
-        int targetH = source.getHeight() / 4;
-
         BufferedImage mipmap = config.createCompatibleImage(source.getWidth(), source.getHeight(), source.getTransparency());
         Graphics2D g = mipmap.createGraphics();
 
@@ -263,9 +260,6 @@ public class ImageUtil {
     }
 
     public static BufferedImage createLowMipmap(BufferedImage source, GraphicsConfiguration config) {
-        int targetW = source.getWidth() / 4;
-        int targetH = source.getHeight() / 4;
-
         BufferedImage mipmap = config.createCompatibleImage(source.getWidth(), source.getHeight(), source.getTransparency());
         Graphics2D g = mipmap.createGraphics();
 

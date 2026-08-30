@@ -332,20 +332,10 @@ public class PacketListener implements ListenerAdapter {
             var z = pack.getTroopStack(BOB.getInstance().getCountryManager(), BOB.getInstance().getTileManager());
             BOB.getInstance().getTroopManager().addTroopStack(z.key(), z.value());
         } else if(event.getPacket() instanceof TroopStacksSyncPacket pack) {
-            BOB.getInstance().getTroopManager().finishReload(
-                    pack.getPackets().stream()
-                            .map(d -> {
-                                var pair = d.getTroopStack(
-                                        BOB.getInstance().getCountryManager(),
-                                        BOB.getInstance().getTileManager()
-                                );
-                                return Map.entry(pair.key(), pair.value());
-                            })
-                            .collect(Collectors.toMap(
-                                    Map.Entry::getKey,
-                                    Map.Entry::getValue
-                            )), true
-            );
+            BOB.getInstance().getTroopManager().finishReload(pack.getPackets().stream().map(d -> {
+                var pair = d.getTroopStack(BOB.getInstance().getCountryManager(), BOB.getInstance().getTileManager());
+                return Map.entry(pair.key(), pair.value());
+            }).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)), true);
         } else if(event.getPacket() instanceof CombatSyncPacket pack) {
             BOB.getInstance().getCombatManager().addStatus(pack.getStatus(BOB.getInstance().getTroopManager()));
         } else if(event.getPacket() instanceof CombatsSyncPacket pack) {

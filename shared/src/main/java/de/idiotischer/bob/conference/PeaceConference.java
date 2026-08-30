@@ -21,10 +21,7 @@ public class PeaceConference {
     private final List<Country> defeated;
     private final List<Country> winners;
 
-    // Track claims made per tile: Tile -> List of (Claimant, Turn When Claimed)
     private final Map<Tile, List<Pair<Country, Integer>>> tileClaims = new HashMap<>();
-
-    // Finalized tile assignments: Tile -> Winner who claims it
     private final Map<Tile, Country> finalizedAnnexations = new HashMap<>();
 
     private Country currentTurn;
@@ -162,6 +159,14 @@ public class PeaceConference {
         }).toList();
     }
 
+    public List<Tile> getTakableTiles() {
+        return defeated.stream().flatMap(c -> {
+            List<Tile> tiles = resolver.getControlled(c);
+            tiles.removeIf(t -> !resolver.anyAlliedWith(winners, t.getOwner()));
+            return tiles.stream();
+        }).toList();
+    }
+
     public void reinstate() {
         if (channels == null) return;
 
@@ -204,6 +209,14 @@ public class PeaceConference {
                 status.hasAttackingWon() ? status.getDefenders() : status.getAttackers(),
                 status.hasAttackingWon() ? status.getAttackers() : status.getDefenders()
         );
+    }
+
+    public List<Country> getWinners() {
+        return winners;
+    }
+
+    public List<Country> getDefeated() {
+        return defeated;
     }
 
     //TODO: add methods to update parts for the client like for example the guy that has the current turn etc and add serializers

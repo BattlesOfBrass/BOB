@@ -246,8 +246,10 @@ public class TileManager implements TileResolver {
             });
 
             ImageUtil.set(BOB.getInstance().getMainRenderer().getLogicMap(), pos.x,pos.y, tile.getController().countryColor().getRGB());
-            BOB.getInstance().getMainRenderer().syncBuffers();
         });
+
+        BOB.getInstance().getMainRenderer().syncBuffers();
+        BOB.getInstance().getMainRenderer().setDirty(true);
     }
 
     public static void recolorTile(Tile tile, Color color) {
@@ -260,8 +262,10 @@ public class TileManager implements TileResolver {
 
             ImageUtil.set(BOB.getInstance().getMainRenderer().getLogicMap(), pos.x,pos.y, color.getRGB());
 
-            BOB.getInstance().getMainRenderer().syncBuffers();
         });
+
+        BOB.getInstance().getMainRenderer().syncBuffers();
+        BOB.getInstance().getMainRenderer().setDirty(true);
     }
 
     //private boolean isPointInTile(java.awt.Point p, List<java.awt.Point> polygon) {

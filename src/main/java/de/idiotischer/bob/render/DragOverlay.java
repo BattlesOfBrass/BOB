@@ -2,9 +2,12 @@ package de.idiotischer.bob.render;
 
 import de.idiotischer.bob.BOB;
 import de.idiotischer.bob.render.menu.components.button.TroopVisualButton;
+import de.idiotischer.bob.tile.Tile;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseEvent;
+import java.awt.geom.AffineTransform;
 import java.util.Objects;
 
 public class DragOverlay extends JComponent {
@@ -28,7 +31,6 @@ public class DragOverlay extends JComponent {
         if (start == null || end == null) return;
 
         Graphics2D g2 = (Graphics2D) g;
-
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         int x = Math.min(start.x, end.x);
@@ -36,12 +38,36 @@ public class DragOverlay extends JComponent {
         int w = Math.abs(start.x - end.x);
         int h = Math.abs(start.y - end.y);
 
-        g2.setColor(new Color(255, 255, 255, 50));
-        g2.fillRoundRect(x, y, w, h, curvature, curvature);
+        if (renderer.getDragButton() == MouseEvent.BUTTON3) {
+            g2.setColor(Color.RED);
 
-        g2.setColor(Color.WHITE);
-        g2.setStroke(new BasicStroke(2));
-        g2.drawRoundRect(x, y, w, h, curvature, curvature);
+            AffineTransform cameraTransform = renderer.getCamera().getTransform();
+            g2.transform(cameraTransform);
+
+            Tile previous = null;
+            int tiles = 0;
+
+            for (Tile tile : renderer.getDraggedTiles()) {
+                Point current = tile.getPoints().getFirst();
+
+                if(tiles + 1 > renderer.getGamePanel().getTroopButtonGroup().size()) break;
+
+                if (previous != null) {
+                    Point previousPoint = previous.getPoints().getFirst();
+                    g2.drawLine(previousPoint.x, previousPoint.y, current.x, current.y);
+                }
+
+                previous = tile;
+                tiles++;
+            }
+        } else if (renderer.getDragButton() == MouseEvent.BUTTON1) {
+            g2.setColor(new Color(255, 255, 255, 50));
+            g2.fillRoundRect(x, y, w, h, curvature, curvature);
+
+            g2.setColor(Color.WHITE);
+            g2.setStroke(new BasicStroke(2));
+            g2.drawRoundRect(x, y, w, h, curvature, curvature);
+        }
     }
 
     public void onDragRelease(boolean shift) {
@@ -49,17 +75,14 @@ public class DragOverlay extends JComponent {
     }
 
     private void selectTroopsInDrag(boolean shift) {
+        if (renderer.getDragButton() != MouseEvent.BUTTON1) return;
+
         Point start = renderer.getDragStart();
         Point end = renderer.getDragEnd();
 
         if (start == null || end == null) return;
 
-        Rectangle selection = new Rectangle(
-                Math.min(start.x, end.x),
-                Math.min(start.y, end.y),
-                Math.abs(start.x - end.x),
-                Math.abs(start.y - end.y)
-        );
+        Rectangle selection = new Rectangle(Math.min(start.x, end.x), Math.min(start.y, end.y), Math.abs(start.x - end.x), Math.abs(start.y - end.y));
 
         if(!shift) renderer.getGamePanel().selected.clear();
 

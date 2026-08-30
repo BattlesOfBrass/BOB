@@ -5,7 +5,10 @@ import de.idiotischer.bob.camera.Camera;
 import de.idiotischer.bob.render.menu.Panel;
 import de.idiotischer.bob.render.menu.components.button.TroopVisualButton;
 import de.idiotischer.bob.tile.Tile;
+import de.idiotischer.bob.troop.Troop;
+import de.idiotischer.bob.troop.TroopStack;
 import de.idiotischer.bob.util.ImageUtil;
+import it.unimi.dsi.fastutil.BigArrays;
 
 import javax.swing.*;
 import java.awt.*;
@@ -14,6 +17,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.VolatileImage;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.stream.Collectors;
 
 public class MainRenderer extends Thread {
@@ -46,6 +50,9 @@ public class MainRenderer extends Thread {
     private Camera camera;
     private DragOverlay overlay;
     private static final int DRAG_THRESHOLD = 6;
+    private boolean mapDirty;
+    private int dragButton;
+    private final Set<Tile> draggedTiles = new LinkedHashSet<>();
 
     public MainRenderer() {
         super("Battles of Brass");
@@ -106,6 +113,9 @@ public class MainRenderer extends Thread {
         super.start();
     }
 
+    public void setDirty(boolean dirty) {
+        this.mapDirty = dirty;
+    }
 
     @Override
     public void run() {
@@ -122,11 +132,13 @@ public class MainRenderer extends Thread {
                 if (inMenu) {
                     cardLayout.show(root, MENU);
                     menuPanel.requestFocusInWindow();
+                    setDirty(true);
                 } else {
                     setMap(BOB.getInstance().getScenarioSceneLoader().getMap());
                     camera.zoomToMin();
                     cardLayout.show(root, GAME);
                     renderPanel.requestFocusInWindow();
+                    setDirty(true);
                 }
 
                 lastMenuTile = inMenu;
@@ -135,7 +147,7 @@ public class MainRenderer extends Thread {
             if (!inMenu) {
                 if (!renderPanel.isPaused()) handleMovement(deltaTime);
 
-                renderPanel.repaint();
+                if(isMapDirty()) renderPanel.repaint();
             } else {
                 renderMenu();
                 menuPanel.repaint();
@@ -229,6 +241,7 @@ public class MainRenderer extends Thread {
                     public void mousePressed(MouseEvent e) {
                         dragStart = e.getPoint();
                         dragEnd = dragStart;
+                        dragButton = e.getButton();
                     }
 
                     @Override
@@ -250,6 +263,20 @@ public class MainRenderer extends Thread {
 
                         dragStart = null;
                         dragEnd = null;
+                        if (draggedTiles.size() > 1 && !renderPanel.isPaused() && getDragButton() == MouseEvent.BUTTON3) {
+                            List<TroopStack> stacks = renderPanel.getTroopButtonGroup().stream().map(TroopVisualButton::getStack).toList();
+
+                            final List<Tile>[] usableTiles = new List[]{new ArrayList<>(draggedTiles)};
+
+                            stacks.forEach(t -> {
+                                if(usableTiles[0].isEmpty()) usableTiles[0] = new ArrayList<>(draggedTiles);
+
+                                BOB.getInstance().getTroopManager().move(t, usableTiles[0].removeLast());
+                            });
+                        }
+
+                        dragButton = -1;
+                        draggedTiles.clear();
 
                         renderPanel.repaint();
                     }
@@ -260,6 +287,18 @@ public class MainRenderer extends Thread {
                     public void mouseDragged(MouseEvent e) {
                         dragEnd = e.getPoint();
 
+                        int x = camera.screenToWorldX(e.getX());
+                        int y = camera.screenToWorldY(e.getY());
+
+                        if (x < 0 || y < 0 || x >= logicMap.getWidth() || y >= logicMap.getHeight()) {
+                            return;
+                        }
+
+                        Tile tile = BOB.getInstance().getTileManager().getTileAt(x, y);
+
+                        if (tile != null) {
+                            draggedTiles.add(tile);
+                        }
                         //panel.repaint();
                     }
 
@@ -298,7 +337,6 @@ public class MainRenderer extends Thread {
             }
         }
     }
-
 
     private void handleMovement(double deltaTime) {
         double dx = 0;
@@ -373,8 +411,6 @@ public class MainRenderer extends Thread {
 
         //    if(BOB.getInstance().isDebug()) System.out.println("moved stacks to new loc: " + tile.getName());
         //});
-
-        renderPanel.repaint();
     }
 
     private void handleCountryMenu(int x, int y) {
@@ -501,6 +537,10 @@ public class MainRenderer extends Thread {
         System.exit(0);
     }
 
+    public int getDragButton() {
+        return dragButton;
+    }
+
     public static abstract class FrameListen implements ComponentListener {
         public void componentHidden(ComponentEvent arg0) {}
         public void componentMoved(ComponentEvent arg0) {}
@@ -527,5 +567,13 @@ public class MainRenderer extends Thread {
 
     public VolatileImage getBackground() {
         return background;
+    }
+
+    public boolean isMapDirty() {
+        return mapDirty;
+    }
+
+    public Set<Tile> getDraggedTiles() {
+        return draggedTiles;
     }
 }

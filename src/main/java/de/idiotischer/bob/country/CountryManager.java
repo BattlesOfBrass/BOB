@@ -4,6 +4,7 @@ import de.idiotischer.bob.BOB;
 import de.idiotischer.bob.Server;
 import de.idiotischer.bob.networking.packet.impl.pp.RequestPacket;
 import de.idiotischer.bob.networking.packet.impl.pp.Type;
+import de.idiotischer.bob.render.menu.impl.select.PeaceMenuOverlay;
 import de.idiotischer.bob.tile.Tile;
 
 import java.awt.*;
