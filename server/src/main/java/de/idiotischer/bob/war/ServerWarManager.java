@@ -102,22 +102,12 @@ public class ServerWarManager {
             baseVP.put(controller, Server.getInstance().getCountryManager().getTotalVPs(controller));
             baseVP.put(aggressor, Server.getInstance().getCountryManager().getTotalVPs(aggressor));
 
-            WarStatus status = new WarStatus(
-                    baseVP,
-                    new HashMap<>(baseVP),
-                    name,
-                    abbr,
-                    attackers,
-                    defenders
-            );
+            WarStatus status = new WarStatus(baseVP, new HashMap<>(baseVP), name, abbr, attackers, defenders);
 
             getOrCreateWars(controller).add(status);
             getOrCreateWars(aggressor).add(status);
 
-            Server.getInstance().getSendTool().broadcast(
-                    Server.getInstance().getServerSocket().getClients(),
-                    new ReplyPacket(Type.START_WAR, status.toDataString())
-            );
+            Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new ReplyPacket(Type.START_WAR, status.toDataString()));
         });
 
         return true;
@@ -152,7 +142,7 @@ public class ServerWarManager {
                 defender.setCapitulated(true, (v) -> {
                     Server.getInstance().getTroopManager().removeTroops(defender);
                     //TODO: only replace tiles without enemy troops
-                    Server.getInstance().getCountryManager().getControlled(defender).forEach(c -> c.setControllerForAll(Server.getInstance().getServerSocket().getClients(), aggressor));
+                    Server.getInstance().getCountryManager().getOwned(defender).forEach(c -> c.setControllerForAll(Server.getInstance().getServerSocket().getClients(), defender));
                     Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new ReplyPacket(Type.CAPITULATE_COUNTRY, aggressor.getAbbreviation() + ";" + defender.getAbbreviation()));
                 });
             }
@@ -187,6 +177,7 @@ public class ServerWarManager {
         }
 
         Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new ReplyPacket(Type.END_WAR, status.toDataString()));
+        Server.getInstance().getConferenceManager().start(status);
     }
 
     public String serializeWars() {

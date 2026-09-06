@@ -117,19 +117,16 @@ public class ServerCountryManager implements CountryResolver {
 
     public List<Tile> getOwned(Country country) {
         if(Server.getInstance().getTileManager() == null) return List.of();
-        return Server.getInstance().getTileManager().getTileSet().stream().filter(s -> s.getOwner() == country).toList();
+        return Server.getInstance().getTileManager().getTileSet().stream().filter(s -> s.getOwner().getAbbreviation().equals(country.getAbbreviation())).toList();
     }
 
     public List<Tile> getControlled(Country country) {
         if(Server.getInstance().getTileManager() == null) return List.of();
-        return Server.getInstance().getTileManager().getTileSet().stream().filter(s -> s.getController() == country).toList();
+        return Server.getInstance().getTileManager().getTileSet().stream().filter(s -> s.getController().getAbbreviation().equals(country.getAbbreviation())).toList();
     }
 
     public List<Country> getCountries() {
-        return countrySet
-                .stream()
-                .sorted(Comparator.comparing(Country::getAbbreviation))
-                .toList();
+        return countrySet.stream().sorted(Comparator.comparing(Country::getAbbreviation)).toList();
     }
 
     public int getTotalVPs(Country country) {
@@ -146,12 +143,8 @@ public class ServerCountryManager implements CountryResolver {
     //}
 
     public List<Country> getMajors() {
-        return getCountries().stream()
-                .filter(Country::isMajor)
-                .sorted(Comparator.comparing(Country::getAbbreviation))
-                .toList();
+        return getCountries().stream().filter(Country::isMajor).sorted(Comparator.comparing(Country::getAbbreviation)).toList();
     }
-
 
     public boolean isAllied(Country a, Country b) {
         return false;
@@ -159,21 +152,15 @@ public class ServerCountryManager implements CountryResolver {
 
     @Override
     public boolean anyAlliedWith(List<Country> testers, Country country) {
-        return false;
+        return testers.stream().anyMatch(c -> isAllied(c, country));
     }
 
     public List<Country> getOnSelectScreen() {
-        return getCountries().stream()
-                .filter(Country::isSelectScreen)
-                .sorted(Comparator.comparing(Country::getAbbreviation))
-                .toList();
+        return getCountries().stream().filter(Country::isSelectScreen).sorted(Comparator.comparing(Country::getAbbreviation)).toList();
     }
 
     public List<Country> getMinors() {
-        return getCountries().stream()
-                .filter(c -> !c.isMajor())
-                .sorted(Comparator.comparing(Country::getAbbreviation))
-                .toList();
+        return getCountries().stream().filter(c -> !c.isMajor()).sorted(Comparator.comparing(Country::getAbbreviation)).toList();
     }
 
     public void splitCountry(Country country) {

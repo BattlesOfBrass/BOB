@@ -1,8 +1,11 @@
 package de.idiotischer.bob.render.menu.impl.select;
 
 import de.idiotischer.bob.BOB;
+import de.idiotischer.bob.SharedCore;
 import de.idiotischer.bob.conference.PeaceConference;
 import de.idiotischer.bob.conference.TakeTileType;
+import de.idiotischer.bob.country.Country;
+import de.idiotischer.bob.country.CountryManager;
 import de.idiotischer.bob.render.menu.components.button.BOBButton;
 import de.idiotischer.bob.tile.Tile;
 
@@ -10,11 +13,20 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
-// The Overlay on RenderPanel that is shown during conferences
 public class PeaceMenuOverlay extends JPanel {
 
-    private PeaceConference peace = null;
+    private UUID peace = null;
+    private BOBButton selectedButton;
+
+    private JPanel countryPanel;
+
+    private BOBButton sendDemandsBtn;
+    private BOBButton quitConferenceBtn;
+
+    private final Set<Tile> selectedTiles = new java.util.HashSet<>();
+    private static boolean waiting;
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
@@ -23,87 +35,21 @@ public class PeaceMenuOverlay extends JPanel {
             frame.setSize(800, 600);
             frame.setLocationRelativeTo(null);
 
-            frame.add(new PeaceMenuOverlay());
+            PeaceConference c = new PeaceConference(new SharedCore(), UUID.randomUUID(), new CountryManager(), Map.of(), Map.of(), Set.of(new Country("hahha", "C1", Color.BLUE, false, false)), Set.of(new Country("hahha", "C2", Color.BLUE, false, false)));
+
+            var o = new PeaceMenuOverlay();
+            o.setPeace(c.getUUID());
+            frame.add(o);
 
             frame.setVisible(true);
         });
     }
 
-    private JButton selectedButton;
-
     public PeaceMenuOverlay() {
         setOpaque(false);
         setLayout(null);
-
-        int buttonX = 20;
-        int buttonY = 55;
-        int buttonWidth = 65;
-        int buttonHeight = 30;
-        int gap = 5;
-
-        for (int i = 0; i < TakeTileType.values().length; i++) {
-            TakeTileType tileType = TakeTileType.values()[i];
-
-            BOBButton button = new BOBButton(tileType.getDefaultCharr(), Color.WHITE, Color.BLACK, Color.DARK_GRAY.darker(), Color.GRAY, 16, 5);
-            button.setBounds(buttonX + i * (buttonWidth + gap), buttonY, buttonWidth, buttonHeight);
-
-            button.addActionListener(e -> {
-                if (selectedButton != null) selectedButton.setSelected(false);
-                selectedButton = button;
-                selectedButton.setSelected(true);
-            });
-
-            add(button);
-        }
-
-        if(peace == null) return;
-
-        JPanel countryPanel = new JPanel();
-        countryPanel.setLayout(new BoxLayout(countryPanel, BoxLayout.Y_AXIS));
-        countryPanel.setOpaque(false);
-        countryPanel.setBounds(10, 90, 300, getHeight() - 100);
-
-        for (var country : peace.getDefeated()) {
-            JPanel countryEntry = new JPanel();
-            countryEntry.setLayout(new BoxLayout(countryEntry, BoxLayout.Y_AXIS));
-            countryEntry.setOpaque(false);
-
-            JButton countryButton = new BOBButton(country.countryName(), Color.WHITE, Color.BLACK, Color.DARK_GRAY.darker(), Color.GRAY, 14, 5);
-
-            JPanel tilePanel = new JPanel();
-            tilePanel.setLayout(new BoxLayout(tilePanel, BoxLayout.Y_AXIS));
-            tilePanel.setOpaque(false);
-            tilePanel.setVisible(false);
-
-            for (Tile tile : peace.getTakableTiles().stream().filter(t -> t.getOwner().getAbbreviation().equals(country.getAbbreviation())).toList()) {
-                JButton tileButton = new BOBButton(tile.getName(), Color.WHITE, Color.BLACK, Color.DARK_GRAY.darker(), Color.GRAY, 12, 5);
-
-                tileButton.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-                tileButton.addActionListener(e -> {
-                    System.out.println("Selected tile: " + tile);
-                });
-
-                tilePanel.add(tileButton);
-            }
-
-            countryButton.setAlignmentX(Component.LEFT_ALIGNMENT);
-            countryButton.addActionListener(e -> {
-                tilePanel.setVisible(!tilePanel.isVisible());
-
-                countryPanel.revalidate();
-                countryPanel.repaint();
-            });
-
-            countryEntry.add(countryButton);
-            countryEntry.add(tilePanel);
-
-            countryPanel.add(countryEntry);
-        }
-
-        add(countryPanel);
-
-
+        setFocusable(true);
+        setRequestFocusEnabled(true);
     }
 
     @Override
@@ -121,13 +67,13 @@ public class PeaceMenuOverlay extends JPanel {
             g2.drawRect(0, 0, getWidth(), 40);
 
             g2.setColor(Color.DARK_GRAY);
-            g2.fillRect(0, 40, 320, getHeight());
+            g2.fillRect(0, 40, 320, getHeight() - 40);
 
             g2.setColor(Color.DARK_GRAY.darker());
             g2.drawRect(0, 40, 320, getHeight() - 40);
 
             g2.setColor(Color.DARK_GRAY);
-            g2.fillRect(getWidth() - 320, 40, 320, getHeight());
+            g2.fillRect(getWidth() - 320, 40, 320, getHeight() - 40);
 
             g2.setColor(Color.DARK_GRAY.darker());
             g2.drawRect(getWidth() - 320, 40, 320, getHeight() - 40);
@@ -136,11 +82,215 @@ public class PeaceMenuOverlay extends JPanel {
         }
     }
 
-    public void setPeace(PeaceConference peace) {
-        this.peace = peace;
+    @Override
+    public void doLayout() {
+        super.doLayout();
+
+        if (countryPanel != null) countryPanel.setBounds(10, 90, 300, Math.max(0, getHeight() - 100));
+
+        if (sendDemandsBtn != null && quitConferenceBtn != null) {
+            int rightButtonWidth = 180;
+            int rightButtonHeight = 35;
+            int rightMargin = 50;
+            int bottomMargin = 50;
+            int buttonGap = 5;
+
+            sendDemandsBtn.setBounds(getWidth() - rightMargin - rightButtonWidth, getHeight() - bottomMargin - rightButtonHeight * 2 - buttonGap, rightButtonWidth, rightButtonHeight);
+            quitConferenceBtn.setBounds(getWidth() - rightMargin - rightButtonWidth, getHeight() - bottomMargin - rightButtonHeight, rightButtonWidth, rightButtonHeight);
+        }
     }
 
-    public PeaceConference getPeace() {
+    public void setPeace(UUID peace) {
+        this.peace = peace;
+
+        start();
+    }
+
+    public void start() {
+        selectedTiles.clear();
+        removeAll();
+
+        addTileTypeButtons();
+        buildCountryPanel();
+        addConferenceButtons();
+
+        revalidate();
+        repaint();
+    }
+
+    private void buildCountryPanel() {
+        countryPanel = new JPanel();
+        countryPanel.setLayout(new BoxLayout(countryPanel, BoxLayout.Y_AXIS));
+        countryPanel.setOpaque(false);
+        countryPanel.setBounds(10, 90, 300, Math.max(0, getHeight() - 100));
+
+        BOBButton countriesButton = new BOBButton("Countries       ▾", Color.WHITE, Color.BLACK, Color.DARK_GRAY.darker(), Color.GRAY, 14, 5);
+        countriesButton.setAlignmentX(Component.LEFT_ALIGNMENT);
+        countriesButton.setMaximumSize(new Dimension(300, 35));
+
+        JPanel countriesPanel = new JPanel();
+        countriesPanel.setLayout(new BoxLayout(countriesPanel, BoxLayout.Y_AXIS));
+        countriesPanel.setOpaque(false);
+        countriesPanel.setVisible(false);
+
+        countriesButton.addActionListener(e -> {
+            if(waiting) return;
+
+            countriesPanel.setVisible(!countriesPanel.isVisible());
+
+            countriesButton.setText(countriesPanel.isVisible() ? "Countries       ▴" : "Countries       ▾");
+
+            countriesPanel.getParent().revalidate();
+            countriesPanel.getParent().repaint();
+        });
+
+        PeaceConference conf = BOB.getInstance().getPeaceHelper().getBy(peace);
+        for (Country country : conf.getDefeated()) {
+            BOBButton countryButton = new BOBButton(country.countryName() + "       ▾", Color.WHITE, Color.BLACK, Color.DARK_GRAY.darker(), Color.GRAY, 13, 5);
+
+            countryButton.setAlignmentX(Component.LEFT_ALIGNMENT);
+            countryButton.setMaximumSize(new Dimension(285, 35));
+
+            JPanel tilePanel = new JPanel();
+            tilePanel.setLayout(new BoxLayout(tilePanel, BoxLayout.Y_AXIS));
+            tilePanel.setOpaque(false);
+            tilePanel.setVisible(false);
+
+            for (Tile tile : conf.getTakableTiles().stream().filter(t -> t.getOwner().getAbbreviation().equals(country.getAbbreviation())).toList()) {
+                BOBButton tileButton = new BOBButton(tile.getAbbreviation(), tile.getVictoryPoints() + " | " + tile.getName(), Color.WHITE, Color.BLACK, Color.DARK_GRAY.darker(), Color.GRAY, 12, 5);
+
+                tileButton.setAlignmentX(Component.LEFT_ALIGNMENT);
+                tileButton.setMaximumSize(new Dimension(270, 30));
+
+                tileButton.addActionListener(e -> {
+                    if(waiting) return;
+
+                    boolean toggled = !tileButton.isToggled();
+                    tileButton.setToggled(toggled);
+
+                    tileButton.setText(tile.getVictoryPoints() + " | " + tile.getName() + (toggled ? " x" : "  "));
+
+                    if (toggled) selectedTiles.add(tile);
+                    else selectedTiles.remove(tile);
+                });
+
+
+                tilePanel.add(tileButton);
+            }
+
+            countryButton.addActionListener(e -> {
+                if(waiting) return;
+
+                boolean visible = !tilePanel.isVisible();
+                tilePanel.setVisible(visible);
+
+                countryButton.setText(country.countryName() + (visible ? "       ▴" : "       ▾"));
+
+                countryPanel.revalidate();
+                countryPanel.repaint();
+            });
+
+            countriesPanel.add(countryButton);
+            countriesPanel.add(tilePanel);
+            countriesPanel.add(Box.createVerticalStrut(5));
+        }
+
+
+        countryPanel.add(countriesButton);
+        countryPanel.add(countriesPanel);
+
+        add(countryPanel);
+    }
+
+    private void addTileTypeButtons() {
+        int buttonX = 20;
+        int buttonY = 55;
+        int buttonWidth = 65;
+        int buttonHeight = 30;
+        int gap = 15;
+
+        for (int i = 0; i < TakeTileType.values().length; i++) {
+            TakeTileType tileType = TakeTileType.values()[i];
+
+            BOBButton button = new BOBButton(tileType.name(), tileType.getDefaultCharr(), Color.WHITE, Color.BLACK, Color.DARK_GRAY.darker(), Color.GRAY, 16, 5);
+
+            button.setBounds(buttonX + i * (buttonWidth + gap), buttonY, buttonWidth, buttonHeight);
+
+            button.addActionListener(e -> {
+                if (waiting) return;
+
+                if (selectedButton != null) selectedButton.setSelected(false);
+
+                selectedButton = button;
+                selectedButton.setSelected(true);
+            });
+
+            add(button);
+
+            if (tileType == TakeTileType.TAKE) {
+                selectedButton = button;
+                selectedButton.setSelected(true);
+            }
+        }
+    }
+
+
+    private void addConferenceButtons() {
+        sendDemandsBtn = new BOBButton("Send Demands", Color.WHITE, Color.BLACK, Color.DARK_GRAY.darker(), Color.GRAY, 14, 5);
+        quitConferenceBtn = new BOBButton("Quit Conference", Color.WHITE, Color.BLACK, Color.DARK_GRAY.darker(), Color.GRAY, 14, 5);
+
+        add(sendDemandsBtn);
+        add(quitConferenceBtn);
+
+        int rightButtonWidth = 180;
+        int rightButtonHeight = 35;
+        int rightMargin = 50;
+        int bottomMargin = 50;
+        int buttonGap = 5;
+
+        sendDemandsBtn.setBounds(getWidth() - rightMargin - rightButtonWidth, getHeight() - bottomMargin - rightButtonHeight * 2 - buttonGap, rightButtonWidth, rightButtonHeight);
+        quitConferenceBtn.setBounds(getWidth() - rightMargin - rightButtonWidth, getHeight() - bottomMargin - rightButtonHeight, rightButtonWidth, rightButtonHeight);
+
+        PeaceConference conf = BOB.getInstance().getPeaceHelper().getBy(peace);
+        quitConferenceBtn.addActionListener(e -> BOB.getInstance().getPeaceHelper().quitConference(peace));
+        sendDemandsBtn.addActionListener(e -> {
+            if(waiting) return;
+
+            if(selectedButton == null) return;
+
+            if(conf.hasDispute(BOB.getInstance().getPlayer().country())) addDisputedPopup();
+            else BOB.getInstance().getPeaceHelper().sendDemands(peace, TakeTileType.valueOf(selectedButton.getId()), selectedTiles, BOB.getInstance().getPlayer().country());
+
+
+            addWaitingPopup();
+
+            waiting = true;
+
+            start();
+        });
+    }
+
+    private void addDisputedPopup() {
+    }
+
+    private void addWaitingPopup() {
+    }
+
+    public static void removeWaitingPopup() {
+    }
+
+    public static void removeDisputedPopup() {
+    }
+
+    public UUID getPeace() {
         return peace;
+    }
+
+    public static boolean isWaiting() {
+        return waiting;
+    }
+
+    public static void setWaiting(boolean waiting) {
+        PeaceMenuOverlay.waiting = waiting;
     }
 }

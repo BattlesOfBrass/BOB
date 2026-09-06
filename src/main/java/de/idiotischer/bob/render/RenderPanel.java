@@ -8,6 +8,7 @@ import de.idiotischer.bob.render.menu.components.button.CombatVisualButton;
 import de.idiotischer.bob.render.menu.components.button.TroopVisualButton;
 import de.idiotischer.bob.render.menu.impl.HUD;
 import de.idiotischer.bob.render.menu.impl.ESCMenu;
+import de.idiotischer.bob.render.menu.impl.select.PeaceMenuOverlay;
 import de.idiotischer.bob.troop.Troop;
 import de.idiotischer.bob.troop.TroopDrawer;
 import de.idiotischer.bob.troop.TroopStack;
@@ -32,6 +33,8 @@ public class RenderPanel extends JPanel implements Panel {
     private final ESCMenu escOverlay;
     private final JPanel troopLayer;
 
+    private final PeaceMenuOverlay overlay = new PeaceMenuOverlay();
+
     private int curvature = 24;
     private boolean escMenu = false;
 
@@ -55,7 +58,11 @@ public class RenderPanel extends JPanel implements Panel {
         this.add(escOverlay);
         this.add(hud);
         this.add(troopLayer);
+        this.add(overlay);
 
+        setDoubleBuffered(true);
+
+        this.overlay.setVisible(false);
         this.escOverlay.setVisible(false);
         this.hud.setVisible(true);
 
@@ -386,6 +393,10 @@ public class RenderPanel extends JPanel implements Panel {
         //this.repaint();
     }
 
+    public void setPaused(boolean on) {
+        this.escMenu = on;
+    }
+
     public boolean isEscMenu() {
         return escMenu;
     }
@@ -424,6 +435,25 @@ public class RenderPanel extends JPanel implements Panel {
     }
 
     public boolean isPeaceConference() {
-        return false;
+        return overlay.isVisible();
+    }
+
+    public void showPeaceOverlay() {
+        this.overlay.setVisible(true);
+        this.renderer.setCanMoveRegardless(true);
+        hud.visible(false);
+    }
+
+    public void removePeaceOverlay() {
+        this.overlay.setVisible(false);
+        this.renderer.setCanMoveRegardless(false);
+    }
+
+    public PeaceMenuOverlay getOverlay() {
+        return overlay;
+    }
+
+    public void setPeace(UUID uuid) {
+        overlay.setPeace(uuid);
     }
 }

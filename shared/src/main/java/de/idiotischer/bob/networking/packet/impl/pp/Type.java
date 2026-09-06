@@ -22,4 +22,9 @@ public enum Type {
     CLEAR_COMBATS,
     WARS_SYNC,
     SPAWN_TROOP, /*test thing, will be removed*/
+    CONFERENCE_STARTED,
+    END_CONFERENCE, //this is 1. used when a client quits and 2. when the server finished the conference
+    ROUND_ENDED,
+    ROUND_UPDATE,
+    SEND_DEMANDS, TROOP_TP,
 }

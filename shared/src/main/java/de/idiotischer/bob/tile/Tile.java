@@ -6,7 +6,6 @@ import de.idiotischer.bob.country.CountryResolver;
 import de.idiotischer.bob.networking.packet.impl.pp.ReplyPacket;
 import de.idiotischer.bob.networking.packet.impl.pp.RequestPacket;
 import de.idiotischer.bob.networking.packet.impl.pp.Type;
-import de.idiotischer.bob.state.State;
 import de.idiotischer.bob.tile.event.TileChangedEvent;
 import it.unimi.dsi.fastutil.Pair;
 import org.jetbrains.annotations.NotNull;
@@ -15,7 +14,6 @@ import org.jetbrains.annotations.NotNull;
 //TODO: Point[] speichern können falls ein tile so weirde formen haben bei denen der nicht ganz zusammenhängt
 import java.awt.*;
 import java.nio.channels.AsynchronousSocketChannel;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -51,6 +49,18 @@ public class Tile {
         this.owner = owner;
     }
 
+    public void setOwnerForAll(Set<AsynchronousSocketChannel> channels, Country owner) {
+        TileChangedEvent event = new TileChangedEvent(this.owner, owner, this, TileChangedEvent.Type.OWNER);
+
+        core.getListenerRegistry().call(event);
+
+        if (event.isCancelled()) return;
+
+        core.getTool().broadcast(channels, new ReplyPacket(Type.TILE_CHANGE, this.constructOwnerChange(controller)));
+
+        this.owner = owner;
+    }
+
     public void setController(Country controller) {
         this.controller = controller;
     }
@@ -60,21 +70,19 @@ public class Tile {
     }
 
     public void setControllerForAll(Set<AsynchronousSocketChannel> channels, Country controller) {
-        TileChangedEvent event = new TileChangedEvent(this.controller, controller, this);
+        TileChangedEvent event = new TileChangedEvent(this.controller, controller, this, TileChangedEvent.Type.CONTROLLER);
 
         core.getListenerRegistry().call(event);
 
-        if (event.isCancelled()) {
-            return;
-        }
+        if (event.isCancelled()) return;
 
-        core.getTool().broadcast(channels, new ReplyPacket(Type.TILE_CHANGE, this.constructChange(controller)));
+        core.getTool().broadcast(channels, new ReplyPacket(Type.TILE_CHANGE, this.constructControllerChange(controller)));
 
         this.controller = controller;
     }
 
     public void setControllerClient(AsynchronousSocketChannel channel, Country controller) {
-        TileChangedEvent event = new TileChangedEvent(this.controller, controller, this);
+        TileChangedEvent event = new TileChangedEvent(this.controller, controller, this, TileChangedEvent.Type.CONTROLLER);
 
         core.getListenerRegistry().call(event);
 
@@ -82,7 +90,7 @@ public class Tile {
             return;
         }
 
-        core.getTool().send(channel, new RequestPacket(Type.TILE_CHANGE, constructChange(controller)));
+        core.getTool().send(channel, new RequestPacket(Type.TILE_CHANGE, constructControllerChange(controller)));
     }
 
     //TODO: these method names are dumb xD
@@ -92,18 +100,33 @@ public class Tile {
     }
 
     //später mils etc auch?
-    public String constructChange(Country controller) {
-        return this.getAbbreviation() + ";" + controller.getAbbreviation();
+
+    public String constructControllerChange(Country controller) {
+        return "controller=" + this.getAbbreviation() + ";" + controller.getAbbreviation();
     }
 
-    public static Pair<Tile,Country> deconstructChange(String s, CountryResolver cR, TileResolver sR) {
-        String[] parts = s.split(";");
+    public static TileChangedEvent.Type getChangeType(String s) {
+        if (s.startsWith("controller=")) {
+            return TileChangedEvent.Type.CONTROLLER;
+        } else if (s.startsWith("owner=")) {
+            return TileChangedEvent.Type.OWNER;
+        }
 
-        Tile tile = sR.byAbbreviation(parts[0]);
+        return null;
+    }
 
-        Country country = cR.byAbbreviation(parts[1]);
+    public static Pair<Tile, Country> deconstructChange(String s, CountryResolver cR, TileResolver sR) {
+        String[] parts = s.split("=", 2);
+        String[] values = parts[1].split(";");
+
+        Tile tile = sR.byAbbreviation(values[0]);
+        Country country = cR.byAbbreviation(values[1]);
 
         return Pair.of(tile, country);
+    }
+
+    public String constructOwnerChange(Country owner) {
+        return "owner=" + this.getAbbreviation() + ";" + owner.getAbbreviation();
     }
 
     public String getAbbreviation() {
@@ -151,16 +174,7 @@ public class Tile {
         return cityName;
     }
 
-    public static @NotNull Tile by(SharedCore core,
-                                   @NotNull CountryResolver resolver,
-                                   @NotNull String abbreviation,
-                                   int victoryPoints,
-                                   String name,
-                                   String cityName,
-                                   boolean hasCity,
-                                   List<Point> points,
-                                   String controllerAbbreviation,
-                                   String ownerAbbreviation) {
+    public static @NotNull Tile by(SharedCore core, @NotNull CountryResolver resolver, @NotNull String abbreviation, int victoryPoints, String name, String cityName, boolean hasCity, List<Point> points, String controllerAbbreviation, String ownerAbbreviation) {
 
         Country controller = "null".equals(controllerAbbreviation) ? null : resolver.byAbbreviation(controllerAbbreviation);
         Country owner = "null".equals(ownerAbbreviation) ? null : resolver.byAbbreviation(ownerAbbreviation);
@@ -202,5 +216,19 @@ public class Tile {
                 ", citName=" + cityName +
                 ", victoryPoints=" + victoryPoints +
                 '}';
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Tile other)) return false;
+
+        return abbreviation.equals(other.abbreviation);
+    }
+
+    @Override
+    public int hashCode() {
+        return abbreviation.hashCode();
     }
 }

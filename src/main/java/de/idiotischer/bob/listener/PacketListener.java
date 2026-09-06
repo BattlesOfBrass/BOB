@@ -5,6 +5,8 @@ import de.craftsblock.craftscore.event.EventPriority;
 import de.craftsblock.craftscore.event.ListenerAdapter;
 import de.idiotischer.bob.BOB;
 import de.idiotischer.bob.Server;
+import de.idiotischer.bob.conference.PeaceConference;
+import de.idiotischer.bob.conference.PeaceHelper;
 import de.idiotischer.bob.country.Country;
 import de.idiotischer.bob.networking.packet.PacketRegistry;
 import de.idiotischer.bob.networking.packet.impl.*;
@@ -16,6 +18,7 @@ import de.idiotischer.bob.scenario.ScenarioManager;
 import de.idiotischer.bob.state.State;
 import de.idiotischer.bob.tile.Tile;
 import de.idiotischer.bob.tile.TileManager;
+import de.idiotischer.bob.tile.event.TileChangedEvent;
 import de.idiotischer.bob.troop.MoveStatus;
 import de.idiotischer.bob.util.AddressUtil;
 import de.idiotischer.bob.war.WarStatus;
@@ -47,9 +50,7 @@ public class PacketListener implements ListenerAdapter {
                 boolean server = false;
 
                 Path baseScenarioDir = Paths.get(scenarioPacket.getAbbreviation());
-                if(scenarioPacket.resolveFallbackScenarioDir(baseScenarioDir) == scenarioDir) {
-                    server = true;
-                }
+                if(scenarioPacket.resolveFallbackScenarioDir(baseScenarioDir) == scenarioDir) server = true;
 
                 Scenario scenario = new Scenario(server, scenarioPacket.getAbbreviation(), scenarioPacket.getName(), scenarioDir);
 
@@ -79,10 +80,7 @@ public class PacketListener implements ListenerAdapter {
             BOB.getInstance().getCountryManager().finishReload();
         } else if(event.getPacket() instanceof TilesSyncPacket packet) {
 
-            if(BOB.getInstance().getTileManager().getAwaitingFuture() == null
-                    || BOB.getInstance().getTileManager().getAwaitingFuture().isCancelled()
-                    || BOB.getInstance().getTileManager().getAwaitingFuture().isDone()
-            ) return;
+            if(BOB.getInstance().getTileManager().getAwaitingFuture() == null || BOB.getInstance().getTileManager().getAwaitingFuture().isCancelled() || BOB.getInstance().getTileManager().getAwaitingFuture().isDone()) return;
 
             List<TileSyncPacket> packs = packet.getPackets();
 
@@ -96,11 +94,7 @@ public class PacketListener implements ListenerAdapter {
 
             BOB.getInstance().getTileManager().finishReload();
         } else if(event.getPacket() instanceof StatesSyncPacket packet) {
-
-            if(BOB.getInstance().getStateManager().getAwaitingFuture() == null
-                    || BOB.getInstance().getStateManager().getAwaitingFuture().isCancelled()
-                    || BOB.getInstance().getStateManager().getAwaitingFuture().isDone()
-            ) return;
+            if(BOB.getInstance().getStateManager().getAwaitingFuture() == null || BOB.getInstance().getStateManager().getAwaitingFuture().isCancelled() || BOB.getInstance().getStateManager().getAwaitingFuture().isDone()) return;
 
             List<StateSyncPacket> packs = packet.getPackets();
 
@@ -126,6 +120,36 @@ public class PacketListener implements ListenerAdapter {
             BOB.getInstance().getTileManager().registerTile(tile);
         } else if(event.getPacket() instanceof ReplyPacket pack) {
             switch (pack.getReplyType()) {
+                case CONFERENCE_STARTED -> {
+                    PeaceConference conference = PeaceConference.deserialize(BOB.getInstance().getSharedCore(), BOB.getInstance().getCountryManager(), BOB.getInstance().getTileManager(), pack.getMessage());
+
+                    BOB.getInstance().getPeaceHelper().addPeaces(conference);
+                }
+                case END_CONFERENCE -> {
+                    String uuidString = pack.getMessage();
+
+                    UUID uuid;
+
+                    try {
+                        uuid = UUID.fromString(uuidString);
+                    } catch (IllegalArgumentException e) {
+                        return;
+                    }
+
+                    BOB.getInstance().getPeaceHelper().removePeaces(uuid);
+                }
+                case ROUND_ENDED -> {
+                    PeaceConference conf = BOB.getInstance().getPeaceHelper().getBy(PeaceConference.getUUID(pack.getMessage()));
+
+                    conf.deserializeUpdate(BOB.getInstance().getTileManager(), pack.getMessage());
+
+                    BOB.getInstance().getPeaceHelper().nextRound();
+                }
+                case ROUND_UPDATE -> {
+                    PeaceConference conf = BOB.getInstance().getPeaceHelper().getBy(PeaceConference.getUUID(pack.getMessage()));
+
+                    conf.deserializeUpdate(BOB.getInstance().getTileManager(), pack.getMessage());
+                }
                 case CLEAR_COMBATS -> {
                     BOB.getInstance().getCombatManager().clear();
                 }
@@ -192,6 +216,20 @@ public class PacketListener implements ListenerAdapter {
                 case WARS_SYNC -> {
                     BOB.getInstance().getWarManager().finishReload(pack.getMessage());
                 }
+                case TROOP_TP -> {
+                    String[] parts = pack.getMessage().split(";");
+
+                    String[] troopPart = parts[0].split("=");
+                    String[] tilePart = parts[1].split("=");
+
+                    Tile tile = BOB.getInstance().getTileManager().byAbbreviation(tilePart[1]);
+
+                    if (troopPart[0].equals("troop")) {
+                        UUID uuid = UUID.fromString(troopPart[1]);
+
+                        BOB.getInstance().getTroopManager().tp(uuid, tile);
+                    }
+                }
                 case TROOPS_MOVE -> {
                     String[] parts = pack.getMessage().split(";");
 
@@ -204,8 +242,7 @@ public class PacketListener implements ListenerAdapter {
                     if (troopPart[0].equals("troop")) {
                         UUID uuid = UUID.fromString(troopPart[1]);
 
-                        MoveStatus status =
-                                MoveStatus.values()[Integer.parseInt(statusPart[1])];
+                        MoveStatus status = MoveStatus.values()[Integer.parseInt(statusPart[1])];
 
                         BOB.getInstance().getTroopManager().finishMove(uuid, tile, status);
                     }
@@ -244,8 +281,12 @@ public class PacketListener implements ListenerAdapter {
 
                     Color c = country.countryColor() == null ? Color.WHITE : country.countryColor() ;
 
-                    tile.setControllerFinish(country, BOB.getInstance().isDebug());
-                    TileManager.recolorTile(tile, c);
+                    if(Objects.equals(Tile.getChangeType(s), TileChangedEvent.Type.OWNER)) {
+                        tile.setOwner(country);
+                    } else if(Objects.equals(Tile.getChangeType(s), TileChangedEvent.Type.CONTROLLER)) {
+                        tile.setControllerFinish(country, BOB.getInstance().isDebug());
+                        TileManager.recolorTile(tile, c);
+                    }
                 }
                 case PLAYER_CHANGE -> {
 
@@ -272,6 +313,7 @@ public class PacketListener implements ListenerAdapter {
                     p.country(country);
                 }
                 case ERROR -> {}
+
             }
         } else if(event.getPacket() instanceof PlayerAuthUpdatePacket pack) {
             if(!pack.isAuthed()) return;

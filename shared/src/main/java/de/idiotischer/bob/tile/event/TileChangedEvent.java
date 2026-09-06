@@ -5,6 +5,11 @@ import de.idiotischer.bob.country.Country;
 import de.idiotischer.bob.tile.Tile;
 
 public class TileChangedEvent extends CancellableEvent {
-    public TileChangedEvent(Country prevCont, Country newCont, Tile tile) {
+    public TileChangedEvent(Country prevCont, Country newCont, Tile tile, Type type) {
+    }
+
+    public enum Type {
+        OWNER,
+        CONTROLLER
     }
 }

@@ -58,7 +58,7 @@ public class ServerTileManager implements TileResolver {
 
                 String name = tileElement.get("name").getAsString();
 
-                int victoryPoints = 50;
+                int victoryPoints = 1;
                 JsonElement victoryPointsElement = tileElement.get("victoryPoints");
                 if (victoryPointsElement != null && !victoryPointsElement.isJsonNull()) {
                     victoryPoints = victoryPointsElement.getAsInt();
@@ -103,43 +103,19 @@ public class ServerTileManager implements TileResolver {
                 }
 
                 if(owner == null && controller == null) {
-                    if (Server.getInstance().isDebug()) {
-                        System.out.println("Failed to registered tile: " + name
-                                + " (" + abbreviation + ") points: "
-                                + points
-                                + " BECAUSE controller and owner are not set!"
-                        );
-                    }
+                    if (Server.getInstance().isDebug()) System.out.println("Failed to registered tile: " + name + " (" + abbreviation + ") points: " + points + " BECAUSE controller and owner are not set!");
                     return;
                 }
 
                 if(owner == null) owner = controller;
                 if(controller == null) controller = owner;
 
-                Tile tile = new Tile(
-                        Server.getInstance().getSharedCore(),
-                        victoryPoints,
-                        cityName,
-                        hasCity,
-                        abbreviation,
-                        name,
-                        points,
-                        controller,
-                        owner
-                );
+                Tile tile = new Tile(Server.getInstance().getSharedCore(), victoryPoints, cityName, hasCity, abbreviation, name, points, controller, owner);
 
                 registerTile(tile);
 
-                if (Server.getInstance().isDebug()) {
-                    System.out.println("registered tile: " + tile.getName()
-                            + " (" + tile.getAbbreviation() + ") points: "
-                            + tile.getPoints()
-                            + " controller: "
-                            + (tile.getController() == null ? "none" : tile.getController().getAbbreviation())
-                            + " owner: "
-                            + (tile.getOwner() == null ? "none" : tile.getOwner().getAbbreviation())
-                    );
-                }
+                if (Server.getInstance().isDebug()) System.out.println("registered tile: " + tile.getName() + " (" + tile.getAbbreviation() + ") points: " + tile.getPoints() + " controller: " + (tile.getController() == null ? "none" : tile.getController().getAbbreviation()) + " owner: " + (tile.getOwner() == null ? "none" : tile.getOwner().getAbbreviation()));
+
             });
 
         } catch (Exception e) {

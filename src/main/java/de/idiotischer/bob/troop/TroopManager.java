@@ -243,4 +243,7 @@ public class TroopManager implements TroopResolver{
         return new ArrayList<>(troops.values());
     }
 
+    public void tp(UUID uuid, Tile tile) {
+        getTroop(uuid).setTile(tile);
+    }
 }

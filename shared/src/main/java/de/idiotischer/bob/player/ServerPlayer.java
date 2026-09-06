@@ -57,6 +57,7 @@ public class ServerPlayer implements Player {
     @Override
     public void country(Country country) {
         this.country = country;
+        if(country != null) country.setPlayer(this);
     }
 
     @Override

@@ -46,18 +46,11 @@ public class WarManager {
     }
 
     public boolean fightsTogetherWith(Country one, Country two) {
-        return getWars(one).stream().anyMatch(w ->
-                w.getAttackers().stream().anyMatch(ally ->
-                        ally.getAbbreviation().equals(two.getAbbreviation())
-                )
-        );
+        return getWars(one).stream().anyMatch(w -> w.getAttackers().stream().anyMatch(ally -> ally.getAbbreviation().equals(two.getAbbreviation())));
     }
 
     private Set<WarStatus> getOrCreateWars(Country c) {
-        return activeWars.computeIfAbsent(
-                c.getAbbreviation(),
-                k -> ConcurrentHashMap.newKeySet()
-        );
+        return activeWars.computeIfAbsent(c.getAbbreviation(), k -> ConcurrentHashMap.newKeySet());
     }
 
     public void finishReload(String message) {

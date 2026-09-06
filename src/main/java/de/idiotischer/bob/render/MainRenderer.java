@@ -54,6 +54,8 @@ public class MainRenderer extends Thread {
     private int dragButton;
     private final Set<Tile> draggedTiles = new LinkedHashSet<>();
 
+    private boolean canMoveRegardless = true;
+
     public MainRenderer() {
         super("Battles of Brass");
     }
@@ -145,7 +147,7 @@ public class MainRenderer extends Thread {
             }
 
             if (!inMenu) {
-                if (!renderPanel.isPaused()) handleMovement(deltaTime);
+                if (!renderPanel.isPaused() || canMoveRegardless) handleMovement(deltaTime);
 
                 if(isMapDirty()) renderPanel.repaint();
             } else {
@@ -575,5 +577,13 @@ public class MainRenderer extends Thread {
 
     public Set<Tile> getDraggedTiles() {
         return draggedTiles;
+    }
+
+    public void setCanMoveRegardless(boolean canMoveRegardless) {
+        this.canMoveRegardless = canMoveRegardless;
+    }
+
+    public boolean canMoveRegardless() {
+        return canMoveRegardless;
     }
 }

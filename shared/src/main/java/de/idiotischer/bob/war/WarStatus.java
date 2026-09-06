@@ -130,4 +130,18 @@ public class WarStatus {
     public boolean isEnded() {
         return ended;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof WarStatus other)) return false;
+
+        return abbr.equals(other.abbr);
+    }
+
+    @Override
+    public int hashCode() {
+        return abbr.hashCode();
+    }
+
 }

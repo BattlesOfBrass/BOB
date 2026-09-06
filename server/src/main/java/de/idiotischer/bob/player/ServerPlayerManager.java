@@ -80,6 +80,7 @@ public class ServerPlayerManager implements PlayerResolver {
 
     public void removePlayer(Player player) {
         players.remove(player);
+        player.country(null);
 
         Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new PlayerQuitPacket(player.uuid()));
     }
@@ -129,6 +130,11 @@ public class ServerPlayerManager implements PlayerResolver {
     @Override
     public Player resolve(@NotNull InetSocketAddress address) {
         return players.stream().filter(p -> address.equals(p.address())).findFirst().orElse(null);
+    }
+
+    @Override
+    public List<Player> resolve(Country country) {
+        return players.stream().filter(p -> p.country().getAbbreviation().equals(country.getAbbreviation())).toList();
     }
 
     public Set<Player> getPlayers() {

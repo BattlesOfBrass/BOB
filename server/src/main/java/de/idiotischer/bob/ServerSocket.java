@@ -1,6 +1,7 @@
 package de.idiotischer.bob;
 
 import de.idiotischer.bob.event.ClientConnectEvent;
+import de.idiotischer.bob.networking.ChannelResolver;
 import de.idiotischer.bob.player.Player;
 import de.idiotischer.bob.util.AddressUtil;
 import de.idiotischer.bob.util.HostUtil;
@@ -19,7 +20,7 @@ import java.util.stream.Collectors;
 
 //TODO: server PW adden
 //TODO: client timeout und threshold adden usw damit man nd botten kann
-public class ServerSocket {
+public class ServerSocket implements ChannelResolver {
 
     private AsynchronousChannelGroup workerGroup;
     private AsynchronousServerSocketChannel channel;
@@ -216,6 +217,7 @@ public class ServerSocket {
     }
 
     private void cleanup(AsynchronousSocketChannel clientChannel) {
+        //TODO: replace the players country player with ai
         lastAction.remove(clientChannel);
         Server.getInstance().getPlayerManager().removePlayer(clientChannel);
         try {
@@ -257,5 +259,10 @@ public class ServerSocket {
 
     public HostUtil getHostUtil() {
         return hostUtil;
+    }
+
+    @Override
+    public Set<AsynchronousSocketChannel> channels() {
+        return getClients();
     }
 }

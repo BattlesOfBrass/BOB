@@ -5,6 +5,7 @@ import de.craftsblock.craftscore.buffer.BufferUtil;
 import de.idiotischer.bob.player.Player;
 import de.idiotischer.bob.state.State;
 import de.idiotischer.bob.util.FileUtil;
+import de.idiotischer.bob.war.WarStatus;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -218,5 +219,19 @@ public class Country {
     public void setCapitulated(boolean b, Consumer<Void> consumer) {
         this.capitulated = b;
         consumer.accept(null);
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Country other)) return false;
+
+        return abbreviation.equals(other.abbreviation);
+    }
+
+    @Override
+    public int hashCode() {
+        return abbreviation.hashCode();
     }
 }

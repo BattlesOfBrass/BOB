@@ -1,6 +1,7 @@
 package de.idiotischer.bob;
 
 import de.idiotischer.bob.combat.CombatManager;
+import de.idiotischer.bob.conference.PeaceHelper;
 import de.idiotischer.bob.country.CountryManager;
 import de.idiotischer.bob.debug.Debugger;
 import de.idiotischer.bob.game.GameManager;
@@ -72,6 +73,7 @@ public class BOB {
     private GameManager gameManager;
     private StateManager stateManager;
     private CombatManager combatManager;
+    private PeaceHelper helper = new PeaceHelper();
 
     public static void main(String[] args) {
         new BOB();
@@ -265,5 +267,9 @@ public class BOB {
 
     public CombatManager getCombatManager() {
         return combatManager;
+    }
+
+    public PeaceHelper getPeaceHelper() {
+        return helper;
     }
 }

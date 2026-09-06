@@ -286,10 +286,7 @@ public class HUD extends JPanel {
         JLabel flagLabel = new JLabel();
         flagLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
-        if (currentMode != null &&
-                currentTile != null &&
-                currentTile.getController() != null) {
-
+        if (currentMode != null && currentTile != null && currentTile.getController() != null) {
             BufferedImage flagIcon = currentTile.getController().getFlagImage();
             if (flagIcon != null) {
                 Image scaled = flagIcon.getScaledInstance(130, 80, Image.SCALE_SMOOTH);
@@ -299,9 +296,7 @@ public class HUD extends JPanel {
 
         flagPanel.add(flagLabel, BorderLayout.CENTER);
 
-        JLabel countryName = new JLabel(
-                currentTile == null ? "None" : currentTile.getController().countryName()
-        );
+        JLabel countryName = new JLabel(currentTile == null ? "None" : currentTile.getController().countryName());
         countryName.setForeground(Color.WHITE);
         countryName.setFont(countryName.getFont().deriveFont(Font.BOLD, 20f));
         countryName.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -317,23 +312,13 @@ public class HUD extends JPanel {
         namePanel.add(Box.createHorizontalGlue());
         namePanel.setFocusable(false);
 
-        JButton declareWarButton = new BOBButton(
-                "Declare War",
-                Color.WHITE,
-                Color.BLACK,
-                Color.DARK_GRAY.darker(),
-                Color.LIGHT_GRAY,
-                16,
-                5
-        );
+        JButton declareWarButton = new BOBButton("Declare War", Color.WHITE, Color.BLACK, Color.DARK_GRAY.darker(), Color.LIGHT_GRAY, 16, 5);
 
         declareWarButton.setFocusable(false);
         declareWarButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         declareWarButton.addActionListener(e -> {
-            if (currentTile == null || currentTile.getController() == null) {
-                return;
-            }
+            if (currentTile == null || currentTile.getController() == null) return;
 
             RequestPacket pack = new RequestPacket(Type.START_WAR, currentTile.getAbbreviation() + ";" + currentTile.getController().getAbbreviation() + ";false");
 

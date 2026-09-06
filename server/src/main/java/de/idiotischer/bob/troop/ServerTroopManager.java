@@ -134,6 +134,10 @@ public class ServerTroopManager implements TroopResolver{
         return troopStacks.values().stream().filter(s -> s.getController() != null && s.getController().equals(country) && s.isVisible()).toList();
     }
 
+    public List<TroopStack> getForOwner(Country country) {
+        return troopStacks.values().stream().filter(s -> s.getOwner() != null && s.getOwner().equals(country)).toList();
+    }
+
     public List<TroopStack> getForController(Country country) {
         return troopStacks.values().stream().filter(s -> s.getController() != null && s.getController().equals(country)).toList();
     }
@@ -326,9 +330,7 @@ public class ServerTroopManager implements TroopResolver{
                                     }
                                 }
                             } else {
-                                pushable.forEach(p -> {
-                                    Server.getInstance().getTroopManager().removeTroop(p);
-                                });
+                                pushable.forEach(p -> {Server.getInstance().getTroopManager().removeTroop(p);});
                             }
                         }
                     });
@@ -359,12 +361,7 @@ public class ServerTroopManager implements TroopResolver{
 
 
     public void removeTroops(Country country) {
-        List<UUID> toRemove = troopStacks.entrySet().stream()
-                .filter(e -> e.getValue().getController() != null
-                        && e.getValue().getController().getAbbreviation()
-                        .equals(country.getAbbreviation()))
-                .map(Map.Entry::getKey)
-                .toList();
+        List<UUID> toRemove = troopStacks.entrySet().stream().filter(e -> e.getValue().getController() != null && e.getValue().getController().getAbbreviation().equals(country.getAbbreviation())).map(Map.Entry::getKey).toList();
 
         toRemove.forEach(this::removeTroop);
     }
@@ -396,18 +393,22 @@ public class ServerTroopManager implements TroopResolver{
     }
 
     public UUID getUuidSafe(TroopStack troopStack) {
-        return troopStacks.entrySet().stream()
-                .filter(entry -> entry.getValue() == troopStack)
-                .map(Map.Entry::getKey)
-                .findFirst()
-                .orElse(null);
+        return troopStacks.entrySet().stream().filter(entry -> entry.getValue() == troopStack).map(Map.Entry::getKey).findFirst().orElse(null);
     }
 
     public void addTroopPath(TroopStack troopStack, List<Tile> path) {
-        if (troopStack == null || path == null) {
-            return; // fun fact, i get an npe whe nto doing this bc of the concurrent hashmap which is very strict which wa snew to me atp
-        }
+        if (troopStack == null || path == null) return; // fun fact, i get an npe whe nto doing this bc of the concurrent hashmap which is very strict which wa snew to me atp
 
         activePathfindings.put(troopStack, path);
+    }
+
+    public void setTileForAll(TroopStack troop, Tile t) {
+        Server.getInstance().getTroopManager().removePathfinding(troop);
+        troop.setTile(t);
+
+        String reply = "troop=" + getUuid(troop) + ";tile=" + t.getAbbreviation();
+
+        Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new ReplyPacket(Type.TROOP_TP, reply));
+
     }
 }

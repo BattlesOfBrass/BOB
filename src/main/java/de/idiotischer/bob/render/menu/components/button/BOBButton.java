@@ -13,6 +13,7 @@ public class BOBButton extends JButton {
     private final int arcHeight;
     private final int borderWidth;
     private final String id;
+    private boolean toggled;
 
     public BOBButton(String text, Color textColor, Color bgColor, Color borderColor, Color borderColorHover, int arc, int borderWidth) {
         this("",text,textColor,bgColor, borderColor, borderColorHover, arc, borderWidth);
@@ -82,6 +83,16 @@ public class BOBButton extends JButton {
         g2.drawString(getText(), textX, textY);
 
         g2.dispose();
+    }
+
+    //only has ONE purpose
+
+    public void setToggled(boolean toggled) {
+        this.toggled = toggled;
+    }
+
+    public boolean isToggled() {
+        return toggled;
     }
 
     public String getId() {

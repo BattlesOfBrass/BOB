@@ -3,6 +3,7 @@ package de.idiotischer.bob.listener;
 import de.craftsblock.craftscore.event.EventHandler;
 import de.craftsblock.craftscore.event.ListenerAdapter;
 import de.idiotischer.bob.Server;
+import de.idiotischer.bob.conference.PeaceConference;
 import de.idiotischer.bob.country.Country;
 import de.idiotischer.bob.networking.packet.PacketRegistry;
 import de.idiotischer.bob.networking.packet.impl.*;
@@ -14,6 +15,7 @@ import de.idiotischer.bob.scenario.Scenario;
 import de.idiotischer.bob.scenario.ServerScenarioManager;
 import de.idiotischer.bob.scenario.ServerScenarioSceneLoader;
 import de.idiotischer.bob.tile.Tile;
+import de.idiotischer.bob.tile.event.TileChangedEvent;
 import de.idiotischer.bob.troop.MoveStatus;
 import de.idiotischer.bob.troop.TroopStack;
 import de.idiotischer.bob.troop.TroopValidator;
@@ -23,6 +25,7 @@ import it.unimi.dsi.fastutil.Pair;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 public class ServerPacketListener implements ListenerAdapter {
@@ -49,6 +52,23 @@ public class ServerPacketListener implements ListenerAdapter {
         } else if(event.getPacket() instanceof RequestPacket pack) {
             //so ping pong like
             switch (pack.getRequestType()) {
+                case SEND_DEMANDS -> {
+                    PeaceConference.Demands demands = Server.getInstance().getConferenceManager().readDemands(Server.getInstance().getCountryManager(), Server.getInstance().getTileManager(), pack.getMessage());
+
+                    Server.getInstance().getConferenceManager().sendDemands(demands);
+                    Server.getInstance().getConferenceManager().getBy(demands.peaceId()).addFinished(demands.country());
+                }
+                case END_CONFERENCE -> {
+                    UUID id = UUID.fromString(pack.getMessage());
+
+                    if(player == null) return;
+
+                    Country c = player.country();
+
+                    if(c == null) return;
+
+                    Server.getInstance().getConferenceManager().getBy(id).addEnded(c);
+                }
                 case SPAWN_TROOP -> {
                     String[] strings = pack.getMessage().split(";");
 
@@ -111,16 +131,12 @@ public class ServerPacketListener implements ListenerAdapter {
 
                         String reply = "troop=" + uuid + ";tile=" + tile.getAbbreviation() + ";type=" + moveStatus.ordinal();
 
-                        if (moveStatus == MoveStatus.FAILURE_FIGHT || moveStatus == MoveStatus.FAILURE_NO_CONTROL || moveStatus == MoveStatus.FAILURE || moveStatus == MoveStatus.FAILURE_KICKED || moveStatus == MoveStatus.FAILURE_IN_COMBAT || moveStatus == MoveStatus.FAILURE_STARTED_PATHFINDING)
-                            return;
+                        if (moveStatus == MoveStatus.FAILURE_FIGHT || moveStatus == MoveStatus.FAILURE_NO_CONTROL || moveStatus == MoveStatus.FAILURE || moveStatus == MoveStatus.FAILURE_KICKED || moveStatus == MoveStatus.FAILURE_IN_COMBAT || moveStatus == MoveStatus.FAILURE_STARTED_PATHFINDING) return;
 
                         Server.getInstance().getTroopManager().removePathfinding(troopStack);
                         troopStack.setTile(tile);
 
-                        Server.getInstance().getSendTool().broadcast(
-                                Server.getInstance().getServerSocket().getClients(),
-                                new ReplyPacket(Type.TROOPS_MOVE, reply)
-                        );
+                        Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new ReplyPacket(Type.TROOPS_MOVE, reply));
                     } else if (firstPart[0].equals("troops")) {
                         List<String> statuses = new ArrayList<>();
 
@@ -240,9 +256,14 @@ public class ServerPacketListener implements ListenerAdapter {
 
                     if(country == null) return;
 
-                    Country oldController = tile.getController();
-
                     if(Server.getInstance().getTileValidator().isChangeValid(tile, tile.getController(), country)) {
+                        if(Objects.equals(Tile.getChangeType(s), TileChangedEvent.Type.OWNER)) {
+                            tile.setOwnerForAll(Server.getInstance().getServerSocket().getClients(), country);
+                            return;
+                        }
+
+                        Country oldController = tile.getController();
+
                         tile.setControllerForAll(Server.getInstance().getServerSocket().getClients(), country);
                         Server.getInstance().getWarManager().checkWarOver(country, oldController, tile);
                     }

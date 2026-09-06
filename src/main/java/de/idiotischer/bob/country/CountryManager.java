@@ -92,13 +92,13 @@ public class CountryManager implements CountryResolver{
     }
 
     public List<Tile> getOwned(Country country) {
-        if(Server.getInstance().getTileManager() == null) return List.of();
-        return Server.getInstance().getTileManager().getTileSet().stream().filter(s -> s.getOwner() == country).toList();
+        if(BOB.getInstance().getTileManager() == null) return List.of();
+        return Server.getInstance().getTileManager().getTileSet().stream().filter(s -> s.getOwner().getAbbreviation().equals(country.getAbbreviation())).toList();
     }
 
     public List<Tile> getControlled(Country country) {
-        if(Server.getInstance().getTileManager() == null) return List.of();
-        return Server.getInstance().getTileManager().getTileSet().stream().filter(s -> s.getController() == country).toList();
+        if(BOB.getInstance().getTileManager() == null) return List.of();
+        return BOB.getInstance().getTileManager().getTileSet().stream().filter(s -> s.getController().getAbbreviation().equals(country.getAbbreviation())).toList();
     }
 
     public int getTotalVPs(Country country) {

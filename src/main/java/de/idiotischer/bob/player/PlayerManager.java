@@ -153,4 +153,9 @@ public class PlayerManager implements PlayerResolver {
     public Player resolve(@NotNull InetSocketAddress address) {
         return players.stream().filter(p -> address.equals(p.address())).findFirst().orElse(null);
     }
+
+    @Override
+    public List<Player> resolve(Country country) {
+        return players.stream().filter(p -> p.country().getAbbreviation().equals(country.getAbbreviation())).toList();
+    }
 }
