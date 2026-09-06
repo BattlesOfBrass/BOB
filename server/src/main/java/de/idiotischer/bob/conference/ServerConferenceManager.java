@@ -51,9 +51,10 @@ public class ServerConferenceManager {
 
         this.conferences.add(conf);
 
+        conf.getDefeated().forEach(c -> Server.getInstance().getCountryManager().getOwned(c).forEach(t -> t.setControllerForAll(Server.getInstance().getServerSocket().channels(), c)));
+
         conf.startConference();
 
-        conf.getDefeated().forEach(c -> Server.getInstance().getCountryManager().getOwned(c).forEach(t -> t.setControllerForAll(Server.getInstance().getServerSocket().channels(), c)));
     }
 
     public void remove(PeaceConference conference) {
