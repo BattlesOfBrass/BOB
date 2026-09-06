@@ -48,8 +48,8 @@ public class PeaceMenuOverlay extends JPanel {
     public PeaceMenuOverlay() {
         setOpaque(false);
         setLayout(null);
-        setFocusable(true);
-        setRequestFocusEnabled(true);
+        setFocusable(false);
+        setRequestFocusEnabled(false);
     }
 
     @Override
