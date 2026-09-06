@@ -78,10 +78,7 @@ public class ServerWarManager {
     }*/
 
     public boolean declareWar(boolean callAllies, Tile declaredTile, Country controller, Country aggressor) {
-
-        if (isAtWar(controller, aggressor)) {
-            return false;
-        }
+        if (isAtWar(controller, aggressor)) return false;
 
         warExecutorService.submit(() -> {
 

@@ -30,7 +30,10 @@ public class PeaceHelper {
     public void addPeaces(PeaceConference conference) {
         peaces.add(conference);
 
-        if(peaces.stream().noneMatch(peace -> peace.getWinners().stream().map(Country::getAbbreviation).toList().contains(BOB.getInstance().getPlayer().country().getAbbreviation()))) return;
+        if(peaces.stream().noneMatch(peace -> peace.getWinners().stream().map(Country::getAbbreviation).toList().contains(BOB.getInstance().getPlayer().country().getAbbreviation()))) {
+            //TODO: open the waiting popup hihihihiihihihi
+            return;
+        }
 
         BOB.getInstance().getMainRenderer().getGamePanel().setPaused(true);
         BOB.getInstance().getMainRenderer().getGamePanel().showPeaceOverlay();

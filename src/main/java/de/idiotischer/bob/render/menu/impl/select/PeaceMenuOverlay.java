@@ -6,6 +6,7 @@ import de.idiotischer.bob.conference.PeaceConference;
 import de.idiotischer.bob.conference.TakeTileType;
 import de.idiotischer.bob.country.Country;
 import de.idiotischer.bob.country.CountryManager;
+import de.idiotischer.bob.render.menu.components.ModernScrollBarUI;
 import de.idiotischer.bob.render.menu.components.button.BOBButton;
 import de.idiotischer.bob.tile.Tile;
 
@@ -24,6 +25,13 @@ public class PeaceMenuOverlay extends JPanel {
 
     private BOBButton sendDemandsBtn;
     private BOBButton quitConferenceBtn;
+
+    private JPanel winnerCountryPanel;
+    private JScrollPane winnerScrollPane;
+
+    private Country selectedWinnerCountry;
+    private BOBButton selectedWinnerButton;
+
 
     private final Set<Tile> selectedTiles = new java.util.HashSet<>();
     private static boolean waiting;
@@ -88,6 +96,8 @@ public class PeaceMenuOverlay extends JPanel {
 
         if (countryPanel != null) countryPanel.setBounds(10, 90, 300, Math.max(0, getHeight() - 100));
 
+        if (winnerScrollPane != null) winnerScrollPane.setBounds(getWidth() - 310, 90, 290, Math.max(0, getHeight() - 250));
+
         if (sendDemandsBtn != null && quitConferenceBtn != null) {
             int rightButtonWidth = 180;
             int rightButtonHeight = 35;
@@ -99,6 +109,7 @@ public class PeaceMenuOverlay extends JPanel {
             quitConferenceBtn.setBounds(getWidth() - rightMargin - rightButtonWidth, getHeight() - bottomMargin - rightButtonHeight, rightButtonWidth, rightButtonHeight);
         }
     }
+
 
     public void setPeace(UUID peace) {
         this.peace = peace;
@@ -113,6 +124,7 @@ public class PeaceMenuOverlay extends JPanel {
         addTileTypeButtons();
         buildCountryPanel();
         addConferenceButtons();
+        buildWinnerCountryPanel();
 
         revalidate();
         repaint();
@@ -202,6 +214,56 @@ public class PeaceMenuOverlay extends JPanel {
         add(countryPanel);
     }
 
+    private void buildWinnerCountryPanel() {
+        winnerCountryPanel = new JPanel();
+        winnerCountryPanel.setLayout(new BoxLayout(winnerCountryPanel, BoxLayout.Y_AXIS));
+        winnerCountryPanel.setOpaque(false);
+        winnerCountryPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+
+        PeaceConference conf = BOB.getInstance().getPeaceHelper().getBy(peace);
+        Country playerCountry = BOB.getInstance().getPlayer().country();
+
+        for (Country country : conf.getWinners()) {
+            BOBButton countryButton = new BOBButton(country.countryName(), Color.WHITE, Color.BLACK, Color.DARK_GRAY.darker(), Color.GRAY, 13, 5);
+
+            countryButton.setAlignmentX(Component.LEFT_ALIGNMENT);
+            countryButton.setMaximumSize(new Dimension(280, 35));
+
+            countryButton.addActionListener(e -> {
+                if (waiting) return;
+
+                selectWinnerCountry(country, countryButton);
+            });
+
+            winnerCountryPanel.add(countryButton);
+            winnerCountryPanel.add(Box.createVerticalStrut(5));
+
+            if (country.getAbbreviation().equals(playerCountry.getAbbreviation())) selectWinnerCountry(country, countryButton);
+        }
+
+        winnerScrollPane = new JScrollPane(winnerCountryPanel);
+        winnerScrollPane.setOpaque(false);
+        winnerScrollPane.getViewport().setOpaque(false);
+        winnerScrollPane.setBorder(null);
+        winnerScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        winnerScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+        winnerScrollPane.getVerticalScrollBar().setUI(new ModernScrollBarUI());
+        winnerScrollPane.getVerticalScrollBar().setPreferredSize(new Dimension(14, 0));
+        winnerScrollPane.getVerticalScrollBar().setOpaque(false);
+        winnerScrollPane.getVerticalScrollBar().setUnitIncrement(16);
+
+        add(winnerScrollPane);
+    }
+
+    private void selectWinnerCountry(Country country, BOBButton button) {
+        if (selectedWinnerButton != null) selectedWinnerButton.setSelected(false);
+
+        selectedWinnerCountry = country;
+        selectedWinnerButton = button;
+
+        selectedWinnerButton.setSelected(true);
+    }
+
     private void addTileTypeButtons() {
         int buttonX = 20;
         int buttonY = 55;
@@ -254,13 +316,13 @@ public class PeaceMenuOverlay extends JPanel {
         PeaceConference conf = BOB.getInstance().getPeaceHelper().getBy(peace);
         quitConferenceBtn.addActionListener(e -> BOB.getInstance().getPeaceHelper().quitConference(peace));
         sendDemandsBtn.addActionListener(e -> {
-            if(waiting) return;
+            if (waiting) return;
 
-            if(selectedButton == null) return;
+            if (selectedButton == null) return;
+            if (selectedWinnerCountry == null) return;
 
-            if(conf.hasDispute(BOB.getInstance().getPlayer().country())) addDisputedPopup();
-            else BOB.getInstance().getPeaceHelper().sendDemands(peace, TakeTileType.valueOf(selectedButton.getId()), selectedTiles, BOB.getInstance().getPlayer().country());
-
+            if (conf.hasDispute(BOB.getInstance().getPlayer().country())) addDisputedPopup();
+            else BOB.getInstance().getPeaceHelper().sendDemands(peace, TakeTileType.valueOf(selectedButton.getId()), selectedTiles, selectedWinnerCountry);
 
             addWaitingPopup();
 
@@ -268,6 +330,7 @@ public class PeaceMenuOverlay extends JPanel {
 
             start();
         });
+
     }
 
     private void addDisputedPopup() {

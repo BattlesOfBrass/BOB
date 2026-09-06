@@ -31,6 +31,7 @@ public class Country {
     private int puppetProgress = 0; //in prozent (0-100) bzw maybe als float idk
     private Set<State> states = new HashSet<>();
     private boolean capitulated;
+    private Country overlord = null;
 
     public Country(String abbreviation, String name, Color color, boolean major, boolean selectScreen) {
         this.abbreviation = abbreviation;
@@ -111,6 +112,10 @@ public class Country {
 
     public void setPlayer(Player player) {
         this.player = player;
+    }
+
+    public void setOverlord(Country country) {
+        this.overlord = country;
     }
 
     public void setPuppetTile(PuppetState tile) {
@@ -221,6 +226,9 @@ public class Country {
         consumer.accept(null);
     }
 
+    public Country getOverlord() {
+        return overlord;
+    }
 
     @Override
     public boolean equals(Object o) {

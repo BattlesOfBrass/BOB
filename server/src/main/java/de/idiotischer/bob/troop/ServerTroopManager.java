@@ -208,6 +208,8 @@ public class ServerTroopManager implements TroopResolver{
 
     @Override
     public MoveStatus canTraverse(Country troopController, Tile from, Tile to) {
+        if(Server.getInstance().getConferenceManager().anyActive()) return MoveStatus.FAILURE;
+
         Country fromController = from.getController();
         Country toController = to.getController();
 
@@ -308,8 +310,7 @@ public class ServerTroopManager implements TroopResolver{
                         if(!pushable.isEmpty()) {
                             List<Tile> fallbacks = new ArrayList<>(Server.getInstance().getTileManager().findNeighbors(to));
 
-                            fallbacks.removeIf(tile1 -> !Objects.equals(tile1.getController().getAbbreviation(), new ArrayList<>(pushable).getFirst().getController().getAbbreviation()) &&
-                                    !Server.getInstance().getWarManager().fightsTogetherWith(tile1.getController(), new ArrayList<>(pushable).getFirst().getController()));
+                            fallbacks.removeIf(tile1 -> !Objects.equals(tile1.getController().getAbbreviation(), new ArrayList<>(pushable).getFirst().getController().getAbbreviation()) && !Server.getInstance().getWarManager().fightsTogetherWith(tile1.getController(), new ArrayList<>(pushable).getFirst().getController()));
 
                             if (!fallbacks.isEmpty()) {
                                 Tile tile = fallbacks.getFirst();
@@ -320,14 +321,18 @@ public class ServerTroopManager implements TroopResolver{
                                     Server.getInstance().getTroopManager().removePathfinding(p);
                                     p.setTile(tile);
 
+                                    if (Server.getInstance().getWarManager().isAtWar(tile.getController(), p.getController())) {
+                                        Server.getInstance().getWarManager().checkWarOver( troopStack.getController(), tile.getController(), tile);
+
+                                        to.setControllerForAll(Server.getInstance().getServerSocket().channels(), troopStack.getController());
+                                    }
+
                                     Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new ReplyPacket(Type.TROOPS_MOVE, reply));
                                 });
 
                                 for (TroopStack stack : all) {
                                     Integer idx = pausedMovementIndex.remove(stack);
-                                    if (idx != null) {
-                                        startMovement(stack, idx);
-                                    }
+                                    if (idx != null) startMovement(stack, idx);
                                 }
                             } else {
                                 pushable.forEach(p -> {Server.getInstance().getTroopManager().removeTroop(p);});
@@ -340,6 +345,11 @@ public class ServerTroopManager implements TroopResolver{
                 }
 
                 troopStack.setTile(to);
+                if (Server.getInstance().getWarManager().isAtWar(to.getController(), troopStack.getController())) {
+                    Server.getInstance().getWarManager().checkWarOver( troopStack.getController(), to.getController(), to);
+
+                    to.setControllerForAll(Server.getInstance().getServerSocket().channels(), troopStack.getController());
+                }
 
                 String reply = "troop=" + getUuid(troopStack) + ";tile=" + to.getAbbreviation() + ";type=" + MoveStatus.SUCCESS_PATHFIND.ordinal();
                 Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new ReplyPacket(Type.TROOPS_MOVE, reply));
@@ -402,7 +412,7 @@ public class ServerTroopManager implements TroopResolver{
         activePathfindings.put(troopStack, path);
     }
 
-    public void setTileForAll(TroopStack troop, Tile t) {
+    public void setStationedTileForAll(TroopStack troop, Tile t) {
         Server.getInstance().getTroopManager().removePathfinding(troop);
         troop.setTile(t);
 

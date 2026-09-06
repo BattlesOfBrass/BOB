@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import de.idiotischer.bob.SharedCore;
 import de.idiotischer.bob.country.Country;
 import de.idiotischer.bob.country.CountryResolver;
+import de.idiotischer.bob.country.PuppetState;
 import de.idiotischer.bob.networking.ChannelResolver;
 import de.idiotischer.bob.networking.packet.impl.pp.ReplyPacket;
 import de.idiotischer.bob.networking.packet.impl.pp.Type;
@@ -67,7 +68,6 @@ public class PeaceConference {
 
         core.getTool().broadcast(r.channels(), new ReplyPacket(Type.CONFERENCE_STARTED, this.serialize()));
     }
-
 
     public boolean nextTurn() {
         Set<String> finishedAbbreviations = finished.stream().map(Country::getAbbreviation).collect(Collectors.toSet());
@@ -187,6 +187,8 @@ public class PeaceConference {
 
     public void endConference() {
         //there is also no disputed logic here so i gotta add that
+        reinstate();
+
         if (r.channels() != null) {
             for (Map.Entry<Tile, List<TakeTileStatus>> entry : tileClaims.entrySet()) {
                 Tile tile = entry.getKey();
@@ -196,18 +198,23 @@ public class PeaceConference {
 
                 TakeTileStatus status = claims.getFirst();
 
+                System.out.println("----------------new-----------------------");
                 if (status.type() == TakeTileType.TAKE) {
                     tile.setOwnerForAll(r.channels(), status.country());
                     tile.setControllerForAll(r.channels(), status.country());
 
                     finalizedAnnexations.put(tile, status.country());
+                } else if(status.type() == TakeTileType.LIBERATE) {
+                    //TODO return the original country with its default ideology
+                } else if(status.type() == TakeTileType.PUPPET) {
+                    tile.getOwner().setOverlord(status.country());
+                    tile.getOwner().setPuppetTile(PuppetState.PUPPET);
+                    // + ideology angleichen
                 }
             }
         }
 
         core.getTool().broadcast(r.channels(), new ReplyPacket(Type.END_CONFERENCE, uuid.toString()));
-
-        reinstate();
 
         if (endHook != null) endHook.run();
     }
@@ -215,7 +222,6 @@ public class PeaceConference {
     public boolean isTaken(Tile tile) {
         return finalizedAnnexations.containsKey(tile);
     }
-
 
     public List<Tile> getTilesToReinstate() {
         return defeated.stream().flatMap(c -> {

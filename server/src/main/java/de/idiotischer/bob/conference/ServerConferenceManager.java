@@ -5,10 +5,8 @@ import de.idiotischer.bob.country.Country;
 import de.idiotischer.bob.country.CountryResolver;
 import de.idiotischer.bob.tile.Tile;
 import de.idiotischer.bob.tile.TileResolver;
-import de.idiotischer.bob.troop.TroopStack;
 import de.idiotischer.bob.util.UUIDUtil;
 import de.idiotischer.bob.war.WarStatus;
-import it.unimi.dsi.fastutil.Pair;
 
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
@@ -45,7 +43,7 @@ public class ServerConferenceManager {
 
                         Tile t = l.get(ThreadLocalRandom.current().nextInt(l.size()));
 
-                        Server.getInstance().getTroopManager().setTileForAll(troop, t);
+                        Server.getInstance().getTroopManager().setStationedTileForAll(troop, t);
                     }
                 });
             });
@@ -54,10 +52,16 @@ public class ServerConferenceManager {
         this.conferences.add(conf);
 
         conf.startConference();
+
+        conf.getDefeated().forEach(c -> Server.getInstance().getCountryManager().getOwned(c).forEach(t -> t.setControllerForAll(Server.getInstance().getServerSocket().channels(), c)));
     }
 
     public void remove(PeaceConference conference) {
         this.conferences.remove(conference);
+    }
+
+    public boolean anyActive() {
+        return !this.conferences.isEmpty();
     }
 
     public PeaceConference.Demands readDemands(CountryResolver r1, TileResolver r, String s) {

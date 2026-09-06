@@ -7,6 +7,7 @@ import de.idiotischer.bob.BOB;
 import de.idiotischer.bob.Server;
 import de.idiotischer.bob.conference.PeaceConference;
 import de.idiotischer.bob.conference.PeaceHelper;
+import de.idiotischer.bob.conference.TakeTileType;
 import de.idiotischer.bob.country.Country;
 import de.idiotischer.bob.networking.packet.PacketRegistry;
 import de.idiotischer.bob.networking.packet.impl.*;
@@ -246,9 +247,7 @@ public class PacketListener implements ListenerAdapter {
 
                         BOB.getInstance().getTroopManager().finishMove(uuid, tile, status);
                     }
-
                     else if (troopPart[0].equals("troops")) {
-
                         String[] uuids = troopPart[1].split(",");
                         String[] statuses = statusPart[1].split(",");
 
@@ -281,10 +280,11 @@ public class PacketListener implements ListenerAdapter {
 
                     Color c = country.countryColor() == null ? Color.WHITE : country.countryColor() ;
 
-                    if(Objects.equals(Tile.getChangeType(s), TileChangedEvent.Type.OWNER)) {
+                    TileChangedEvent.Type t = Tile.getChangeType(s);
+                    if(Objects.equals(t, TileChangedEvent.Type.OWNER)) {
                         tile.setOwner(country);
-                    } else if(Objects.equals(Tile.getChangeType(s), TileChangedEvent.Type.CONTROLLER)) {
-                        tile.setControllerFinish(country, BOB.getInstance().isDebug());
+                    } else if(Objects.equals(t, TileChangedEvent.Type.CONTROLLER)) {
+                        tile.setController(country);
                         TileManager.recolorTile(tile, c);
                     }
                 }

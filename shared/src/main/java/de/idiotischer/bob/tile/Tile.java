@@ -47,6 +47,7 @@ public class Tile {
 
     public void setOwner(Country owner) {
         this.owner = owner;
+        System.out.println("set tile owner for client: " + abbreviation + " " + owner.getAbbreviation());
     }
 
     public void setOwnerForAll(Set<AsynchronousSocketChannel> channels, Country owner) {
@@ -59,10 +60,12 @@ public class Tile {
         core.getTool().broadcast(channels, new ReplyPacket(Type.TILE_CHANGE, this.constructOwnerChange(controller)));
 
         this.owner = owner;
+        System.out.println("set tile owner for: " + abbreviation + " " + owner.getAbbreviation());
     }
 
     public void setController(Country controller) {
         this.controller = controller;
+        System.out.println("set tile controller for client: " + abbreviation + " " + owner.getAbbreviation());
     }
 
     public Country getController() {
@@ -79,6 +82,7 @@ public class Tile {
         core.getTool().broadcast(channels, new ReplyPacket(Type.TILE_CHANGE, this.constructControllerChange(controller)));
 
         this.controller = controller;
+        System.out.println("set tile controller for: " + abbreviation + " " + owner.getAbbreviation());
     }
 
     public void setControllerClient(AsynchronousSocketChannel channel, Country controller) {
@@ -86,9 +90,7 @@ public class Tile {
 
         core.getListenerRegistry().call(event);
 
-        if (event.isCancelled()) {
-            return;
-        }
+        if (event.isCancelled()) return;
 
         core.getTool().send(channel, new RequestPacket(Type.TILE_CHANGE, constructControllerChange(controller)));
     }

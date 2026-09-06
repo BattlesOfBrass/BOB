@@ -150,6 +150,12 @@ public class TroopManager implements TroopResolver{
     public void finishMoveAll(Map<UUID, MoveStatus> results, Tile newTile) {
         Set<Pair<TroopStack, Pair<Tile, MoveStatus>>> resultSet = new HashSet<>();
 
+        CompletableFuture<Set<Pair<TroopStack, Pair<Tile, MoveStatus>>>> future = bundledRequests.remove(new HashSet<>(results.keySet()));
+
+        if (future != null) future.complete(resultSet);
+
+        if(BOB.getInstance().getMainRenderer().getGamePanel().isPeaceConference()) return;
+
         for (var entry : results.entrySet()) {
             UUID troopId = entry.getKey();
             MoveStatus moveStatus = entry.getValue();
@@ -158,24 +164,15 @@ public class TroopManager implements TroopResolver{
 
             resultSet.add(Pair.of(troop, Pair.of(newTile, moveStatus)));
 
-            if (troop == null || newTile == null)
-                continue;
+            if (troop == null || newTile == null) continue;
 
-            if (moveStatus == MoveStatus.FAILURE_FIGHT || moveStatus == MoveStatus.FAILURE_NO_CONTROL || moveStatus == MoveStatus.FAILURE
-                    || moveStatus == MoveStatus.FAILURE_KICKED || moveStatus == MoveStatus.FAILURE_IN_COMBAT || moveStatus == MoveStatus.FAILURE_STARTED_PATHFINDING)
-                continue;
+            if (moveStatus == MoveStatus.FAILURE_FIGHT || moveStatus == MoveStatus.FAILURE_NO_CONTROL || moveStatus == MoveStatus.FAILURE || moveStatus == MoveStatus.FAILURE_KICKED || moveStatus == MoveStatus.FAILURE_IN_COMBAT || moveStatus == MoveStatus.FAILURE_STARTED_PATHFINDING) continue;
 
             troop.setTile(newTile);
 
-            newTile.setControllerClient(BOB.getInstance().getClient().getChannel(), troop.getController());
+            //newTile.setControllerClient(BOB.getInstance().getClient().getChannel(), troop.getController());
         }
 
-        CompletableFuture<Set<Pair<TroopStack, Pair<Tile, MoveStatus>>>> future =
-                bundledRequests.remove(new HashSet<>(results.keySet()));
-
-        if (future != null) {
-            future.complete(resultSet);
-        }
     }
     public void finishMove(UUID troopId, Tile newTile, MoveStatus moveStatus) {
         TroopStack troop = troops.get(troopId);
@@ -183,15 +180,16 @@ public class TroopManager implements TroopResolver{
         requests.getOrDefault(troopId, new CompletableFuture<>()/*I'm too lazy to null handle this*/).complete(Pair.of(troop, Pair.of(newTile, moveStatus)));
         requests.remove(troopId);
 
+        if(BOB.getInstance().getMainRenderer().getGamePanel().isPeaceConference()) return;
+
         if(troop == null) return;
         if(newTile == null) return;
 
-        if(moveStatus == MoveStatus.FAILURE_FIGHT || moveStatus == MoveStatus.FAILURE_NO_CONTROL || moveStatus == MoveStatus.FAILURE || moveStatus == MoveStatus.FAILURE_KICKED
-                || moveStatus == MoveStatus.FAILURE_IN_COMBAT || moveStatus == MoveStatus.FAILURE_STARTED_PATHFINDING) return;
+        if(moveStatus == MoveStatus.FAILURE_FIGHT || moveStatus == MoveStatus.FAILURE_NO_CONTROL || moveStatus == MoveStatus.FAILURE || moveStatus == MoveStatus.FAILURE_KICKED || moveStatus == MoveStatus.FAILURE_IN_COMBAT || moveStatus == MoveStatus.FAILURE_STARTED_PATHFINDING) return;
         troop.setTile(newTile);
 
         //theoretically already set in the request on the server
-        newTile.setControllerClient(BOB.getInstance().getClient().getChannel(), troop.getController());
+        //newTile.setControllerClient(BOB.getInstance().getClient().getChannel(), troop.getController());
     }
 
     public CompletableFuture<Void> reload() {

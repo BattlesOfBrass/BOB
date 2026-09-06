@@ -26,5 +26,6 @@ public enum Type {
     END_CONFERENCE, //this is 1. used when a client quits and 2. when the server finished the conference
     ROUND_ENDED,
     ROUND_UPDATE,
-    SEND_DEMANDS, TROOP_TP,
+    SEND_DEMANDS,
+    TROOP_TP,
 }

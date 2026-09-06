@@ -31,9 +31,7 @@ public class ServerCombatManager {
     public void reload() {
         for (CombatStatus combat : activeCombats) {
             ScheduledFuture<?> task = combat.getTask();
-            if (task != null) {
-                task.cancel(false);
-            }
+            if (task != null) task.cancel(false);
         }
 
         activeCombats.clear();
@@ -51,9 +49,7 @@ public class ServerCombatManager {
 
         Set<String> attackerSet = new HashSet<>(validAttackers).stream().map(t -> t.getController().getAbbreviation()).collect(Collectors.toSet());
         for (TroopStack defender : validDefenders) {
-            if (attackerSet.contains(defender.getController().getAbbreviation())) {
-                return null;
-            }
+            if (attackerSet.contains(defender.getController().getAbbreviation())) return null;
         }
 
         if (validAttackers.isEmpty() || validDefenders.isEmpty()) return null;
@@ -83,13 +79,9 @@ public class ServerCombatManager {
     }
 
     private void mergeIntoCombat(CombatStatus combat, List<TroopStack> attackers, List<TroopStack> defenders) {
-        for (TroopStack stack : attackers) {
-            combat.addAttacker(stack);
-        }
+        for (TroopStack stack : attackers) combat.addAttacker(stack);
 
-        for (TroopStack stack : defenders) {
-            combat.addDefender(stack);
-        }
+        for (TroopStack stack : defenders) combat.addDefender(stack);
 
         CombatSyncPacket packet = new CombatSyncPacket(combat, Server.getInstance().getTroopManager());
 
@@ -105,9 +97,7 @@ public class ServerCombatManager {
             boolean normal = combat.getAttackers().stream().anyMatch(t -> attackers.contains(t.getController().getAbbreviation())) && combat.getDefenders().stream().anyMatch(t -> defenders.contains(t.getController().getAbbreviation()));
             boolean reversed = combat.getAttackers().stream().anyMatch(t -> defenders.contains(t.getController().getAbbreviation())) && combat.getDefenders().stream().anyMatch(t -> attackers.contains(t.getController().getAbbreviation()));
 
-            if (normal || reversed) {
-                cleanupCombat(combat);
-            }
+            if (normal || reversed) cleanupCombat(combat);
         }
     }
 
@@ -117,9 +107,7 @@ public class ServerCombatManager {
         attackers.forEach(t -> tiles.add(t.getTile()));
         defenders.forEach(t -> tiles.add(t.getTile()));
 
-        if (tiles.size() != 1) {
-            return null;
-        }
+        if (tiles.size() != 1) return null;
 
         Object tile = tiles.iterator().next();
 
@@ -149,29 +137,17 @@ public class ServerCombatManager {
 
         combat.tick();
 
-        if (isCombatOver(combat)) {
-            cleanupCombat(combat);
-        } else {
-            broadcast(combat);
-        }
+        if (isCombatOver(combat)) cleanupCombat(combat);
+        else broadcast(combat);
     }
 
     public void removeByCountry(Country country) {
         for (CombatStatus combat : new ArrayList<>(activeCombats)) {
-            List<TroopStack> toRemove = Stream.concat(
-                            combat.getAttackers().stream(),
-                            combat.getDefenders().stream()
-                    )
-                    .filter(stack -> Objects.equals(stack.getController().getAbbreviation(), country.getAbbreviation()))
-                    .toList();
+            List<TroopStack> toRemove = Stream.concat(combat.getAttackers().stream(), combat.getDefenders().stream()).filter(stack -> Objects.equals(stack.getController().getAbbreviation(), country.getAbbreviation())).toList();
 
-            for (TroopStack stack : toRemove) {
-                handleOOH(combat, stack);
-            }
+            for (TroopStack stack : toRemove) handleOOH(combat, stack);
 
-            if (isCombatOver(combat)) {
-                cleanupCombat(combat);
-            }
+            if (isCombatOver(combat)) cleanupCombat(combat);
         }
     }
 
@@ -183,32 +159,26 @@ public class ServerCombatManager {
 
     private void checkRemoved(CombatStatus combat) {
         combat.getAttackers().forEach(c -> {
-            if(!c.isAlive()) {
-                c.setHp(0);
-            }
+            if(!c.isAlive()) c.setHp(0);
+
         });
 
         combat.getDefenders().forEach(c -> {
-            if(!c.isAlive()) {
-                c.setHp(0);
-            }
+            if(!c.isAlive()) c.setHp(0);
+
         });
     }
 
     private void removeOrg(CombatStatus combat, Set<TroopStack> stacks, int extra) {
         for (TroopStack stack : stacks) {
-            if (stack.getHp() <= 0) {
-                continue;
-            }
+            if (stack.getHp() <= 0) continue;
 
             int oldOrg = stack.getOrg();
             int newOrg = oldOrg - ORG_RM_PER_TICK - extra;
 
             stack.setOrg(newOrg);
 
-            if (stack.getOrg() <= 0) {
-                handleOOH(combat, stack);
-            }
+            if (stack.getOrg() <= 0) handleOOH(combat, stack);
         }
     }
 
@@ -254,9 +224,7 @@ public class ServerCombatManager {
 
         List<Tile> fallbacks = new ArrayList<>(Server.getInstance().getTileManager().findNeighbors(stack.getTile()));
 
-        fallbacks.removeIf(tile ->
-                !Objects.equals(tile.getController().getAbbreviation(), stack.getController().getAbbreviation()) && !Server.getInstance().getWarManager().fightsTogetherWith(tile.getController(), stack.getController())
-        );
+        fallbacks.removeIf(tile -> !Objects.equals(tile.getController().getAbbreviation(), stack.getController().getAbbreviation()) && !Server.getInstance().getWarManager().fightsTogetherWith(tile.getController(), stack.getController()));
 
         if (!fallbacks.isEmpty()) {
             Tile fallback = fallbacks.getFirst();

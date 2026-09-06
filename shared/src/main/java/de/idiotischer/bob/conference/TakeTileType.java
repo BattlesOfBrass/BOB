@@ -15,7 +15,6 @@ package de.idiotischer.bob.conference;
 
 //TODO: gonna use an enum for now till someone needs this xD
 public enum TakeTileType {
-    GIVE("GVE"),
     PUPPET("PPT"),
     TAKE("TKE"),
     LIBERATE("LIB");
