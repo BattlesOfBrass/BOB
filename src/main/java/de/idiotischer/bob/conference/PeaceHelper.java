@@ -57,7 +57,7 @@ public class PeaceHelper {
         if( BOB.getInstance().getMainRenderer() == null) return;
         PeaceMenuOverlay.setWaiting(false);
         BOB.getInstance().getMainRenderer().getGamePanel().setPaused(false);
-        BOB.getInstance().getMainRenderer().getGamePanel().removePeaceOverlay();
+        BOB.getInstance().getMainRenderer().getGamePanel().removePeaceOverlay(true);
     }
 
     public void nextRound() {

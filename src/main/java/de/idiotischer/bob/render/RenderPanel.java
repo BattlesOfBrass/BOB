@@ -270,6 +270,7 @@ public class RenderPanel extends JPanel implements Panel {
         return null;
     }
 
+    //TODO: make em appear over the troop buttons
     private void updateCombatButtons() {
         Set<UUID> activeIds = new HashSet<>();
 
@@ -388,7 +389,6 @@ public class RenderPanel extends JPanel implements Panel {
 
         if(on) getHud().visible(false);
 
-
         this.revalidate();
         //this.repaint();
     }
@@ -445,8 +445,12 @@ public class RenderPanel extends JPanel implements Panel {
     }
 
     public void removePeaceOverlay() {
+        removePeaceOverlay(false);
+    }
+    public void removePeaceOverlay(boolean noHud) {
         this.overlay.setVisible(false);
         this.renderer.setCanMoveRegardless(false);
+        if(!noHud) hud.visible(true);
     }
 
     public PeaceMenuOverlay getOverlay() {

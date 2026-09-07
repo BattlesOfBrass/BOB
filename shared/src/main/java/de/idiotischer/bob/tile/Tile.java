@@ -57,7 +57,7 @@ public class Tile {
 
         if (event.isCancelled()) return;
 
-        core.getTool().broadcast(channels, new ReplyPacket(Type.TILE_CHANGE, this.constructOwnerChange(controller)));
+        core.getTool().broadcast(channels, new ReplyPacket(Type.TILE_CHANGE, this.constructOwnerChange(owner)));
 
         this.owner = owner;
         System.out.println("set tile owner for: " + abbreviation + " " + owner.getAbbreviation());
@@ -82,23 +82,7 @@ public class Tile {
         core.getTool().broadcast(channels, new ReplyPacket(Type.TILE_CHANGE, this.constructControllerChange(controller)));
 
         this.controller = controller;
-        System.out.println("set tile controller for: " + abbreviation + " " + owner.getAbbreviation());
-    }
-
-    public void setControllerClient(AsynchronousSocketChannel channel, Country controller) {
-        TileChangedEvent event = new TileChangedEvent(this.controller, controller, this, TileChangedEvent.Type.CONTROLLER);
-
-        core.getListenerRegistry().call(event);
-
-        if (event.isCancelled()) return;
-
-        core.getTool().send(channel, new RequestPacket(Type.TILE_CHANGE, constructControllerChange(controller)));
-    }
-
-    //TODO: these method names are dumb xD
-    public void setControllerFinish(Country controller, boolean debug) {
-        this.controller = controller;
-        if(debug) System.out.println("got controller sync on: " + abbreviation);
+        System.out.println("set tile controller for: " + abbreviation + " " + controller.getAbbreviation());
     }
 
     //später mils etc auch?

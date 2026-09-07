@@ -21,6 +21,15 @@ public class ServerConferenceManager {
 
         if(conf == null) return;
 
+        conf.getDefeated().forEach(c -> {
+            Server.getInstance().getTroopManager().getForController(c).forEach(con -> Server.getInstance().getTroopManager().removePathfinding(con));
+            Server.getInstance().getCountryManager().getOwned(c).forEach(t -> t.setControllerForAll(Server.getInstance().getServerSocket().channels(), c));
+        });
+
+        conf.getWinners().forEach(c -> {
+            Server.getInstance().getTroopManager().getForController(c).forEach(con -> Server.getInstance().getTroopManager().removePathfinding(con));
+        });
+
         conf.setEndHook(() -> {
             remove(conf);
 
@@ -51,8 +60,6 @@ public class ServerConferenceManager {
 
         this.conferences.add(conf);
 
-        conf.getDefeated().forEach(c -> Server.getInstance().getCountryManager().getOwned(c).forEach(t -> t.setControllerForAll(Server.getInstance().getServerSocket().channels(), c)));
-
         conf.startConference();
 
     }
@@ -64,6 +71,7 @@ public class ServerConferenceManager {
     public boolean anyActive() {
         return !this.conferences.isEmpty();
     }
+
 
     public PeaceConference.Demands readDemands(CountryResolver r1, TileResolver r, String s) {
         String[] parts = s.split(";");
