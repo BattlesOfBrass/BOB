@@ -131,6 +131,39 @@ public class WarStatus {
         return ended;
     }
 
+    public Set<Country> getWinningSideByParticipation() {
+        Map<Country, Double> participation = getParticipation();
+
+        double attackersParticipation = attackers.stream().mapToDouble(c -> participation.getOrDefault(c, 0.0)).sum();
+        double defendersParticipation = defenders.stream().mapToDouble(c -> participation.getOrDefault(c, 0.0)).sum();
+
+        return attackersParticipation >= defendersParticipation ? attackers : defenders;
+    }
+
+    public Map<Country, Double> getParticipation() {
+        return calculateParticipation(attackers, defenders);
+    }
+
+    public Map<Country, Double> getAggressorParticipation() {
+        return calculateParticipation(attackers);
+    }
+
+    public Map<Country, Double> getLooserParticipation() {
+        Set<Country> looser = hasAttackingWon ? defenders : attackers;
+        return calculateParticipation(looser);
+    }
+
+    private Map<Country, Double> calculateParticipation(Set<Country>... sides) {
+        Set<Country> countries = Arrays.stream(sides).flatMap(Set::stream).collect(Collectors.toSet());
+
+        int totalVP = countries.stream().mapToInt(c -> currentVP.getOrDefault(c, 0)).sum();
+
+        if (totalVP == 0) return countries.stream().collect(Collectors.toMap(c -> c, c -> 0.0));
+
+        return countries.stream().collect(Collectors.toMap(c -> c, c -> currentVP.getOrDefault(c, 0) * 100.0 / totalVP));
+    }
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

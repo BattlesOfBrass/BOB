@@ -118,9 +118,7 @@ public class ServerWarManager {
             boolean aggressorIsAttacker = war.getAttackers().stream().map(Country::getAbbreviation).collect(Collectors.toSet()).contains(aggressor.getAbbreviation());
             boolean defenderIsDefender = war.getDefenders().stream().map(Country::getAbbreviation).collect(Collectors.toSet()).contains(defender.getAbbreviation());
 
-            if (!aggressorIsAttacker || !defenderIsDefender) {
-                continue;
-            }
+            if (!aggressorIsAttacker || !defenderIsDefender) continue;
 
             Map<Country, Integer> vpMap = war.getCurrentVP();
 
