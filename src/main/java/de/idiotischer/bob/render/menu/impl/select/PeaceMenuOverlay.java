@@ -12,6 +12,8 @@ import de.idiotischer.bob.tile.Tile;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -32,6 +34,7 @@ public class PeaceMenuOverlay extends JPanel {
     private Country selectedWinnerCountry;
     private BOBButton selectedWinnerButton;
 
+    private JScrollPane countryScrollPane;
 
     private final Set<Tile> selectedTiles = new java.util.HashSet<>();
     private static boolean waiting;
@@ -94,7 +97,7 @@ public class PeaceMenuOverlay extends JPanel {
     public void doLayout() {
         super.doLayout();
 
-        if (countryPanel != null) countryPanel.setBounds(10, 90, 300, Math.max(0, getHeight() - 100));
+        if (countryScrollPane != null) countryScrollPane.setBounds(10, 90, 300, Math.max(0, getHeight() - 100));
 
         if (winnerScrollPane != null) winnerScrollPane.setBounds(getWidth() - 310, 90, 290, Math.max(0, getHeight() - 250));
 
@@ -131,51 +134,109 @@ public class PeaceMenuOverlay extends JPanel {
     }
 
     private void buildCountryPanel() {
-        countryPanel = new JPanel();
+        countryPanel = new JPanel() {
+            @Override
+            public Dimension getPreferredSize() {
+                Dimension size = super.getPreferredSize();
+                return new Dimension(290, size.height);
+            }
+        };
         countryPanel.setLayout(new BoxLayout(countryPanel, BoxLayout.Y_AXIS));
         countryPanel.setOpaque(false);
-        countryPanel.setBounds(10, 90, 300, Math.max(0, getHeight() - 100));
+        countryPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
         BOBButton countriesButton = new BOBButton("Countries       ▾", Color.WHITE, Color.BLACK, Color.DARK_GRAY.darker(), Color.GRAY, 14, 5);
         countriesButton.setAlignmentX(Component.LEFT_ALIGNMENT);
-        countriesButton.setMaximumSize(new Dimension(300, 35));
+        countriesButton.setMaximumSize(new Dimension(290, 35));
 
         JPanel countriesPanel = new JPanel();
         countriesPanel.setLayout(new BoxLayout(countriesPanel, BoxLayout.Y_AXIS));
         countriesPanel.setOpaque(false);
+        countriesPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
         countriesPanel.setVisible(false);
 
         countriesButton.addActionListener(e -> {
-            if(waiting) return;
+            if (waiting) return;
 
             countriesPanel.setVisible(!countriesPanel.isVisible());
-
             countriesButton.setText(countriesPanel.isVisible() ? "Countries       ▴" : "Countries       ▾");
 
-            countriesPanel.getParent().revalidate();
-            countriesPanel.getParent().repaint();
+            countryPanel.revalidate();
+            countryPanel.repaint();
         });
 
         PeaceConference conf = BOB.getInstance().getPeaceHelper().getBy(peace);
         for (Country country : conf.getDefeated()) {
-            BOBButton countryButton = new BOBButton(country.countryName() + "       ▾", Color.WHITE, Color.BLACK, Color.DARK_GRAY.darker(), Color.GRAY, 13, 5);
+            JPanel countryWrapper = new JPanel();
+            countryWrapper.setLayout(new BoxLayout(countryWrapper, BoxLayout.X_AXIS));
+            countryWrapper.setOpaque(false);
+            countryWrapper.setAlignmentX(Component.LEFT_ALIGNMENT);
+            countryWrapper.add(Box.createRigidArea(new Dimension(10, 0)));
 
+            BOBButton countryButton = new BOBButton(country.countryName() + "       ▾", Color.WHITE, Color.BLACK, Color.DARK_GRAY.darker(), Color.GRAY, 13, 5);
             countryButton.setAlignmentX(Component.LEFT_ALIGNMENT);
-            countryButton.setMaximumSize(new Dimension(285, 35));
+            countryButton.setMaximumSize(new Dimension(270, 35));
+            countryWrapper.add(countryButton);
 
             JPanel tilePanel = new JPanel();
             tilePanel.setLayout(new BoxLayout(tilePanel, BoxLayout.Y_AXIS));
             tilePanel.setOpaque(false);
+            tilePanel.setAlignmentX(Component.LEFT_ALIGNMENT);
             tilePanel.setVisible(false);
 
-            for (Tile tile : conf.getTakableTiles().stream().filter(t -> t.getOwner().getAbbreviation().equals(country.getAbbreviation())).toList()) {
-                BOBButton tileButton = new BOBButton(tile.getAbbreviation(), tile.getVictoryPoints() + " | " + tile.getName(), Color.WHITE, Color.BLACK, Color.DARK_GRAY.darker(), Color.GRAY, 12, 5);
+            java.util.List<Tile> countryTiles = conf.getTakableTiles().stream().filter(t -> t.getOwner().getAbbreviation().equals(country.getAbbreviation())).toList();
 
+            List<BOBButton> tileButtons = new ArrayList<>();
+
+            if (!countryTiles.isEmpty()) {
+                JPanel selectAllWrapper = new JPanel();
+                selectAllWrapper.setLayout(new BoxLayout(selectAllWrapper, BoxLayout.X_AXIS));
+                selectAllWrapper.setOpaque(false);
+                selectAllWrapper.setAlignmentX(Component.LEFT_ALIGNMENT);
+                selectAllWrapper.add(Box.createRigidArea(new Dimension(25, 0))); // 25px Indentation
+
+                BOBButton selectAllButton = new BOBButton("Select All", Color.WHITE, Color.BLACK, Color.DARK_GRAY.darker(), Color.GRAY, 12, 5);
+                selectAllButton.setAlignmentX(Component.LEFT_ALIGNMENT);
+                selectAllButton.setMaximumSize(new Dimension(245, 30));
+
+                selectAllButton.addActionListener(e -> {
+                    if (waiting) return;
+
+                    boolean selectAll = tileButtons.stream().anyMatch(btn -> !btn.isToggled());
+
+                    for (int i = 0; i < countryTiles.size(); i++) {
+                        Tile tile = countryTiles.get(i);
+                        BOBButton tileBtn = tileButtons.get(i);
+
+                        tileBtn.setToggled(selectAll);
+                        tileBtn.setText(tile.getVictoryPoints() + " | " + tile.getName() + (selectAll ? " x" : "  "));
+
+                        if (selectAll) {
+                            selectedTiles.add(tile);
+                        } else {
+                            selectedTiles.remove(tile);
+                        }
+                    }
+                });
+
+                selectAllWrapper.add(selectAllButton);
+                tilePanel.add(selectAllWrapper);
+                tilePanel.add(Box.createVerticalStrut(3));
+            }
+
+            for (Tile tile : countryTiles) {
+                JPanel tileWrapper = new JPanel();
+                tileWrapper.setLayout(new BoxLayout(tileWrapper, BoxLayout.X_AXIS));
+                tileWrapper.setOpaque(false);
+                tileWrapper.setAlignmentX(Component.LEFT_ALIGNMENT);
+                tileWrapper.add(Box.createRigidArea(new Dimension(25, 0))); // 25px Indentation
+
+                BOBButton tileButton = new BOBButton(tile.getAbbreviation(), tile.getVictoryPoints() + " | " + tile.getName(), Color.WHITE, Color.BLACK, Color.DARK_GRAY.darker(), Color.GRAY, 12, 5);
                 tileButton.setAlignmentX(Component.LEFT_ALIGNMENT);
-                tileButton.setMaximumSize(new Dimension(270, 30));
+                tileButton.setMaximumSize(new Dimension(245, 30));
 
                 tileButton.addActionListener(e -> {
-                    if(waiting) return;
+                    if (waiting) return;
 
                     boolean toggled = !tileButton.isToggled();
                     tileButton.setToggled(toggled);
@@ -186,12 +247,15 @@ public class PeaceMenuOverlay extends JPanel {
                     else selectedTiles.remove(tile);
                 });
 
+                tileButtons.add(tileButton);
+                tileWrapper.add(tileButton);
 
-                tilePanel.add(tileButton);
+                tilePanel.add(tileWrapper);
+                tilePanel.add(Box.createVerticalStrut(2));
             }
 
             countryButton.addActionListener(e -> {
-                if(waiting) return;
+                if (waiting) return;
 
                 boolean visible = !tilePanel.isVisible();
                 tilePanel.setVisible(visible);
@@ -202,16 +266,26 @@ public class PeaceMenuOverlay extends JPanel {
                 countryPanel.repaint();
             });
 
-            countriesPanel.add(countryButton);
+            countriesPanel.add(countryWrapper);
             countriesPanel.add(tilePanel);
             countriesPanel.add(Box.createVerticalStrut(5));
         }
 
-
         countryPanel.add(countriesButton);
         countryPanel.add(countriesPanel);
 
-        add(countryPanel);
+        countryScrollPane = new JScrollPane(countryPanel);
+        countryScrollPane.setOpaque(false);
+        countryScrollPane.getViewport().setOpaque(false);
+        countryScrollPane.setBorder(null);
+        countryScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        countryScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+        countryScrollPane.getVerticalScrollBar().setUI(new ModernScrollBarUI());
+        countryScrollPane.getVerticalScrollBar().setPreferredSize(new Dimension(14, 0));
+        countryScrollPane.getVerticalScrollBar().setOpaque(false);
+        countryScrollPane.getVerticalScrollBar().setUnitIncrement(16);
+
+        add(countryScrollPane);
     }
 
     private void buildWinnerCountryPanel() {

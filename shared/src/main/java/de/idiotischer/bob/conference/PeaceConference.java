@@ -197,7 +197,6 @@ public class PeaceConference {
 
                 TakeTileStatus status = claims.getFirst();
 
-                System.out.println("----------------new-----------------------");
                 if (status.type() == TakeTileType.TAKE) {
                     tile.setOwnerForAll(r.channels(), status.country());
                     tile.setControllerForAll(r.channels(), status.country());

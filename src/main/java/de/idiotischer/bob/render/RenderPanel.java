@@ -450,7 +450,7 @@ public class RenderPanel extends JPanel implements Panel {
     public void removePeaceOverlay(boolean noHud) {
         this.overlay.setVisible(false);
         this.renderer.setCanMoveRegardless(false);
-        if(!noHud) hud.visible(true);
+        //if(!noHud) hud.visible(true);
     }
 
     public PeaceMenuOverlay getOverlay() {

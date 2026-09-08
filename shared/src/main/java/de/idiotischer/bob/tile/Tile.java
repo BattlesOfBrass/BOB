@@ -50,7 +50,6 @@ public class Tile {
 
     public void setOwner(Country owner) {
         this.owner = owner;
-        System.out.println("set tile owner for client: " + abbreviation + " " + owner.getAbbreviation());
     }
 
     public void setOwnerForAll(Set<AsynchronousSocketChannel> channels, Country owner) {
@@ -63,12 +62,10 @@ public class Tile {
         core.getTool().broadcast(channels, new ReplyPacket(Type.TILE_CHANGE, this.constructOwnerChange(owner)));
 
         this.owner = owner;
-        System.out.println("set tile owner for: " + abbreviation + " " + owner.getAbbreviation());
     }
 
     public void setController(Country controller) {
         this.controller = controller;
-        System.out.println("set tile controller for client: " + abbreviation + " " + controller.getAbbreviation());
     }
 
     public Country getController() {
@@ -85,7 +82,6 @@ public class Tile {
         core.getTool().broadcast(channels, new ReplyPacket(Type.TILE_CHANGE, this.constructControllerChange(controller)));
 
         this.controller = controller;
-        System.out.println("set tile controller for: " + abbreviation + " " + controller.getAbbreviation());
     }
 
     //später mils etc auch?
