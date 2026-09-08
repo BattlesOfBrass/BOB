@@ -35,7 +35,6 @@ public class TileSyncPacket implements de.idiotischer.bob.networking.packet.Pack
 
     @Override
     public void write(ByteBuffer buffer) {
-        claims.clear();
         BufferUtil.of(buffer).putUtf(tile.toDataString());
     }
 

@@ -563,4 +563,18 @@ public class PeaceConference {
     public record Demands(Country country, TakeTileType type, Set<Tile> tiles, UUID peaceId) {}
 
     //TODO: add methods to update parts for the client like for example the guy that has the current turn etc and add serializers
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof PeaceConference other)) return false;
+
+        return Objects.equals(uuid, other.uuid);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(uuid);
+    }
+
 }

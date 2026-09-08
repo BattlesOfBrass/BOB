@@ -15,6 +15,7 @@ import java.awt.*;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 public class Tile {
@@ -67,7 +68,7 @@ public class Tile {
 
     public void setController(Country controller) {
         this.controller = controller;
-        System.out.println("set tile controller for client: " + abbreviation + " " + owner.getAbbreviation());
+        System.out.println("set tile controller for client: " + abbreviation + " " + controller.getAbbreviation());
     }
 
     public Country getController() {
@@ -224,11 +225,12 @@ public class Tile {
         if (this == o) return true;
         if (!(o instanceof Tile other)) return false;
 
-        return abbreviation.equals(other.abbreviation);
+        return Objects.equals(abbreviation, other.abbreviation);
     }
 
     @Override
     public int hashCode() {
-        return abbreviation.hashCode();
+        return Objects.hash(abbreviation);
     }
+
 }

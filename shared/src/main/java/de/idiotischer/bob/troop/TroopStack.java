@@ -183,4 +183,5 @@ public class TroopStack extends Troop {
         setHp(0);
         this.alive = b;
     }
+
 }

@@ -1,5 +1,6 @@
 package de.idiotischer.bob.state;
 
+import de.idiotischer.bob.conference.PeaceConference;
 import de.idiotischer.bob.country.Country;
 import de.idiotischer.bob.country.CountryResolver;
 import de.idiotischer.bob.tile.Tile;
@@ -8,6 +9,7 @@ import de.idiotischer.bob.tile.TileResolver;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -59,5 +61,18 @@ public record State(Country owner, List<Tile> tiles, String abbreviation, String
         }
 
         return new State(owner, tiles, values.get("abbreviation"), values.get("name"));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof State other)) return false;
+
+        return Objects.equals(abbreviation, other.abbreviation);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(abbreviation);
     }
 }

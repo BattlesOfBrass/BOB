@@ -282,12 +282,19 @@ public class PacketListener implements ListenerAdapter {
 
                     TileChangedEvent.Type t = Tile.getChangeType(s);
                     if(Objects.equals(t, TileChangedEvent.Type.OWNER)) {
-                        System.out.println("CLIENT SET tile owner for: " + tile.getAbbreviation() + " " + country.getAbbreviation());
                         tile.setOwner(country);
                     } else if(Objects.equals(t, TileChangedEvent.Type.CONTROLLER)) {
-                        System.out.println("CLIENT SET tile controller for: " + tile.getAbbreviation() + " " + country.getAbbreviation());
                         tile.setController(country);
                         TileManager.recolorTile(tile, c);
+
+                        System.out.println("TILE THAT WAS CHANGED: " + tile.getController().getAbbreviation());
+
+                        Pair<Tile, Country> pair1 = Tile.deconstructChange(s, Server.getInstance().getCountryManager(), Server.getInstance().getTileManager());
+
+                        System.out.println("TILE THAT I GOT NOW: " + pair1.left().getController().getAbbreviation());
+
+                        var p = tile.getPoints().getFirst();
+                        System.out.println("TILE WHEN I GET IT BY POINT NOW: " + BOB.getInstance().getTileManager().getTileAt(p.x,p.y));
                     }
                 }
                 case PLAYER_CHANGE -> {

@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import de.craftsblock.craftscore.buffer.BufferUtil;
 import de.idiotischer.bob.player.Player;
 import de.idiotischer.bob.state.State;
+import de.idiotischer.bob.tile.Tile;
 import de.idiotischer.bob.util.FileUtil;
 import de.idiotischer.bob.war.WarStatus;
 
@@ -13,10 +14,8 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
-import java.util.HashSet;
+import java.util.*;
 import java.util.List;
-import java.util.Set;
-import java.util.UUID;
 import java.util.function.Consumer;
 
 public class Country {
@@ -235,11 +234,11 @@ public class Country {
         if (this == o) return true;
         if (!(o instanceof Country other)) return false;
 
-        return abbreviation.equals(other.abbreviation);
+        return Objects.equals(abbreviation, other.abbreviation);
     }
 
     @Override
     public int hashCode() {
-        return abbreviation.hashCode();
+        return Objects.hash(abbreviation);
     }
 }
