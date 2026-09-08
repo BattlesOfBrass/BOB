@@ -268,7 +268,7 @@ public class PacketListener implements ListenerAdapter {
 
                     if(s.isEmpty()) return;
 
-                    Pair<Tile, Country> pair = Tile.deconstructChange(s, Server.getInstance().getCountryManager(), Server.getInstance().getTileManager());
+                    Pair<Tile, Country> pair = Tile.deconstructChange(s, BOB.getInstance().getCountryManager(), BOB.getInstance().getTileManager());
 
                     Tile tile = pair.key();
 
@@ -287,14 +287,14 @@ public class PacketListener implements ListenerAdapter {
                         tile.setController(country);
                         TileManager.recolorTile(tile, c);
 
-                        System.out.println("TILE THAT WAS CHANGED: " + tile.getController().getAbbreviation());
-
-                        Pair<Tile, Country> pair1 = Tile.deconstructChange(s, Server.getInstance().getCountryManager(), Server.getInstance().getTileManager());
-
-                        System.out.println("TILE THAT I GOT NOW: " + pair1.left().getController().getAbbreviation());
-
-                        var p = tile.getPoints().getFirst();
-                        System.out.println("TILE WHEN I GET IT BY POINT NOW: " + BOB.getInstance().getTileManager().getTileAt(p.x,p.y));
+                        //System.out.println("TILE THAT WAS CHANGED: " + tile.getController().getAbbreviation());
+//
+                        //Pair<Tile, Country> pair1 = Tile.deconstructChange(s, BOB.getInstance().getCountryManager(), BOB.getInstance().getTileManager());
+//
+                        //System.out.println("TILE THAT I GOT NOW: " + pair1.left().getController().getAbbreviation());
+//
+                        //var p = tile.getPoints().getFirst();
+                        //System.out.println("TILE WHEN I GET IT BY POINT NOW: " + BOB.getInstance().getTileManager().getTileAt(p.x,p.y));
                     }
                 }
                 case PLAYER_CHANGE -> {
@@ -307,13 +307,13 @@ public class PacketListener implements ListenerAdapter {
 
                     if(!Boolean.parseBoolean(status)) return;
 
-                    Country country = Server.getInstance().getCountryManager().byAbbreviation(abbreviation);
+                    Country country = BOB.getInstance().getCountryManager().byAbbreviation(abbreviation);
 
                     if(country == null) {
                         return;
                     }
 
-                    Player p = Server.getInstance().getPlayerManager().getPlayer(AddressUtil.getRemoteAddress(event.getChannel()));
+                    Player p = BOB.getInstance().getPlayerManager().getPlayer(AddressUtil.getRemoteAddress(event.getChannel()));
 
                     if(p == null) {
                         return;
