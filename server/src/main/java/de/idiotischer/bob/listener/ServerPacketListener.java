@@ -242,6 +242,7 @@ public class ServerPacketListener implements ListenerAdapter {
                     Server.getInstance().getScenarioSceneLoader().loadNew(scenario);
                 }
                 case TILE_CHANGE -> {
+                    //TODO: i think this is obsolete
                     String s = pack.getMessage();
 
                     if(s.isEmpty()) return;

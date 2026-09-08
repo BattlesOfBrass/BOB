@@ -2,13 +2,15 @@ package de.idiotischer.bob.networking.packet.impl;
 
 import de.craftsblock.craftscore.buffer.BufferUtil;
 import de.idiotischer.bob.SharedCore;
+import de.idiotischer.bob.country.Country;
 import de.idiotischer.bob.country.CountryResolver;
 import de.idiotischer.bob.tile.Tile;
 
 import java.awt.*;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class TileSyncPacket implements de.idiotischer.bob.networking.packet.Packet {
 
@@ -23,6 +25,7 @@ public class TileSyncPacket implements de.idiotischer.bob.networking.packet.Pack
     private String cityName;
     private boolean city;
     private int victoryPoints;
+    private Set<String> claims = new HashSet<>();
 
     public TileSyncPacket() {}
 
@@ -32,6 +35,7 @@ public class TileSyncPacket implements de.idiotischer.bob.networking.packet.Pack
 
     @Override
     public void write(ByteBuffer buffer) {
+        claims.clear();
         BufferUtil.of(buffer).putUtf(tile.toDataString());
     }
 
@@ -39,7 +43,7 @@ public class TileSyncPacket implements de.idiotischer.bob.networking.packet.Pack
     public void read(ByteBuffer buffer) {
         String info = BufferUtil.of(buffer).getUtf();
 
-        String[] parts = info.split(";");
+        String[] parts = info.split(";", -1);
 
         this.abbreviation = parts[0];
         this.name = parts[1];
@@ -59,6 +63,12 @@ public class TileSyncPacket implements de.idiotischer.bob.networking.packet.Pack
         this.countryAbbreviation = parts[5];
         this.ownerAbbreviation = parts[6];
         this.victoryPoints = Integer.parseInt(parts[7]);
+
+        this.claims = new HashSet<>();
+
+        if (!parts[8].isEmpty()) {
+            this.claims.addAll(Arrays.asList(parts[8].split(",")));
+        }
     }
 
     public void reconstruct(SharedCore core, CountryResolver resolver) {
@@ -68,7 +78,7 @@ public class TileSyncPacket implements de.idiotischer.bob.networking.packet.Pack
     public void reconstruct(SharedCore core, CountryResolver resolver, boolean forceReconstruct) {
         if(!forceReconstruct && reconstructed) return;
 
-        this.tile = Tile.by(core, resolver, abbreviation, victoryPoints, name, cityName, city, points, countryAbbreviation,ownerAbbreviation);
+        this.tile = Tile.by(core, claims.stream().map(resolver::byAbbreviation).filter(Objects::nonNull).collect(Collectors.toSet()), resolver, abbreviation, victoryPoints, name, cityName, city, points, countryAbbreviation,ownerAbbreviation);
 
         reconstructed = true;
     }

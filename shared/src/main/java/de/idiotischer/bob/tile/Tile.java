@@ -4,7 +4,6 @@ import de.idiotischer.bob.SharedCore;
 import de.idiotischer.bob.country.Country;
 import de.idiotischer.bob.country.CountryResolver;
 import de.idiotischer.bob.networking.packet.impl.pp.ReplyPacket;
-import de.idiotischer.bob.networking.packet.impl.pp.RequestPacket;
 import de.idiotischer.bob.networking.packet.impl.pp.Type;
 import de.idiotischer.bob.tile.event.TileChangedEvent;
 import it.unimi.dsi.fastutil.Pair;
@@ -14,6 +13,7 @@ import org.jetbrains.annotations.NotNull;
 //TODO: Point[] speichern können falls ein tile so weirde formen haben bei denen der nicht ganz zusammenhängt
 import java.awt.*;
 import java.nio.channels.AsynchronousSocketChannel;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -23,14 +23,16 @@ public class Tile {
     private final String abbreviation;
     private final SharedCore core;
     private final int victoryPoints;
+    private final Set<Country> claims;
     private Country controller;
     private Country owner;
     private final List<Point> points;
     private final String cityName;
     private final boolean city;
 
-    public Tile(SharedCore core, int victoryPoints, String cityName, boolean city, String abbreviation, String name, List<Point> points, Country controller, Country owner) {
+    public Tile(SharedCore core, Set<Country> claims, int victoryPoints, String cityName, boolean city, String abbreviation, String name, List<Point> points, Country controller, Country owner) {
         this.core = core;
+        this.claims = claims;
         this.abbreviation = abbreviation;
         this.name = name;
         this.controller = controller;
@@ -160,12 +162,12 @@ public class Tile {
         return cityName;
     }
 
-    public static @NotNull Tile by(SharedCore core, @NotNull CountryResolver resolver, @NotNull String abbreviation, int victoryPoints, String name, String cityName, boolean hasCity, List<Point> points, String controllerAbbreviation, String ownerAbbreviation) {
+    public static @NotNull Tile by(SharedCore core, Set<Country> claims, @NotNull CountryResolver resolver, @NotNull String abbreviation, int victoryPoints, String name, String cityName, boolean hasCity, List<Point> points, String controllerAbbreviation, String ownerAbbreviation) {
 
         Country controller = "null".equals(controllerAbbreviation) ? null : resolver.byAbbreviation(controllerAbbreviation);
         Country owner = "null".equals(ownerAbbreviation) ? null : resolver.byAbbreviation(ownerAbbreviation);
 
-        return new Tile(core, victoryPoints, cityName, hasCity, abbreviation, name, points, controller,owner);
+        return new Tile(core, claims, victoryPoints, cityName, hasCity, abbreviation, name, points, controller,owner);
     }
 
     public String toDataString() {
@@ -175,19 +177,31 @@ public class Tile {
             Point p = points.get(i);
             sb.append(p.x).append(",").append(p.y);
 
-            if (i < points.size() - 1) {
-                sb.append("|");
-            }
+            if (i < points.size() - 1) sb.append("|");
         }
 
-        return getAbbreviation() + ";" +
-                getName() + ";" +
-                hasCity() + ";" +
-                getCityName() + ";" +
-                sb + ";" +
-                (getController() != null ? getController().getAbbreviation() : "null") + ";" +
-                (getOwner() != null ? getOwner().getAbbreviation() : "null") + ";" +
-                victoryPoints;
+        List<Country> claims = new ArrayList<>(this.claims);
+        StringBuilder claimsSb = new StringBuilder();
+
+        for (int i = 0; i < claims.size(); i++) {
+            claimsSb.append(claims.get(i).getAbbreviation());
+
+            if (i < claims.size() - 1) claimsSb.append(",");
+        }
+
+        return getAbbreviation() + ";" + getName() + ";" + hasCity() + ";" + getCityName() + ";" + sb + ";" + (getController() != null ? getController().getAbbreviation() : "null") + ";" + (getOwner() != null ? getOwner().getAbbreviation() : "null") + ";" + victoryPoints + ";" + claimsSb;
+    }
+
+    public void addClaim(Country c) {
+        claims.add(c);
+    }
+
+    public void removeClaim(Country c) {
+        claims.remove(c);
+    }
+
+    public Set<Country> getClaims() {
+        return claims;
     }
 
     @Override

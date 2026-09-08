@@ -48,21 +48,16 @@ public class ServerTileManager implements TileResolver {
                 JsonObject tileElement = entry.getValue().getAsJsonObject();
 
                 String controllerString = getAsStringSafe(tileElement, "controller");
-                Country controller = Server.getInstance()
-                        .getCountryManager()
-                        .fromAbbreviation(controllerString);
+                Country controller = Server.getInstance().getCountryManager().byAbbreviation(controllerString);
+
                 String ownerString = getAsStringSafe(tileElement, "owner");
-                Country owner = Server.getInstance()
-                        .getCountryManager()
-                        .fromAbbreviation(ownerString);
+                Country owner = Server.getInstance().getCountryManager().byAbbreviation(ownerString);
 
                 String name = tileElement.get("name").getAsString();
 
                 int victoryPoints = 1;
                 JsonElement victoryPointsElement = tileElement.get("victoryPoints");
-                if (victoryPointsElement != null && !victoryPointsElement.isJsonNull()) {
-                    victoryPoints = victoryPointsElement.getAsInt();
-                }
+                if (victoryPointsElement != null && !victoryPointsElement.isJsonNull()) victoryPoints = victoryPointsElement.getAsInt();
 
                 String cityName = "";
 
@@ -73,9 +68,7 @@ public class ServerTileManager implements TileResolver {
                     JsonObject cityObject = cityElement.getAsJsonObject();
 
                     JsonElement cityNameElement = cityObject.get("name");
-                    if (cityNameElement != null && !cityNameElement.isJsonNull()) {
-                        cityName = cityNameElement.getAsString();
-                    }
+                    if (cityNameElement != null && !cityNameElement.isJsonNull()) cityName = cityNameElement.getAsString();
                 }
 
                 if(cityName == null || cityName.isEmpty()) hasCity = false;
@@ -95,12 +88,8 @@ public class ServerTileManager implements TileResolver {
                     coords[0] = coords[0].trim();
                     coords[1] = coords[1].trim();
                     points.add(new Point(Integer.parseInt(coords[0]), Integer.parseInt(coords[1])));
-                } else {
-                    points.add(new Point(
-                            tileElement.get("x").getAsInt(),
-                            tileElement.get("y").getAsInt()
-                    ));
-                }
+                } else points.add(new Point(tileElement.get("x").getAsInt(), tileElement.get("y").getAsInt()));
+
 
                 if(owner == null && controller == null) {
                     if (Server.getInstance().isDebug()) System.out.println("Failed to registered tile: " + name + " (" + abbreviation + ") points: " + points + " BECAUSE controller and owner are not set!");
@@ -110,7 +99,22 @@ public class ServerTileManager implements TileResolver {
                 if(owner == null) owner = controller;
                 if(controller == null) controller = owner;
 
-                Tile tile = new Tile(Server.getInstance().getSharedCore(), victoryPoints, cityName, hasCity, abbreviation, name, points, controller, owner);
+                Set<Country> claims = new HashSet<>();
+
+                JsonElement claimsElement = tileElement.get("claims");
+
+                if (claimsElement != null && claimsElement.isJsonArray()) {
+                    for (JsonElement el : claimsElement.getAsJsonArray()) {
+                        if (el == null || el.isJsonNull()) continue;
+
+                        String claimString = el.getAsString();
+                        Country claim = Server.getInstance().getCountryManager().byAbbreviation(claimString);
+
+                        if (claim != null) claims.add(claim);
+                    }
+                }
+
+                Tile tile = new Tile(Server.getInstance().getSharedCore(), claims, victoryPoints, cityName, hasCity, abbreviation, name, points, controller, owner);
 
                 registerTile(tile);
 

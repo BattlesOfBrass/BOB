@@ -282,8 +282,10 @@ public class PacketListener implements ListenerAdapter {
 
                     TileChangedEvent.Type t = Tile.getChangeType(s);
                     if(Objects.equals(t, TileChangedEvent.Type.OWNER)) {
+                        System.out.println("CLIENT SET tile owner for: " + tile.getAbbreviation() + " " + country.getAbbreviation());
                         tile.setOwner(country);
                     } else if(Objects.equals(t, TileChangedEvent.Type.CONTROLLER)) {
+                        System.out.println("CLIENT SET tile controller for: " + tile.getAbbreviation() + " " + country.getAbbreviation());
                         tile.setController(country);
                         TileManager.recolorTile(tile, c);
                     }
@@ -334,23 +336,13 @@ public class PacketListener implements ListenerAdapter {
             }
 
             if(BOB.getInstance().getPlayerManager().hasPlayer(pack.getUuid())) {
-                System.out.println(
-                        "UUID already good " +
-                                BOB.getInstance().getPlayerManager().getPlayer(pack.getAddress()).uuid() +
-                                " " +
-                                pack.getUuid()
-                );
+                System.out.println("UUID already good " + BOB.getInstance().getPlayerManager().getPlayer(pack.getAddress()).uuid() + " " + pack.getUuid());
                 return;
             }
 
             if(BOB.getInstance().getPlayerManager().hasPlayer(pack.getAddress())) {
                 //für local sync
-                System.out.println(
-                        "UUID changed " +
-                                BOB.getInstance().getPlayerManager().getPlayer(pack.getAddress()).uuid() +
-                                " " +
-                                pack.getUuid()
-                );
+                System.out.println("UUID changed " + BOB.getInstance().getPlayerManager().getPlayer(pack.getAddress()).uuid() + " " + pack.getUuid());
 
                 BOB.getInstance().getPlayerManager().getPlayer(pack.getAddress()).uuid(pack.getUuid());
             }

@@ -74,14 +74,6 @@ public class ServerCountryManager implements CountryResolver {
         return this.getCountries().stream().filter(c -> c.getPuppetState() != PuppetState.NONE).collect(Collectors.toSet());
     }
 
-    public Country fromNameExact(String name) {
-        return this.getCountries().stream().filter(country -> country.countryName().equals(name)).findFirst().orElse(null);
-    }
-
-    public Country fromAbbreviation(String abbreviation) {
-        return this.getCountries().stream().filter(country -> country.getAbbreviation().equals(abbreviation.toUpperCase())).findFirst().orElse(null);
-    }
-
     @Deprecated(forRemoval = true)
     public Country fromColor(Color color) {
         return this.getCountries().stream().filter(country -> country.countryColor().equals(color)).findFirst().orElse(null);

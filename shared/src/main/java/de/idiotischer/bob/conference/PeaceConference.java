@@ -187,14 +187,13 @@ public class PeaceConference {
 
     public void endConference() {
         //there is also no disputed logic here so i gotta add that
-        reinstate();
 
         if (r.channels() != null) {
             for (Map.Entry<Tile, List<TakeTileStatus>> entry : tileClaims.entrySet()) {
                 Tile tile = entry.getKey();
                 List<TakeTileStatus> claims = entry.getValue();
 
-                if (claims.size() != 1) continue;
+                if (claims.isEmpty()) continue;
 
                 TakeTileStatus status = claims.getFirst();
 
@@ -215,6 +214,8 @@ public class PeaceConference {
         }
 
         core.getTool().broadcast(r.channels(), new ReplyPacket(Type.END_CONFERENCE, uuid.toString()));
+
+        reinstate();
 
         if (endHook != null) endHook.run();
     }

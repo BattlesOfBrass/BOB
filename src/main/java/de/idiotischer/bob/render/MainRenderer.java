@@ -448,6 +448,8 @@ public class MainRenderer extends Thread {
             return;
         }
 
+        System.out.println(tile.getController().countryName());
+
         renderPanel.getHud().setTile(tile);
         renderPanel.getHud().visible(true);
 
