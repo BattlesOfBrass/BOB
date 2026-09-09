@@ -1,5 +1,7 @@
 package de.idiotischer.bob.render.menu.components;
 
+import de.idiotischer.bob.util.FileUtil;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -29,7 +31,7 @@ public class HUDTopBar extends JPanel {
         g2.drawRect(0, 0, getWidth(), getHeight());
 
         g2.setColor(Color.GREEN);
-        Font font = new Font(Font.SANS_SERIF, Font.BOLD, 15);
+        Font font = /*FileUtil.getFont();*/new Font(Font.SANS_SERIF, Font.BOLD, 15);
         g2.setFont(font);
 
         String text = "Current country: " + countryName;

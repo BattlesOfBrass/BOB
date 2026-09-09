@@ -79,12 +79,14 @@ public class ServerTileManager implements TileResolver {
                 if (locationsElement != null && locationsElement.isJsonArray()) {
                     for (JsonElement el : locationsElement.getAsJsonArray()) {
                         String[] coords = el.getAsString().split("[,;]");
+                        if(coords.length <= 1) return;
                         coords[0] = coords[0].trim();
                         coords[1] = coords[1].trim();
                         points.add(new Point(Integer.parseInt(coords[0]), Integer.parseInt(coords[1])));
                     }
                 } else if (locationsElement != null && locationsElement.isJsonPrimitive()) {
                     String[] coords = locationsElement.getAsString().split("[,;]");
+                    if(coords.length <= 1) return;
                     coords[0] = coords[0].trim();
                     coords[1] = coords[1].trim();
                     points.add(new Point(Integer.parseInt(coords[0]), Integer.parseInt(coords[1])));

@@ -1,5 +1,7 @@
 package de.idiotischer.bob.render.menu.components;
 
+import de.idiotischer.bob.util.FileUtil;
+
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicTextFieldUI;
 import java.awt.*;
@@ -14,7 +16,7 @@ public class ModernTextField extends BasicTextFieldUI {
         this.getComponent().setForeground(Color.WHITE);
         this.getComponent().setCaretColor(Color.WHITE);
         this.getComponent().setBackground(new Color(0, 0, 0, 0));
-        this.getComponent().setFont(new Font("SansSerif", Font.PLAIN, 14));
+        this.getComponent().setFont(/*FileUtil.getFont();*/new Font("SansSerif", Font.PLAIN, 14));
     }
 
     @Override

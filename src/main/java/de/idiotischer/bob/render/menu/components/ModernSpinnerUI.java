@@ -1,5 +1,7 @@
 package de.idiotischer.bob.render.menu.components;
 
+import de.idiotischer.bob.util.FileUtil;
+
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicSpinnerUI;
 import java.awt.*;
@@ -77,7 +79,7 @@ public class ModernSpinnerUI extends BasicSpinnerUI {
         btn.setContentAreaFilled(false);
         btn.setOpaque(false);
 
-        btn.setFont(new Font("Arial", Font.BOLD, 10));
+        btn.setFont(/*FileUtil.getFont();*/new Font("Arial", Font.BOLD, 10));
         btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
         btn.setForeground(new Color(180, 180, 180));

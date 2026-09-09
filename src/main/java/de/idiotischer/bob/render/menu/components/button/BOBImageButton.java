@@ -1,5 +1,7 @@
 package de.idiotischer.bob.render.menu.components.button;
 
+import de.idiotischer.bob.util.FileUtil;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.RoundRectangle2D;
@@ -33,7 +35,7 @@ public class BOBImageButton extends JButton {
         setFocusPainted(false);
         setOpaque(false);
         setForeground(textColor);
-        setFont(new Font(Font.SANS_SERIF, Font.BOLD, 16));
+        setFont(/*FileUtil.getFont();*/new Font(Font.SANS_SERIF, Font.BOLD, 16));
     }
 
     @Override

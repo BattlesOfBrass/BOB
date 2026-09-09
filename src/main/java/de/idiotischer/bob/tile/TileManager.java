@@ -238,6 +238,16 @@ public class TileManager implements TileResolver {
         List<Color> taken = BOB.getInstance().getScenarioSceneLoader().getTakenColors();
 
         tile.getPoints().forEach(pos -> {
+            //try {
+            //    int rgb = BOB.getInstance().getMainRenderer().getLogicMap().getRGB(pos.x, pos.y);
+            //    Color currentColor = new Color(rgb, true);
+
+            //    if (currentColor.getAlpha() == 0) System.out.println("Recoloring tile at " + pos.x + ", " + pos.y + " - starting point has alpha 0 " + tile.getAbbreviation());
+            //
+            //} catch (Exception e) {
+            //    System.out.println("Failed to get RGB for tile: " + tile.getAbbreviation());
+            //}
+
             //PosUtil.getPossibleBDPos(taken, BOB.getInstance().getMainRenderer().getLogicMap(), pos.x, pos.y).forEach(px -> {
             //    BOB.getInstance().getMainRenderer().getVisualBorderOverlay().setRGB(px.x,px.y, tile.getController().countryColor().darker().getRGB());
             //});
@@ -256,6 +266,16 @@ public class TileManager implements TileResolver {
         List<Color> taken = BOB.getInstance().getScenarioSceneLoader().getTakenColors();
 
         tile.getPoints().forEach(pos -> {
+            //try {
+            //    int rgb = BOB.getInstance().getMainRenderer().getLogicMap().getRGB(pos.x, pos.y);
+            //    Color currentColor = new Color(rgb, true);
+
+            //    if (currentColor.getAlpha() == 0) System.out.println("Recoloring tile at " + pos.x + ", " + pos.y + " - starting point has alpha 0 " + tile.getAbbreviation());
+            //
+            //} catch (Exception e) {
+            //    System.out.println("Failed to get RGB for tile: " + tile.getAbbreviation());
+            //}
+
             PosUtil.getPossiblePos(taken.stream().map(Color::getRGB).collect(Collectors.toSet()), BOB.getInstance().getMainRenderer().getLogicMap(), pos.x, pos.y).forEach(px -> {
                 ImageUtil.set(BOB.getInstance().getMainRenderer().getLogicMap(), px.x,px.y, color.getRGB());
             });

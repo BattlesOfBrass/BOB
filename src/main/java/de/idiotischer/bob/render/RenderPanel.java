@@ -332,6 +332,7 @@ public class RenderPanel extends JPanel implements Panel {
             combatButton.setDirection(ax, ay, dx, dy);
 
             combatButton.setBounds(centerX - combatSize / 2, centerY - combatSize / 2, combatSize, combatSize);
+            bringCombatButtonsToFront();
         }
 
         combatButtons.entrySet().removeIf(entry -> {
@@ -382,6 +383,18 @@ public class RenderPanel extends JPanel implements Panel {
         g2.setStroke(oldStroke);
     }*/
 
+    private void bringCombatButtonsToFront() {
+        int z = 0;
+
+        for (Component component : troopLayer.getComponents()) {
+            if (component instanceof CombatVisualButton) {
+                troopLayer.setComponentZOrder(component, z++);
+            }
+        }
+
+        troopLayer.revalidate();
+        troopLayer.repaint();
+    }
 
     public void setEscMenu(boolean on) {
         this.escMenu = on;

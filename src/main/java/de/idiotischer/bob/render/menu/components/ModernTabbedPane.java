@@ -34,24 +34,15 @@ public class ModernTabbedPane extends JTabbedPane {
         }
 
         @Override
-        protected void paintText(Graphics g, int tabPlacement,
-                                 Font font, FontMetrics metrics,
-                                 int tabIndex, String title,
-                                 Rectangle textRect, boolean isSelected) {
-
+        protected void paintText(Graphics g, int tabPlacement, Font font, FontMetrics metrics, int tabIndex, String title, Rectangle textRect, boolean isSelected) {
             g.setFont(font);
             g.setColor(Color.WHITE);
 
-            g.drawString(title,
-                    textRect.x,
-                    textRect.y + metrics.getAscent());
+            g.drawString(title, textRect.x, textRect.y + metrics.getAscent());
         }
 
         @Override
-        protected void paintFocusIndicator(Graphics g, int tabPlacement,
-                                           Rectangle[] rects, int tabIndex,
-                                           Rectangle iconRect, Rectangle textRect,
-                                           boolean isSelected) {
+        protected void paintFocusIndicator(Graphics g, int tabPlacement, Rectangle[] rects, int tabIndex, Rectangle iconRect, Rectangle textRect, boolean isSelected) {
         }
 
         @Override
@@ -61,9 +52,7 @@ public class ModernTabbedPane extends JTabbedPane {
         }
 
         @Override
-        protected void paintTabBorder(Graphics g, int tabPlacement,
-                                     int tabIndex, int x, int y, int w, int h,
-                                     boolean isSelected) {
+        protected void paintTabBorder(Graphics g, int tabPlacement, int tabIndex, int x, int y, int w, int h, boolean isSelected) {
             g.setColor(border);
             g.drawRect(x, y, w, h);
         }
