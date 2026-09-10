@@ -1,11 +1,18 @@
 package de.idiotischer.bob.war;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.stream.JsonReader;
 import de.idiotischer.bob.Server;
+import de.idiotischer.bob.SharedCore;
 import de.idiotischer.bob.country.Country;
 import de.idiotischer.bob.networking.packet.impl.pp.ReplyPacket;
 import de.idiotischer.bob.networking.packet.impl.pp.Type;
 import de.idiotischer.bob.tile.Tile;
 
+import java.awt.*;
+import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -20,6 +27,29 @@ public class ServerWarManager {
 
     public void reload() {
         activeWars.clear();
+
+        var file = Server.getInstance().getScenarioSceneLoader().getCurrentScenario().getCountryConfig();
+        if(Files.exists(file)) return;
+        try (JsonReader reader = new JsonReader(Files.newBufferedReader(file))) {
+            JsonElement root = SharedCore.GSON.fromJson(reader, JsonElement.class);
+
+            root.getAsJsonObject().entrySet().forEach(entry -> {
+                String countryAbbreviation = entry.getKey();
+
+                JsonObject countryElement = entry.getValue().getAsJsonObject();
+
+                JsonArray wars = countryElement.get("wars").getAsJsonArray();
+
+                wars.asList().stream().map(JsonElement::getAsString).forEach(c -> {
+                    Country cO = Server.getInstance().getCountryManager().byAbbreviation(countryAbbreviation);
+                    Country c1 = Server.getInstance().getCountryManager().byAbbreviation(c);
+                    if(cO != null && c1 != null) declareWar(false,null, cO, c1);
+                });
+            });
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public Set<WarStatus> getWars(Country c) {

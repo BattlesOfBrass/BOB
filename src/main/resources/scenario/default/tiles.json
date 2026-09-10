@@ -1420,6 +1420,130 @@
     "locations": "651,145",
     "controller": "UKR"
   },
+  "volyn": {
+    "name": "Volyn",
+    "locations": "656,133",
+    "controller": "UKR"
+  },
+  "rivne": {
+    "name": "Rivne",
+    "locations": "662,133",
+    "controller": "UKR"
+  },
+  "zhytomir": {
+    "name": "Zhytomir",
+    "locations": "669,135",
+    "controller": "UKR"
+  },
+  "ternopil": {
+    "name": "Ternopil",
+    "locations": "664,139",
+    "controller": "UKR"
+  },
+  "chernivtsi": {
+    "name": "Chernivtsi",
+    "locations": [
+      "659,146",
+      "663,144"
+    ],
+    "controller": "UKR"
+  },
+  "ivano-frankivsk": {
+    "name": "Ivano-Frankivsk",
+    "locations": "657,142",
+    "controller": "UKR"
+  },
+  "vinnytsia": {
+    "name": "Vinnytsia",
+    "locations": "672,143",
+    "controller": "UKR"
+  },
+  "odessa-upper": {
+    "name": "Upper Odessa",
+    "locations": "677,150",
+    "controller": "UKR"
+  },
+  "odessa-lower": {
+    "name": "Lower Odessa",
+    "locations": "675,156",
+    "controller": "UKR"
+  },
+  "kyiv": {
+    "name": "Kyiv",
+    "locations": "677,137",
+    "city": "Kyiv",
+    "controller": "UKR"
+  },
+  "chernihiv": {
+    "name": "Chernihiv",
+    "locations": "680,131",
+    "controller": "UKR"
+  },
+  "sumy": {
+    "name": "Sumy",
+    "locations": "690,134",
+    "controller": "UKR"
+  },
+  "cherkasy-kirovohrad": {
+    "name": "Cherkasy-Kirovohrad",
+    "locations": "682,143",
+    "controller": "UKR"
+  },
+  "mykolaiv": {
+    "name": "Mykolaiv",
+    "locations": "683,150",
+    "controller": "UKR"
+  },
+  "kherson": {
+    "name": "Kherson",
+    "locations": "691,152",
+    "controller": "UKR"
+  },
+  "poltava": {
+    "name": "Poltava",
+    "locations": "689,139",
+    "controller": "UKR"
+  },
+  "kharkiv": {
+    "name": "Kharkiv",
+    "locations": "700,139",
+    "controller": "UKR"
+  },
+  "luhansk": {
+    "name": "Luhansk",
+    "locations": "708,141",
+    "controller": "UKR"
+  },
+  "donetsk": {
+    "name": "Donetsk",
+    "locations": "704,145",
+    "controller": "UKR"
+  },
+  "zarporizhzhia": {
+    "name": "Zarporizhzhia",
+    "locations": "699,149",
+    "controller": "UKR"
+  },
+  "dnipropetrovsk": {
+    "name": "Dnipropetrovsk",
+    "locations": "694,145",
+    "controller": "UKR"
+  },
+  "crimea": {
+    "name": "Crimea",
+    "locations": "692,158",
+    "controller": "UKR"
+  },
+  "the-real-moldova": {
+    "name": "Moldova",
+    "locations": "670,151",
+    "controller": "MOL"
+  },
+  "transnistria": {
+    "name": "Transnistria",
+    "locations": "672,150",
+    "controller": "TRA"
+  },
   "barcelona": {
     "name": "Barcelona",
     "locations": "571,174",

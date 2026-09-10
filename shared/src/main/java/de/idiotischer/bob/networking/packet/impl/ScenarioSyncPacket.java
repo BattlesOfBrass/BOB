@@ -24,6 +24,7 @@ import java.util.List;
 //TODO: alle assets wie flaggen für das scenario etc syncen
 public class ScenarioSyncPacket implements Packet {
 
+
     private String abbreviation;
     private String name;
 
@@ -38,6 +39,7 @@ public class ScenarioSyncPacket implements Packet {
     private byte[] tilesJson;
     private byte[] statesJson;
     private byte[] troopsJson;
+    private byte[] warsJson;
 
     private List<FlagEntry> flagEntries = new ArrayList<>();
 
@@ -58,6 +60,7 @@ public class ScenarioSyncPacket implements Packet {
         this.tilesJson = scenario.isTilesConfigDefault() ? null : FileUtil.readFile(scenario.getTilesConfig());
         this.statesJson = scenario.isStatesConfigDefault() ? null : FileUtil.readFile(scenario.getStatesConfig());
         this.troopsJson = scenario.isTroopConfigDefault() ? null : FileUtil.readFile(scenario.getTroopConfig());
+        this.warsJson = scenario.isWarsDefault() ? null : FileUtil.readFile(scenario.getWarsConfig());
 
         Path flagFolder = FileUtil.getDefaultFlagsDir(scenario);
 
@@ -78,13 +81,10 @@ public class ScenarioSyncPacket implements Packet {
             if (path.equals(root)) return;
 
             try {
-                String relativePath = root.relativize(path)
-                        .toString()
-                        .replace(File.separatorChar, '/');
+                String relativePath = root.relativize(path).toString().replace(File.separatorChar, '/');
 
-                if (Files.isDirectory(path)) {
-                    entries.add(new FlagEntry(relativePath, true, null));
-                } else {
+                if (Files.isDirectory(path)) entries.add(new FlagEntry(relativePath, true, null));
+                else {
                     byte[] data = Files.readAllBytes(path);
                     entries.add(new FlagEntry(relativePath, false, data));
                 }
@@ -108,20 +108,14 @@ public class ScenarioSyncPacket implements Packet {
                 writeString(buffer, entry.path);
                 buffer.put((byte) (entry.directory ? 1 : 0));
 
-                if (!entry.directory) {
-                    writeBytes(buffer, entry.data);
-                }
+                if (!entry.directory) writeBytes(buffer, entry.data);
             }
 
             buffer.putInt(takenColors.size());
-            for (Color c : takenColors) {
-                buffer.putInt(c.getRGB());
-            }
+            for (Color c : takenColors) buffer.putInt(c.getRGB());
 
             buffer.putInt(borderColors.size());
-            for (Color c : borderColors) {
-                buffer.putInt(c.getRGB());
-            }
+            for (Color c : borderColors) buffer.putInt(c.getRGB());
 
             ImageUtil.writeImage(buffer, mapImage);
             ImageUtil.writeImage(buffer, backgroundImage);
@@ -131,6 +125,7 @@ public class ScenarioSyncPacket implements Packet {
             writeBytes(buffer, tilesJson);
             writeBytes(buffer, statesJson);
             writeBytes(buffer, troopsJson);
+            writeBytes(buffer, warsJson);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -180,12 +175,13 @@ public class ScenarioSyncPacket implements Packet {
         this.tilesJson = readBytes(buffer);
         this.statesJson = readBytes(buffer);
         this.troopsJson = readBytes(buffer);
+        this.warsJson = readBytes(buffer);
     }
 
     private void writeFlagFolder(Path targetDir) throws IOException {
         Path flagsDir = targetDir.resolve("flags");
 
-        Files.createDirectories(flagsDir);
+        if(!flagEntries.isEmpty()) Files.createDirectories(flagsDir);
 
         for (FlagEntry entry : flagEntries) {
             Path target = flagsDir.resolve(entry.path).normalize();
@@ -221,6 +217,7 @@ public class ScenarioSyncPacket implements Packet {
             writeIfMissing(targetDir.resolve("states.json"), statesJson);
             writeIfMissing(targetDir.resolve("tiles.json"), tilesJson);
             writeIfMissing(targetDir.resolve("troops.json"), troopsJson);
+            writeIfMissing(targetDir.resolve("wars.json"), warsJson);
 
             writeFlagFolder(targetDir);
 
@@ -267,6 +264,7 @@ public class ScenarioSyncPacket implements Packet {
             writeIfMissing(targetDir.resolve("states.json"), statesJson);
             writeIfMissing(targetDir.resolve("tiles.json"), tilesJson);
             writeIfMissing(targetDir.resolve("troops.json"), troopsJson);
+            writeIfMissing(targetDir.resolve("wars.json"), warsJson);
 
             writeFlagFolder(targetDir);
 

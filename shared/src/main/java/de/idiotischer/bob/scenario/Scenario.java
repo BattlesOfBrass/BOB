@@ -66,6 +66,15 @@ public class Scenario {
         return path;
     }
 
+
+    public Path getWarsConfig() {
+        Path path = dir.resolve("wars.json");
+
+        if(Files.notExists(path)) path = FileUtil.getDefaultScenarioDir().resolve("wars.json");
+
+        return path;
+    }
+
     public Path getTilesConfig() {
         Path path = dir.resolve("tiles.json");
 
@@ -92,6 +101,12 @@ public class Scenario {
 
     public boolean isUnusableDefault() {
         Path path = dir.resolve("unusable.json");
+
+        return Files.notExists(path);
+    }
+
+    public boolean isWarsDefault() {
+        Path path = dir.resolve("wars.json");
 
         return Files.notExists(path);
     }
