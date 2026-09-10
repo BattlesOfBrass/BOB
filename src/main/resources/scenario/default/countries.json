@@ -5,10 +5,7 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60,
     "major": false,
     "selectScreen": true
@@ -19,10 +16,7 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60,
     "major": false,
     "selectScreen": false
@@ -33,10 +27,7 @@
     "capital": "",
     "ideology": "none_aligned",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60,
     "major": true,
     "selectScreen": true
@@ -47,10 +38,7 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60,
     "major": true,
     "selectScreen": true
@@ -61,10 +49,7 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60,
     "major": true,
     "selectScreen": true
@@ -75,10 +60,7 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60,
     "major": false,
     "selectScreen": false
@@ -89,10 +71,7 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60,
     "major": false,
     "selectScreen": false
@@ -103,13 +82,8 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
-    "base_stability": 60,
-    "major": false,
-    "selectScreen": false
+    
+    "base_stability": 35
   },
   "BEL": {
     "name": "Belgium",
@@ -117,10 +91,6 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
     "base_stability": 60
   },
   "NET": {
@@ -129,10 +99,7 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "LUX": {
@@ -141,10 +108,7 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "DEN": {
@@ -153,10 +117,7 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "ITA": {
@@ -165,34 +126,25 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "SPA": {
     "name": "Spain",
-    "color": "232;143;72",
+    "color": "241;206;77",
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "POR": {
     "name": "Portugal",
-    "color": "0;102;122",
+    "color": "40;116;65",
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "NOR": {
@@ -201,10 +153,7 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "BOS": {
@@ -213,10 +162,7 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "SWE": {
@@ -225,22 +171,16 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "RUS": {
     "name": "Russia",
-    "color": "74;99;41",
+    "color": "55;96;49",
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60,
     "major": true,
     "selectScreen": true
@@ -251,46 +191,32 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "BUL": {
     "name": "Bulgaria",
-    "color": "66;113;69",
+    "color": "51;155;0",
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
-    "base_stability": 60
+    "base_stability": 40
   },
   "ALB": {
     "name": "Albania",
-    "color": "173;83;114",
+    "color": "148;41;104",
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
     "base_stability": 60
   },
   "ROM": {
     "name": "Romania",
-    "color": "255;255;119",
+    "color": "215;197;46",
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "SER": {
@@ -299,10 +225,7 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "SLO": {
@@ -311,10 +234,7 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "CRO": {
@@ -323,34 +243,25 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
-  "MON": {
+  "MNT": {
     "name": "Montenegro",
     "color": "240;109;115",
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "GRE": {
     "name": "Greece",
-    "color": "124;166;212",
+    "color": "93;181;227",
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "MOL": {
@@ -359,10 +270,7 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "TRA": {
@@ -371,10 +279,7 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "UKR": {
@@ -383,22 +288,16 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "BLR": {
     "name": "Belarus",
     "color": "199;213;224",
     "capital": "",
-    "ideology": "democratic",
-    "leader": "autocracy",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    "ideology": "autocracy",
+    "leader": "",
+    
     "base_stability": 60
   },
   "SAN": {
@@ -407,10 +306,7 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "PAP": {
@@ -419,10 +315,7 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "LIB": {
@@ -431,10 +324,7 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "ETH": {
@@ -443,10 +333,7 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "ASS": {
@@ -455,10 +342,7 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "SAF": {
@@ -467,10 +351,7 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "CAN": {
@@ -479,10 +360,7 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "USA": {
@@ -491,10 +369,7 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60,
     "major": true,
     "selectScreen": true
@@ -505,10 +380,7 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "CUB": {
@@ -517,10 +389,7 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "GUA": {
@@ -529,10 +398,7 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "ELS": {
@@ -541,10 +407,7 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "HON": {
@@ -553,10 +416,7 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "NIC": {
@@ -565,10 +425,7 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "COS": {
@@ -577,10 +434,7 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "PAN": {
@@ -589,10 +443,7 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "HAI": {
@@ -613,10 +464,7 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "VEN": {
@@ -625,10 +473,7 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "COL": {
@@ -637,10 +482,7 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "ECU": {
@@ -649,10 +491,7 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "PER": {
@@ -661,10 +500,7 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "BRA": {
@@ -673,10 +509,7 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "PAR": {
@@ -685,10 +518,7 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "URU": {
@@ -697,10 +527,7 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "ARG": {
@@ -709,10 +536,7 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "CHL": {
@@ -721,10 +545,7 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "BOL": {
@@ -733,10 +554,7 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "JAB": {
@@ -745,10 +563,7 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "OMA": {
@@ -757,10 +572,7 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "SAU": {
@@ -769,10 +581,7 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "YEM": {
@@ -781,10 +590,7 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "IRA": {
@@ -793,10 +599,7 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "AFG": {
@@ -805,10 +608,7 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "RAJ": {
@@ -817,10 +617,7 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "Nep": {
@@ -829,10 +626,7 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "BUT": {
@@ -841,10 +635,7 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "TIB": {
@@ -853,10 +644,7 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "MNG": {
@@ -865,10 +653,7 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "CHI": {
@@ -877,10 +662,7 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "JAP": {
@@ -889,10 +671,7 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "THA": {
@@ -901,10 +680,7 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "MAL": {
@@ -913,10 +689,16 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
+    "base_stability": 60
+  },
+  "MLT": {
+    "name": "Malta",
+    "color": "217;217;217",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+
     "base_stability": 60
   },
   "IND": {
@@ -925,10 +707,7 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "AST": {
@@ -937,10 +716,7 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "NZE": {
@@ -949,10 +725,7 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "PHI": {
@@ -961,10 +734,7 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "CZE": {
@@ -973,10 +743,7 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
   },
   "SVK": {
@@ -985,11 +752,74 @@
     "capital": "",
     "ideology": "democratic",
     "leader": "",
-    "startingDivisions": {
-      "motorized": 12,
-      "cavalry": 6
-    },
+    
     "base_stability": 60
+  },
+  "FIN": {
+    "name": "Finnland",
+    "color": "194;198;215",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    
+    "base_stability": 60
+  },
+  "LAT": {
+    "name": "Lativa",
+    "color": "74;77;192",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    
+    "base_stability": 60
+  },
+  "EST": {
+    "name": "Estonia",
+    "color": "52;137;179",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "base_stability": 60
+  },
+  "IRE": {
+    "name": "Ireland",
+    "color": "80;159;90",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "base_stability": 60
+  },
+  "KOS": {
+    "name": "Kosovo",
+    "color": "118;142;186",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "base_stability": 60
+  },
+  "MAC": {
+    "name": "Macedonia",
+    "color": "202;150;115",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "base_stability": 60
+  },
+  "ICE": {
+    "name": "Iceland",
+    "color": "68;81;113",
+    "capital": "",
+    "ideology": "democratic",
+    "leader": "",
+    "base_stability": 60
+  },
+  "TUR": {
+    "name": "Türkiye",
+    "color": "165;49;63",
+    "capital": "",
+    "ideology": "authoritarian",
+    "leader": "",
+    "base_stability": 20
   }
 }
 

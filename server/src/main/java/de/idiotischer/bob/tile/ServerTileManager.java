@@ -175,6 +175,86 @@ public class ServerTileManager implements TileResolver {
         });
     }
 
+    public Set<Point> findNonBorderPoints(Tile tile) {
+        Set<Point> pixels = cache.get(tile);
+
+        if (pixels == null) {
+            cache(tile, tile.getPoints());
+            return Set.of();
+        }
+
+        BufferedImage map = Server.getInstance().getScenarioSceneLoader().getMap();
+
+        int width = map.getWidth();
+        int height = map.getHeight();
+
+        int maxBorderThickness = 1;
+
+        Set<Integer> borderColors = Server.getInstance().getScenarioSceneLoader().getBorderColors().stream().map(Color::getRGB).collect(Collectors.toSet());
+
+        Set<Point> nonBorderPoints = new HashSet<>();
+
+        int[][] dirs = {{-1, 0}, {-1, 1}, {0, 1}, {1, 1}, {1, 0}, {1, -1}, {0, -1}, {-1, -1}};
+
+        for (Point p : pixels) {
+            boolean bordersSomethingExternal = false;
+
+            for (int[] dir : dirs) {
+
+                boolean enteredBorder = false;
+
+                for (int distance = 1; distance <= maxBorderThickness + 1; distance++) {
+
+                    int x = p.x + dir[0] * distance;
+                    int y = p.y + dir[1] * distance;
+
+                    if (x < 0 || y < 0 || x >= width || y >= height) {
+                        bordersSomethingExternal = true;
+                        break;
+                    }
+
+                    int rgb = map.getRGB(x, y);
+
+                    Color color = new Color(rgb, true);
+
+                    if (color.getAlpha() == 0) {
+                        bordersSomethingExternal = true;
+                        break;
+                    }
+
+                    if (borderColors.contains(rgb)) {
+                        enteredBorder = true;
+                        continue;
+                    }
+
+                    Tile other = getTileAt(x, y);
+
+                    if (other == null) {
+                        bordersSomethingExternal = true;
+                        break;
+                    }
+
+                    if (other == tile) break;
+
+                    if (enteredBorder) {
+                        Country ownCountry = tile.getController();
+                        Country otherCountry = other.getController();
+
+                        if (ownCountry == null || otherCountry == null || !ownCountry.getAbbreviation().equals(otherCountry.getAbbreviation())) bordersSomethingExternal = true;
+                    }
+
+                    break;
+                }
+
+                if (bordersSomethingExternal) break;
+            }
+
+            if (!bordersSomethingExternal) nonBorderPoints.add(p);
+        }
+
+        return nonBorderPoints;
+    }
+
     public Set<Tile> findNeighbors(Tile tile) {
         Set<Point> pixels = cache.get(tile);
         if (pixels == null) {
@@ -209,7 +289,8 @@ public class ServerTileManager implements TileResolver {
                     if (x < 0 || y < 0 || x >= width || y >= height) {
                         break;
                     }
-                    int rgb = ImageUtil.get(map,x,y);
+
+                    int rgb = map.getRGB(x, y);
 
                     if (borderColors.contains(rgb)) {
                         enteredBorder = true;
@@ -238,6 +319,23 @@ public class ServerTileManager implements TileResolver {
         return neighbors;
     }
 
+    public Map<Country, Set<Tile>> getNeighbors(Country country) {
+        Map<Country, Set<Tile>> neighborsByCountry = new HashMap<>();
+
+        Set<Tile> ownTiles = new HashSet<>(Server.getInstance().getCountryManager().getControlled(country));
+
+        for (Tile ownTile : ownTiles) {
+            for (Tile neighbor : findNeighbors(ownTile)) {
+                Country neighborCountry = neighbor.getController();
+
+                if (neighborCountry == null || neighborCountry.getAbbreviation().equals(country.getAbbreviation())) continue;
+
+                neighborsByCountry.computeIfAbsent(neighborCountry, k -> new HashSet<>()).add(neighbor);
+            }
+        }
+
+        return neighborsByCountry;
+    }
 
     public List<String> getTiles() {
         return tileSet.stream().map(Tile::toString).collect(Collectors.toList());

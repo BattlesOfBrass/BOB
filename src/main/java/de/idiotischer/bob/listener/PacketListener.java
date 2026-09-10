@@ -137,6 +137,10 @@ public class PacketListener implements ListenerAdapter {
                         return;
                     }
 
+                    PeaceConference c = BOB.getInstance().getPeaceHelper().getBy(uuid);
+                    if(c != null)
+                        BOB.getInstance().getMainRenderer().getGamePanel().showGenericPopup("PEACE ACHIEVED!","achieved peace with", c.getWinners().getFirst(), c.getDefeated().getFirst(), 5000);
+
                     BOB.getInstance().getPeaceHelper().removePeaces(uuid);
                 }
                 case ROUND_ENDED -> {
@@ -192,7 +196,7 @@ public class PacketListener implements ListenerAdapter {
 
                     country.setCapitulated(capped);
 
-                    //TODO: show popup that a country capped
+                    //TODO: show popup that a country capped (idk since its a bit dumb currentlky since peace starts immediatly)
                 }
                 case END_WAR -> {
                     WarStatus status = WarStatus.fromString(pack.getMessage(), BOB.getInstance().getCountryManager());
@@ -200,19 +204,15 @@ public class PacketListener implements ListenerAdapter {
                     status.getAttackers().forEach(c -> BOB.getInstance().getWarManager().endWar(c.getAbbreviation(),status));
                     status.getDefenders().forEach(c -> BOB.getInstance().getWarManager().endWar(c.getAbbreviation(),status));
 
-                    //TODO: show popup that a war ended and start peace conference (oh gosh i need to code that)
+                    //TODO: show popup that a war ended and start peace conference (oh gosh i need to code that) (idk since its a bit dumb currentlky since peace starts immediatly)
                 }
                 case START_WAR -> {
                     WarStatus status = WarStatus.fromString(pack.getMessage(), BOB.getInstance().getCountryManager());
 
-                    status.getAttackers().forEach(c -> {
-                        BOB.getInstance().getWarManager().addWar(c.getAbbreviation(), status);
-                    });
+                    status.getAttackers().forEach(c -> {BOB.getInstance().getWarManager().addWar(c.getAbbreviation(), status);});
+                    status.getDefenders().forEach(c -> {BOB.getInstance().getWarManager().addWar(c.getAbbreviation(), status);});
 
-                    status.getDefenders().forEach(c -> {
-                        BOB.getInstance().getWarManager().addWar(c.getAbbreviation(), status);
-                    });
-                    //TODO: show popup that a war happened
+                    BOB.getInstance().getMainRenderer().getGamePanel().showGenericPopup("WAR DECLARED!", "declared war on", status.getAttackers().getFirst(), status.getDefenders().getFirst(), 5000);
                 }
                 case WARS_SYNC -> {
                     BOB.getInstance().getWarManager().finishReload(pack.getMessage());

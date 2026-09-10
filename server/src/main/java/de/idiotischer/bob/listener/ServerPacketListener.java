@@ -108,7 +108,6 @@ public class ServerPacketListener implements ListenerAdapter {
                     if(p == null) return;
 
                     Server.getInstance().getWarManager().declareWar(callAllies, declaredTile, controller, p.country());
-
                 }
                 case TROOPS_MOVE -> {
                     String[] parts = pack.getMessage().split(";");

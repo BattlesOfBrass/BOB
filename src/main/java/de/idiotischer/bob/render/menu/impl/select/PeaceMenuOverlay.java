@@ -39,6 +39,9 @@ public class PeaceMenuOverlay extends JPanel {
     private final Set<Tile> selectedTiles = new java.util.HashSet<>();
     private static boolean waiting;
 
+    private static JPanel waitingPopupOverlay;
+    private static JPanel disputedPopupOverlay;
+
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             JFrame frame = new JFrame("Peace Menu Overlay");
@@ -408,15 +411,125 @@ public class PeaceMenuOverlay extends JPanel {
     }
 
     private void addDisputedPopup() {
+        removeDisputedPopup();
+
+        disputedPopupOverlay = createHoi4PopupOverlay("DISPUTED CLAIMS", "Another victor has submitted overlapping demands for these territories. Resolve claims or increase offer point weight before submitting.", "Acknowledge", e -> removeDisputedPopup());
+
+        add(disputedPopupOverlay);
+        setComponentZOrder(disputedPopupOverlay, 0);
+        revalidate();
+        repaint();
     }
 
     private void addWaitingPopup() {
+        removeWaitingPopup();
+
+        waitingPopupOverlay = createHoi4PopupOverlay("CONFERENCE IN PROGRESS", "Waiting for other victorious nations to submit their demands...", null, null);
+
+        add(waitingPopupOverlay);
+        setComponentZOrder(waitingPopupOverlay, 0);
+        revalidate();
+        repaint();
     }
 
     public static void removeWaitingPopup() {
+        if (waitingPopupOverlay != null && waitingPopupOverlay.getParent() != null) {
+            Container parent = waitingPopupOverlay.getParent();
+            parent.remove(waitingPopupOverlay);
+            waitingPopupOverlay = null;
+            parent.revalidate();
+            parent.repaint();
+        }
     }
 
     public static void removeDisputedPopup() {
+        if (disputedPopupOverlay != null && disputedPopupOverlay.getParent() != null) {
+            Container parent = disputedPopupOverlay.getParent();
+            parent.remove(disputedPopupOverlay);
+            disputedPopupOverlay = null;
+            parent.revalidate();
+            parent.repaint();
+        }
+    }
+
+    private JPanel createHoi4PopupOverlay(String title, String message, String buttonText, java.awt.event.ActionListener buttonListener) {
+        JPanel overlay = new JPanel(new GridBagLayout()) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setColor(new Color(0, 0, 0, 160));
+                g2.fillRect(0, 0, getWidth(), getHeight());
+                g2.dispose();
+            }
+        };
+        overlay.setOpaque(false);
+        overlay.setBounds(0, 0, getWidth(), getHeight());
+
+        JPanel dialog = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                g2.setColor(new Color(35, 38, 41));
+                g2.fillRect(0, 0, getWidth(), getHeight());
+
+                g2.setColor(new Color(25, 27, 29));
+                g2.fillRect(0, 0, getWidth(), 36);
+
+                g2.setColor(new Color(110, 115, 120));
+                g2.setStroke(new BasicStroke(2));
+                g2.drawRect(1, 1, getWidth() - 3, getHeight() - 3);
+
+                g2.setColor(new Color(55, 60, 65));
+                g2.drawRect(4, 4, getWidth() - 9, getHeight() - 9);
+
+                g2.setColor(new Color(90, 95, 100));
+                g2.drawLine(4, 36, getWidth() - 5, 36);
+
+                g2.dispose();
+            }
+        };
+
+        dialog.setLayout(new BorderLayout());
+        dialog.setPreferredSize(new Dimension(420, 200));
+        dialog.setOpaque(false);
+        dialog.setBorder(BorderFactory.createEmptyBorder(8, 12, 12, 12));
+
+        JLabel titleLabel = new JLabel(title, SwingConstants.CENTER);
+        titleLabel.setFont(new Font("SansSerif", Font.BOLD, 14));
+        titleLabel.setForeground(new Color(220, 220, 220));
+        titleLabel.setPreferredSize(new Dimension(400, 28));
+
+        JTextArea messageArea = new JTextArea(message);
+        messageArea.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        messageArea.setForeground(new Color(190, 195, 200));
+        messageArea.setOpaque(false);
+        messageArea.setEditable(false);
+        messageArea.setFocusable(false);
+        messageArea.setWrapStyleWord(true);
+        messageArea.setLineWrap(true);
+        messageArea.setBorder(BorderFactory.createEmptyBorder(15, 10, 10, 10));
+
+        dialog.add(titleLabel, BorderLayout.NORTH);
+        dialog.add(messageArea, BorderLayout.CENTER);
+
+        if (buttonText != null && buttonListener != null) {
+            JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+            buttonPanel.setOpaque(false);
+
+            BOBButton okBtn = new BOBButton(buttonText, Color.WHITE, Color.BLACK, new Color(50, 55, 60), Color.GRAY, 13, 5);
+            okBtn.setPreferredSize(new Dimension(140, 32));
+            okBtn.addActionListener(buttonListener);
+
+            buttonPanel.add(okBtn);
+            dialog.add(buttonPanel, BorderLayout.SOUTH);
+        }
+
+        overlay.add(dialog);
+        return overlay;
     }
 
     public UUID getPeace() {

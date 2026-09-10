@@ -3,6 +3,7 @@ package de.idiotischer.bob.country;
 import com.google.gson.JsonArray;
 import de.craftsblock.craftscore.buffer.BufferUtil;
 import de.idiotischer.bob.player.Player;
+import de.idiotischer.bob.scenario.Scenario;
 import de.idiotischer.bob.state.State;
 import de.idiotischer.bob.tile.Tile;
 import de.idiotischer.bob.util.FileUtil;
@@ -42,20 +43,20 @@ public class Country {
     }
 
     //später nicht die default sondern die current flag returnen
-    public Path getFlag() {
-        return FileUtil.getFlag(abbreviation);
+    public Path getFlag(Scenario scenario) {
+        return FileUtil.getFlag(scenario,abbreviation);
     }
 
-    public BufferedImage getFlagImage() {
+    public BufferedImage getFlagImage(Scenario scenario) {
         try {
-            return ImageIO.read(FileUtil.getFlag(abbreviation).toFile());
+            return ImageIO.read(FileUtil.getFlag(scenario, abbreviation).toFile());
         } catch (IOException e) {
             return null;
         }
     }
 
-    public Path getDefaultFlag() {
-        return FileUtil.getFlag(abbreviation);
+    public Path getDefaultFlag(Scenario scenario) {
+        return FileUtil.getFlag(scenario, abbreviation);
     }
 
     public Color countryColor() {

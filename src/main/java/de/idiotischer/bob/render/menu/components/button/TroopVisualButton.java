@@ -33,7 +33,7 @@ public class TroopVisualButton extends JToggleButton {
         g2.fillRect(0, 0, getWidth(), getHeight());
 
         if (stack.getOwner() != null) {
-            BufferedImage img = stack.getOwner().getFlagImage();
+            BufferedImage img = stack.getOwner().getFlagImage(BOB.getInstance().getScenarioSceneLoader().getCurrentScenario());
             g2.drawImage(img, 0, 0, getWidth(), getHeight(), null);
         }
 

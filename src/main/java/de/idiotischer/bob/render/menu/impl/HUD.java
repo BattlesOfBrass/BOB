@@ -95,7 +95,7 @@ public class HUD extends JPanel {
         flagLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
         if (currentMode != null && currentTile != null && currentTile.getController() != null) {
-            BufferedImage flagIcon = currentTile.getController().getFlagImage();
+            BufferedImage flagIcon = currentTile.getController().getFlagImage(BOB.getInstance().getScenarioSceneLoader().getCurrentScenario());
             if (flagIcon != null) {
                 Image scaled = flagIcon.getScaledInstance(130, 80, Image.SCALE_SMOOTH);
                 flagLabel.setIcon(new ImageIcon(scaled));
@@ -287,7 +287,7 @@ public class HUD extends JPanel {
         flagLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
         if (currentMode != null && currentTile != null && currentTile.getController() != null) {
-            BufferedImage flagIcon = currentTile.getController().getFlagImage();
+            BufferedImage flagIcon = currentTile.getController().getFlagImage(BOB.getInstance().getScenarioSceneLoader().getCurrentScenario());
             if (flagIcon != null) {
                 Image scaled = flagIcon.getScaledInstance(130, 80, Image.SCALE_SMOOTH);
                 flagLabel.setIcon(new ImageIcon(scaled));

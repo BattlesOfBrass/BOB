@@ -12,12 +12,12 @@ public class WarStatus {
     private Map<Country, Integer> currentVP;
     private String name;
     private String abbr;
-    private Set<Country> attackers;
-    private Set<Country> defenders;
+    private LinkedHashSet<Country> attackers;
+    private LinkedHashSet<Country> defenders;
     private boolean hasAttackingWon;
     private boolean ended = true;
 
-    public WarStatus(Map<Country, Integer> baseVP, Map<Country, Integer> currentVP, String name, String abbr, Set<Country> attackers, Set<Country> defenders) {
+    public WarStatus(Map<Country, Integer> baseVP, Map<Country, Integer> currentVP, String name, String abbr, LinkedHashSet<Country> attackers, LinkedHashSet<Country> defenders) {
         this.baseVP = baseVP;
         this.currentVP = currentVP;
         this.name = name;
@@ -26,19 +26,19 @@ public class WarStatus {
         this.defenders = defenders;
     }
 
-    public void setAttackers(Set<Country> attackers) {
+    public void setAttackers(LinkedHashSet<Country> attackers) {
         this.attackers = attackers;
     }
 
-    public void setDefenders(Set<Country> defenders) {
+    public void setDefenders(LinkedHashSet<Country> defenders) {
         this.defenders = defenders;
     }
 
-    public Set<Country> getAttackers() {
+    public LinkedHashSet<Country> getAttackers() {
         return attackers;
     }
 
-    public Set<Country> getDefenders() {
+    public LinkedHashSet<Country> getDefenders() {
         return defenders;
     }
 
@@ -70,9 +70,7 @@ public class WarStatus {
         String attackersStr = attackers.stream().map(c -> c.getAbbreviation() + ":" + currentVP.getOrDefault(c, 0)).collect(Collectors.joining(","));
         String defendersStr = defenders.stream().map(c -> c.getAbbreviation() + ":" + currentVP.getOrDefault(c, 0)).collect(Collectors.joining(","));
 
-        return abbr + "|" + name + "|"
-                + attackersStr + "|"
-                + defendersStr;
+        return abbr + "|" + name + "|" + attackersStr + "|" + defendersStr;
     }
 
     public static WarStatus fromString(String s, CountryResolver cr) {
@@ -85,8 +83,8 @@ public class WarStatus {
         Map<Country, Integer> baseVP = new HashMap<>();
         Map<Country, Integer> currentVP = new HashMap<>();
 
-        Set<Country> attackers = new HashSet<>();
-        Set<Country> defenders = new HashSet<>();
+        LinkedHashSet<Country> attackers = new LinkedHashSet<>();
+        LinkedHashSet<Country> defenders = new LinkedHashSet<>();
 
         for (String entry : parts[2].split(",")) {
             if (entry.isEmpty()) continue;
@@ -163,6 +161,32 @@ public class WarStatus {
         return countries.stream().collect(Collectors.toMap(c -> c, c -> currentVP.getOrDefault(c, 0) * 100.0 / totalVP));
     }
 
+    public float getSurrenderProgressAttackers() {
+        Map<Country, Double> participation = getParticipation();
+
+        double attackersParticipation = attackers.stream().mapToDouble(c -> participation.getOrDefault(c, 0.0)).sum();
+        double defendersParticipation = defenders.stream().mapToDouble(c -> participation.getOrDefault(c, 0.0)).sum();
+
+        if (attackersParticipation == 0 && defendersParticipation == 0) return 0.0f;
+
+
+        double maxParticipation = Math.max(attackersParticipation, defendersParticipation);
+
+        return (float) (attackersParticipation / maxParticipation);
+    }
+
+    public float getSurrenderProgressDefenders() {
+        Map<Country, Double> participation = getParticipation();
+
+        double attackersParticipation = attackers.stream().mapToDouble(c -> participation.getOrDefault(c, 0.0)).sum();
+        double defendersParticipation = defenders.stream().mapToDouble(c -> participation.getOrDefault(c, 0.0)).sum();
+
+        if (attackersParticipation == 0 && defendersParticipation == 0) return 0.0f;
+
+        double maxParticipation = Math.max(attackersParticipation, defendersParticipation);
+
+        return (float) (defendersParticipation / maxParticipation);
+    }
 
     @Override
     public boolean equals(Object o) {

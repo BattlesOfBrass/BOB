@@ -707,14 +707,85 @@
     "controller": "BOS"
   },
   "montenegro-west": {
-    "name": "Montenegro-West",
+    "name": "Montenegro West",
     "locations": "636,171",
-    "controller": "MON"
+    "controller": "MNT"
   },
   "montenegro-east": {
-    "name": "Montenegro-East",
+    "name": "Montenegro East",
     "locations": "638,169",
-    "controller": "MON"
+    "controller": "MNT"
+  },
+  "kosovo-west": {
+    "name": "Kosovo West",
+    "locations": "642,171",
+    "controller": "KOS"
+  },
+  "kosovo-east": {
+    "name": "Kosovo East",
+    "locations": "643,169",
+    "controller": "KOS"
+  },
+  "central-macedonia": {
+    "name": "Central Macedonia",
+    "locations": "646,175",
+    "controller": "MAC"
+  },
+  "eastern-macedonia": {
+    "name": "Eastern Macedonia",
+    "locations": "648,173",
+    "controller": "MAC"
+  },
+  "southwest-macedonia": {
+    "name": "Southwest Macedonia",
+    "locations": "643,174",
+    "controller": "MAC"
+  },
+  "montana": {
+    "name": "Montana",
+    "locations": "655,168",
+    "controller": "BUL"
+  },
+  "sofiya": {
+    "name": "Sofiya",
+    "locations": "652,173",
+    "city": "Sofya",
+    "controller": "BUL"
+  },
+  "plovdiv": {
+    "name": "Plovdiv",
+    "locations": "660,174",
+    "controller": "BUL"
+  },
+  "ruse": {
+    "name": "Ruse",
+    "locations": "665,167",
+    "controller": "BUL"
+  },
+  "burgas": {
+    "name": "Burgas",
+    "locations": "668,172",
+    "controller": "BUL"
+  },
+  "elbasan": {
+    "name": "Elbasan",
+    "locations": "640,178",
+    "controller": "ALB"
+  },
+  "shkodra": {
+    "name": "Shkodra",
+    "locations": "639,173",
+    "controller": "ALB"
+  },
+  "northern-epirus": {
+    "name": "Northern Epirus",
+    "locations": "641,181",
+    "controller": "ALB"
+  },
+  "pirot": {
+    "name": "Pirot",
+    "locations": "649,167",
+    "controller": "SER"
   },
   "belgrade": {
     "name": "Belgrade",
@@ -1153,5 +1224,394 @@
     "name": "Wyoming",
     "locations": "157,167",
     "controller": "USA"
+  },
+  "gotland": {
+    "name": "Gotland",
+    "locations": "628,105",
+    "controller": "SWE"
+  },
+  "skane": {
+    "name": "Skane",
+    "locations": "618,107",
+    "controller": "SWE"
+  },
+  "norbotten": {
+    "name": "Norbotten",
+    "locations": "633,68",
+    "controller": "SWE"
+  },
+  "vaesterbotten": {
+    "name": "Västerbotten",
+    "locations": "621,80",
+    "controller": "SWE"
+  },
+  "jaemtland": {
+    "name": "Jämtland",
+    "locations": "621,80",
+    "controller": "SWE"
+  },
+  "uppsala": {
+    "name": "Uppsala",
+    "locations": "624,97",
+    "controller": "SWE"
+  },
+  "vaermland": {
+    "name": "Vämland",
+    "locations": "615,91",
+    "controller": "SWE"
+  },
+  "vaestra": {
+    "name": "Västra",
+    "locations": "611,102",
+    "controller": "SWE"
+  },
+  "aaland": {
+    "name": "Aaland",
+    "locations": "636,95",
+    "controller": "FIN"
+  },
+  "svalbard": {
+    "name": "Svalbard",
+    "locations": "624,26",
+    "controller": "NOR"
+  },
+  "finnmark-west": {
+    "name": "Finnmark West",
+    "locations": "658,54",
+    "controller": "NOR"
+  },
+  "finnmark-east": {
+    "name": "Finnmark East",
+    "locations": "646,56",
+    "controller": "NOR"
+  },
+  "nordland": {
+    "name": "Nordland",
+    "locations": "623,62",
+    "controller": "NOR"
+  },
+  "trondelag": {
+    "name": "Trondelag",
+    "locations": "606,80",
+    "controller": "NOR"
+  },
+  "vestland": {
+    "name": "Vestland",
+    "locations": "591,94",
+    "controller": "NOR"
+  },
+  "telemark": {
+    "name": "Telemark",
+    "locations": "600,96",
+    "controller": "NOR"
+  },
+  "innlandet": {
+    "name": "Innlandet",
+    "locations": "605,89",
+    "controller": "NOR"
+  },
+  "lapland-west": {
+    "name": "Lapland West",
+    "locations": "646,65",
+    "controller": "FIN"
+  },
+  "lapland-east": {
+    "name": "Lapland East",
+    "locations": "654,61",
+    "controller": "FIN"
+  },
+  "north-ostrobothnia": {
+    "name": "North Ostrobothnia",
+    "locations": "655,72",
+    "controller": "FIN"
+  },
+  "south-ostrobothnia": {
+    "name": "South Ostrobothnia",
+    "locations": "647,81",
+    "controller": "FIN"
+  },
+  "paijat-mama": {
+    "name": "Paijat Mama",
+    "locations": "647,90",
+    "controller": "FIN"
+  },
+  "kainuu": {
+    "name": "Kainuu",
+    "locations": "661,79",
+    "controller": "FIN"
+  },
+  "karella": {
+    "name": "Karella",
+    "locations": "658,87",
+    "controller": "FIN"
+  },
+  "riga": {
+    "name": "Riga",
+    "locations": "650,108",
+    "controller": "LAT"
+  },
+  "kurzeme": {
+    "name": "Kurzeme",
+    "locations": "644,107",
+    "controller": "LAT"
+  },
+  "vidzeme": {
+    "name": "Vidzeme",
+    "locations": "656,106",
+    "controller": "LAT"
+  },
+  "latgale": {
+    "name": "Latgale",
+    "locations": "660,111",
+    "controller": "LAT"
+  },
+  "saare": {
+    "name": "Saare",
+    "locations": "646,102",
+    "controller": "EST"
+  },
+  "tallin": {
+    "name": "Tallin",
+    "locations": "651,100",
+    "controller": "EST"
+  },
+  "tartu": {
+    "name": "Tartu",
+    "locations": "658,101",
+    "controller": "EST"
+  },
+  "minsk": {
+    "name": "Minsk",
+    "locations": "665,122",
+    "controller": "BLR"
+  },
+  "homiel": {
+    "name": "Homiel",
+    "locations": "672,127",
+    "controller": "BLR"
+  },
+  "brest": {
+    "name": "Brest",
+    "locations": "656,127",
+    "controller": "BLR"
+  },
+  "hrodna": {
+    "name": "Hrodna",
+    "locations": "655,121",
+    "controller": "BLR"
+  },
+  "viciebsk": {
+    "name": "Viciebsk",
+    "locations": "668,115",
+    "controller": "BLR"
+  },
+  "viciebsk2": {
+    "name": "Viciebsk2", //idk what gav intended for this state
+    "locations": "669,109",
+    "controller": "BLR"
+  },
+  "lviv": {
+    "name": "Lviv",
+    "locations": "652,138",
+    "controller": "UKR"
+  },
+  "zakarpattia": {
+    "name": "Zakarpattia",
+    "locations": "651,145",
+    "controller": "UKR"
+  },
+  "barcelona": {
+    "name": "Barcelona",
+    "locations": "571,174",
+    "controller": "SPA"
+  },
+  "huesca": {
+    "name": "Huesca",
+    "locations": "564,172",
+    "controller": "SPA"
+  },
+  "cantabria": {
+    "name": "Cantabria",
+    "locations": "557,169",
+    "controller": "SPA"
+  },
+  "burgos": {
+    "name": "Burgos",
+    "locations": "551,172",
+    "controller": "SPA"
+  },
+  "asturia": {
+    "name": "Asturias",
+    "locations": "542,167",
+    "controller": "SPA"
+  },
+  "lugo": {
+    "name": "Lugo",
+    "locations": "534,169",
+    "controller": "SPA"
+  },
+  "zamora": {
+    "name": "Zamora",
+    "locations": "542,176",
+    "controller": "SPA"
+  },
+  "madrid": {
+    "name": "Madrid",
+    "locations": "547,178",
+    "controller": "SPA"
+  },
+  "teruel": {
+    "name": "Teruel",
+    "locations": "556,180",
+    "controller": "SPA"
+  },
+  "badajoz": {
+    "name": "Badajoz",
+    "locations": "540,186",
+    "controller": "SPA"
+  },
+  "ciudad-real": {
+    "name": "Ciudad Real",
+    "locations": "547,185",
+    "controller": "SPA"
+  },
+  "albacete": {
+    "name": "Albacete",
+    "locations": "556,189",
+    "controller": "SPA"
+  },
+  "valencia": {
+    "name": "Valencia",
+    "locations": "561,185",
+    "controller": "SPA"
+  },
+  "jaen": {
+    "name": "Jaén",
+    "locations": "545,192",
+    "controller": "SPA"
+  },
+  "malaga": {
+    "name": "Málaga",
+    "locations": "544,196",
+    "controller": "SPA"
+  },
+  "balearic-west": {
+    "name": "Balearic West",
+    "locations": "574,184",
+    "controller": "SPA"
+  },
+  "balearic-east": {
+    "name": "Balearic East",
+    "locations": "578,183",
+    "controller": "SPA"
+  },
+  "gibraltar": {
+    "name": "Gibraltar",
+    "locations": "543,198",
+    "controller": "ENG"
+  },
+  "faro": {
+    "name": "Faro",
+    "locations": "533,193",
+    "controller": "POR"
+  },
+  "setubal": {
+    "name": "Setúbal",
+    "locations": "530,187",
+    "controller": "POR"
+  },
+  "evora": {
+    "name": "Évora",
+    "locations": "534,187",
+    "controller": "POR"
+  },
+  "coimbra": {
+    "name": "Coimbra",
+    "locations": "532,181",
+    "controller": "POR"
+  },
+  "vila-real": {
+    "name": "Vila Real",
+    "locations": "535,176",
+    "controller": "POR"
+  },
+  "peleponnese": {
+    "name": "Peleponnese",
+    "locations": "651,194",
+    "controller": "GRE"
+  },
+  "attica": {
+    "name": "Attica",
+    "locations": "655,190",
+    "controller": "GRE"
+  },
+  "epirus": {
+    "name": "Epirus",
+    "locations": "643,184",
+    "controller": "GRE"
+  },
+  "west-greece": {
+    "name": "West Greece",
+    "locations": "646,189",
+    "controller": "GRE"
+  },
+  "thessaly": {
+    "name": "Thessaly",
+    "locations": "649,183",
+    "controller": "GRE"
+  },
+  "central-greece": {
+    "name": "Central Greece",
+    "locations": "651,188",
+    "controller": "GRE"
+  },
+  "north-macedonia": {
+    "name": "North Macedonia",
+    "locations": "654,176",
+    "controller": "GRE"
+  },
+  "west-macedonia": {
+    "name": "West Macedonia",
+    "locations": "647,179",
+    "controller": "GRE"
+  },
+  "central-macedonia-gre": {
+    "name": "Central Macedonia",
+    "locations": "652,179",
+    "controller": "GRE"
+  },
+  "thrace": {
+    "name": "Thrace",
+    "locations": "660,177",
+    "controller": "GRE"
+  },
+  "evvoia": {
+    "name": "Évvoia",
+    "locations": "656,188",
+    "controller": "GRE"
+  },
+  "aegean": {
+    "name": "Aegean",
+    "locations": [
+      "662,186",
+      "661,189",
+      "662,191"
+    ],
+    "controller": "GRE"
+  },
+  "greta": {
+    "name": "Greta",
+    "locations": "660,204",
+    "controller": "GRE"
+  },
+  "east-thrace": {
+    "name": "East Thrace",
+    "locations": "667,175",
+    "controller": "TUR"
+  },
+  "west-istanbul": {
+    "name": "West Istanbul",
+    "locations": "671,175",
+    "controller": "TUR"
   }
 }

@@ -61,11 +61,6 @@ public class ServerPlayer implements Player {
     }
 
     @Override
-    public List<Troop> selectedTroops() {
-        return List.of();
-    }
-
-    @Override
     public InetSocketAddress address() {
         return address;
     }

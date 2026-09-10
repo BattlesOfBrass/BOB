@@ -39,8 +39,7 @@ public class ScenarioSyncPacket implements Packet {
     private byte[] statesJson;
     private byte[] troopsJson;
 
-    private transient byte[] cachedMapImage;
-    private transient byte[] cachedBackgroundImage;
+    private List<FlagEntry> flagEntries = new ArrayList<>();
 
     public ScenarioSyncPacket() {}
 
@@ -59,6 +58,42 @@ public class ScenarioSyncPacket implements Packet {
         this.tilesJson = scenario.isTilesConfigDefault() ? null : FileUtil.readFile(scenario.getTilesConfig());
         this.statesJson = scenario.isStatesConfigDefault() ? null : FileUtil.readFile(scenario.getStatesConfig());
         this.troopsJson = scenario.isTroopConfigDefault() ? null : FileUtil.readFile(scenario.getTroopConfig());
+
+        Path flagFolder = FileUtil.getDefaultFlagsDir(scenario);
+
+        if (Files.exists(flagFolder)) {
+            try {
+                flagEntries = readFlagFolder(flagFolder);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+    }
+
+    private List<FlagEntry> readFlagFolder(Path root) throws IOException {
+        List<FlagEntry> entries = new ArrayList<>();
+
+        Files.walk(root).forEach(path -> {
+            if (path.equals(root)) return;
+
+            try {
+                String relativePath = root.relativize(path)
+                        .toString()
+                        .replace(File.separatorChar, '/');
+
+                if (Files.isDirectory(path)) {
+                    entries.add(new FlagEntry(relativePath, true, null));
+                } else {
+                    byte[] data = Files.readAllBytes(path);
+                    entries.add(new FlagEntry(relativePath, false, data));
+                }
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        });
+
+        return entries;
     }
 
     @Override
@@ -66,6 +101,17 @@ public class ScenarioSyncPacket implements Packet {
         try {
             writeString(buffer, abbreviation);
             writeString(buffer, name);
+
+            buffer.putInt(flagEntries.size());
+
+            for (FlagEntry entry : flagEntries) {
+                writeString(buffer, entry.path);
+                buffer.put((byte) (entry.directory ? 1 : 0));
+
+                if (!entry.directory) {
+                    writeBytes(buffer, entry.data);
+                }
+            }
 
             buffer.putInt(takenColors.size());
             for (Color c : takenColors) {
@@ -98,6 +144,22 @@ public class ScenarioSyncPacket implements Packet {
 
         takenColors.clear();
         borderColors.clear();
+        flagEntries.clear();
+
+        int flagCount = buffer.getInt();
+
+        for (int i = 0; i < flagCount; i++) {
+            String path = readString(buffer);
+            boolean directory = buffer.get() == 1;
+
+            byte[] data = null;
+
+            if (!directory) {
+                data = readBytes(buffer);
+            }
+
+            flagEntries.add(new FlagEntry(path, directory, data));
+        }
 
         int takenSize = buffer.getInt();
         for (int i = 0; i < takenSize; i++) {
@@ -120,6 +182,26 @@ public class ScenarioSyncPacket implements Packet {
         this.troopsJson = readBytes(buffer);
     }
 
+    private void writeFlagFolder(Path targetDir) throws IOException {
+        Path flagsDir = targetDir.resolve("flags");
+
+        Files.createDirectories(flagsDir);
+
+        for (FlagEntry entry : flagEntries) {
+            Path target = flagsDir.resolve(entry.path).normalize();
+
+            if (!target.startsWith(flagsDir.normalize())) throw new IOException("Invalid flag path: " + entry.path);
+
+            if (entry.directory) Files.createDirectories(target);
+            else {
+                Files.createDirectories(target.getParent());
+
+                if (Files.notExists(target)) Files.write(target, entry.data);
+            }
+        }
+    }
+
+
     public Path applyToDisk2() {
         return applyToDisk2(getAbbreviation());
     }
@@ -139,6 +221,8 @@ public class ScenarioSyncPacket implements Packet {
             writeIfMissing(targetDir.resolve("states.json"), statesJson);
             writeIfMissing(targetDir.resolve("tiles.json"), tilesJson);
             writeIfMissing(targetDir.resolve("troops.json"), troopsJson);
+
+            writeFlagFolder(targetDir);
 
             if (mapImage != null) {
                 Path mapPath = targetDir.resolve("map.png");
@@ -183,6 +267,8 @@ public class ScenarioSyncPacket implements Packet {
             writeIfMissing(targetDir.resolve("states.json"), statesJson);
             writeIfMissing(targetDir.resolve("tiles.json"), tilesJson);
             writeIfMissing(targetDir.resolve("troops.json"), troopsJson);
+
+            writeFlagFolder(targetDir);
 
             if (mapImage != null) {
                 Path mapPath = targetDir.resolve("map.png");
@@ -254,6 +340,19 @@ public class ScenarioSyncPacket implements Packet {
         buffer.get(bytes);
         return new String(bytes, StandardCharsets.UTF_8);
     }
+
+    private static class FlagEntry {
+        private final String path;
+        private final boolean directory;
+        private final byte[] data;
+
+        public FlagEntry(String path, boolean directory, byte[] data) {
+            this.path = path;
+            this.directory = directory;
+            this.data = data;
+        }
+    }
+
 
     public String getAbbreviation() { return abbreviation; }
     public String getName() { return name; }

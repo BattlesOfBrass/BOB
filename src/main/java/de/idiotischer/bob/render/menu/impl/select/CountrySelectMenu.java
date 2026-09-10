@@ -84,7 +84,7 @@ public class CountrySelectMenu extends JPanel {
         }
 
         for (Country c : featured) {
-            BOBImageButton btn = new BOBImageButton(c.getAbbreviation(), c.countryName().length() > 9 ? c.getAbbreviation() : c.countryName(), c.getFlagImage(), Color.WHITE, Color.DARK_GRAY, Color.DARK_GRAY.darker(), Color.LIGHT_GRAY, 16, 5);
+            BOBImageButton btn = new BOBImageButton(c.getAbbreviation(), c.countryName().length() > 9 ? c.getAbbreviation() : c.countryName(), c.getFlagImage(BOB.getInstance().getScenarioSceneLoader().getCurrentScenario()), Color.WHITE, Color.DARK_GRAY, Color.DARK_GRAY.darker(), Color.LIGHT_GRAY, 16, 5);
 
             btn.setPreferredSize(new Dimension(130, 160));
             btn.setFocusable(false);

@@ -26,8 +26,7 @@ public class ModernTextField extends BasicTextFieldUI {
         Graphics2D g2 = (Graphics2D) g.create();
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        g2.setClip(new java.awt.geom.RoundRectangle2D.Float(
-                0, 0, c.getWidth(), c.getHeight(), 12, 12));
+        g2.setClip(new java.awt.geom.RoundRectangle2D.Float(0, 0, c.getWidth(), c.getHeight(), 12, 12));
 
         super.paintSafely(g2);
         g2.dispose();

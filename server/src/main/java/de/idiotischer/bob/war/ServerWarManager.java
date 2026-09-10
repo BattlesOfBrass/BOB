@@ -26,28 +26,26 @@ public class ServerWarManager {
         return activeWars.getOrDefault(c.getAbbreviation(), Collections.emptySet());
     }
 
+    public boolean isAtWar(Country country) {
+        if (country == null) return false;
+        return !getWars(country).isEmpty();
+    }
+
     public boolean isAtWar(Country a, Country b) {
         if(Objects.equals(a.getAbbreviation(), b.getAbbreviation())) return false;
         return !Collections.disjoint(getWars(a), getWars(b));
     }
 
     public boolean fightsTogetherWith(Country one, Country two) {
-        return getWars(one).stream().anyMatch(w ->
-                w.getAttackers().stream().anyMatch(ally -> ally.getAbbreviation().equals(two.getAbbreviation()))
-        );
+        return getWars(one).stream().anyMatch(w -> w.getAttackers().stream().anyMatch(ally -> ally.getAbbreviation().equals(two.getAbbreviation())));
     }
 
     private Set<WarStatus> getOrCreateWars(Country c) {
-        return activeWars.computeIfAbsent(
-                c.getAbbreviation(),
-                k -> ConcurrentHashMap.newKeySet()
-        );
+        return activeWars.computeIfAbsent(c.getAbbreviation(), k -> ConcurrentHashMap.newKeySet());
     }
 
     public boolean isEnemy(Country a, Country b) {
-        return getWars(a).stream().anyMatch(w ->
-                w.getDefenders().stream().anyMatch(ally -> ally.getAbbreviation().equals(b.getAbbreviation()))
-        );
+        return getWars(a).stream().anyMatch(w -> w.getDefenders().stream().anyMatch(ally -> ally.getAbbreviation().equals(b.getAbbreviation())));
     }
 
     /*public boolean isEnemy(Country a, Country b) {
@@ -85,10 +83,10 @@ public class ServerWarManager {
             String name = controller.countryName() + "–" + aggressor.countryName() + " War";
             String abbr = controller.getAbbreviation() + "-" + aggressor.getAbbreviation();
 
-            Set<Country> defenders = new HashSet<>();
+            LinkedHashSet<Country> defenders = new LinkedHashSet<>();
             defenders.add(controller);
 
-            Set<Country> attackers = new HashSet<>();
+            LinkedHashSet<Country> attackers = new LinkedHashSet<>();
             attackers.add(aggressor);
 
             if(callAllies) {
@@ -114,7 +112,6 @@ public class ServerWarManager {
         Set<WarStatus> wars = getWars(aggressor);
 
         for (WarStatus war : new HashSet<>(wars)) {
-
             boolean aggressorIsAttacker = war.getAttackers().stream().map(Country::getAbbreviation).collect(Collectors.toSet()).contains(aggressor.getAbbreviation());
             boolean defenderIsDefender = war.getDefenders().stream().map(Country::getAbbreviation).collect(Collectors.toSet()).contains(defender.getAbbreviation());
 
@@ -126,12 +123,26 @@ public class ServerWarManager {
 
             vpMap.computeIfPresent(defender, (c, vp) -> vp - tile.getVictoryPoints());
 
-            if (owner.getAbbreviation().equals(aggressor.getAbbreviation())) {
-                vpMap.computeIfPresent(aggressor, (c, vp) -> vp + tile.getVictoryPoints());
-            }
+            if (owner.getAbbreviation().equals(aggressor.getAbbreviation())) vpMap.computeIfPresent(aggressor, (c, vp) -> vp + tile.getVictoryPoints());
 
             int base = war.getBaseVP().get(defender);
             int current = vpMap.getOrDefault(defender, 0);
+
+            //if(war.getSurrenderProgressAttackers() == 1) {
+            //    war.getAttackers().forEach(c1 -> c1.setCapitulated(true, (v) -> {
+            //        Server.getInstance().getTroopManager().removeTroops(defender);
+            //        //TODO: only replace tiles without enemy troops
+            //        Server.getInstance().getCountryManager().getOwned(defender).forEach(c -> c.setControllerForAll(Server.getInstance().getServerSocket().getClients(), defender));
+            //        Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new ReplyPacket(Type.CAPITULATE_COUNTRY, aggressor.getAbbreviation() + ";" + defender.getAbbreviation()));
+            //    }));
+            //} else if(war.getSurrenderProgressDefenders() == 1) {
+            //    war.getDefenders().forEach(c1 -> c1.setCapitulated(true, (v) -> {
+            //        Server.getInstance().getTroopManager().removeTroops(defender);
+            //        //TODO: only replace tiles without enemy troops
+            //        Server.getInstance().getCountryManager().getOwned(defender).forEach(c -> c.setControllerForAll(Server.getInstance().getServerSocket().getClients(), defender));
+            //        Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new ReplyPacket(Type.CAPITULATE_COUNTRY, aggressor.getAbbreviation() + ";" + defender.getAbbreviation()));
+            //    }));
+            //}
 
             if (base > 0 && current <= base * 0.35) {
                 defender.setCapitulated(true, (v) -> {
@@ -159,16 +170,12 @@ public class ServerWarManager {
 
         for (Country c : status.getAttackers()) {
             Set<WarStatus> wars = activeWars.get(c.getAbbreviation());
-            if (wars != null) {
-                wars.remove(status);
-            }
+            if (wars != null) wars.remove(status);
         }
 
         for (Country c : status.getDefenders()) {
             Set<WarStatus> wars = activeWars.get(c.getAbbreviation());
-            if (wars != null) {
-                wars.remove(status);
-            }
+            if (wars != null) wars.remove(status);
         }
 
         Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new ReplyPacket(Type.END_WAR, status.toDataString()));
@@ -182,9 +189,7 @@ public class ServerWarManager {
 
             String country = entry.getKey();
 
-            for (WarStatus war : entry.getValue()) {
-                sb.append(country).append("#").append(war.toDataString()).append("\n");
-            }
+            for (WarStatus war : entry.getValue()) sb.append(country).append("#").append(war.toDataString()).append("\n");
         }
 
         return sb.toString();

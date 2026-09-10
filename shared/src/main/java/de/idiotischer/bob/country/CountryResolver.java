@@ -17,10 +17,7 @@ public interface CountryResolver {
     List<Tile> getControlled(Country country);
 
     default List<Tile> getAllTiles(Country country) {
-        return Stream.concat(
-                getOwned(country).stream(),
-                getControlled(country).stream()
-        ).toList();
+        return Stream.concat(getOwned(country).stream(), getControlled(country).stream()).toList();
     }
 
     boolean isAllied(Country a, Country b);

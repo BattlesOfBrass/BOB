@@ -67,15 +67,11 @@ public class BOBButton extends JButton {
         }
 
         g2.setColor(drawBg);
-        g2.fillRoundRect(borderWidth/2, borderWidth/2,
-                width - borderWidth, height - borderWidth,
-                arcWidth, arcHeight);
+        g2.fillRoundRect(borderWidth/2, borderWidth/2, width - borderWidth, height - borderWidth, arcWidth, arcHeight);
 
         g2.setStroke(new BasicStroke(borderWidth));
         g2.setColor(model.isRollover() ? borderColorHover : bdColor);
-        g2.drawRoundRect(borderWidth/2, borderWidth/2,
-                width - borderWidth, height - borderWidth,
-                arcWidth, arcHeight);
+        g2.drawRoundRect(borderWidth/2, borderWidth/2, width - borderWidth, height - borderWidth, arcWidth, arcHeight);
 
         FontMetrics fm = g2.getFontMetrics();
         int textX = (width - fm.stringWidth(getText())) / 2;

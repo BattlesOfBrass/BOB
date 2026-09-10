@@ -2,6 +2,7 @@ package de.idiotischer.bob.render;
 
 import de.idiotischer.bob.BOB;
 import de.idiotischer.bob.combat.CombatStatus;
+import de.idiotischer.bob.country.Country;
 import de.idiotischer.bob.map.FloodFill;
 import de.idiotischer.bob.render.menu.Panel;
 import de.idiotischer.bob.render.menu.components.button.CombatVisualButton;
@@ -15,7 +16,9 @@ import de.idiotischer.bob.troop.TroopStack;
 import de.idiotischer.bob.util.ImageUtil;
 
 import javax.swing.*;
+import javax.swing.Timer;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
@@ -34,6 +37,7 @@ public class RenderPanel extends JPanel implements Panel {
     private final JPanel troopLayer;
 
     private final PeaceMenuOverlay overlay = new PeaceMenuOverlay();
+    private final JPanel popupContainer;
 
     private int curvature = 24;
     private boolean escMenu = false;
@@ -55,10 +59,16 @@ public class RenderPanel extends JPanel implements Panel {
         troopLayer.setOpaque(false);
         troopLayer.setFocusable(false);
 
+        this.popupContainer = new JPanel(null);
+
+        popupContainer.setOpaque(false);
+        popupContainer.setFocusable(false);
+
         this.add(escOverlay);
         this.add(hud);
         this.add(troopLayer);
         this.add(overlay);
+        this.add(popupContainer);
 
         setDoubleBuffered(true);
 
@@ -406,6 +416,129 @@ public class RenderPanel extends JPanel implements Panel {
         //this.repaint();
     }
 
+    public void showGenericPopup(String title, String text, Country a, Country b, int durationMS) {
+        SwingUtilities.invokeLater(() -> {
+            int width = 360;
+            int height = 70;
+            int x = (getWidth() - width) / 2;
+            int y = 50;
+
+            int interval = 50;
+            int[] elapsed = {0};
+
+            JPanel capitulateCard = new JPanel(new BorderLayout(8, 0)) {
+                @Override
+                protected void paintComponent(Graphics g) {
+                    super.paintComponent(g);
+                    Graphics2D g2 = (Graphics2D) g.create();
+                    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                    g2.setColor(new Color(30, 33, 36, 235));
+                    g2.fillRect(0, 0, getWidth(), getHeight());
+
+                    g2.setColor(new Color(150, 35, 35));
+                    g2.fillRect(0, 0, getWidth(), 4);
+
+                    g2.setColor(new Color(110, 115, 120));
+                    g2.setStroke(new BasicStroke(1.5f));
+                    g2.drawRect(1, 1, getWidth() - 2, getHeight() - 2);
+
+                    g2.setColor(new Color(55, 60, 65));
+                    g2.drawRect(3, 3, getWidth() - 6, getHeight() - 6);
+
+                    int progressHeight = 3;
+                    double remainingRatio = Math.max(0, 1.0 - ((double) elapsed[0] / durationMS));
+                    int progressWidth = (int) (getWidth() * remainingRatio);
+
+                    g2.setColor(Color.WHITE);
+                    g2.fillRect(0, getHeight() - progressHeight, progressWidth, progressHeight);
+
+                    g2.dispose();
+                }
+            };
+
+            capitulateCard.setBounds(x, y, width, height);
+            capitulateCard.setOpaque(false);
+            capitulateCard.setBorder(BorderFactory.createEmptyBorder(8, 12, 8, 12));
+
+            JPanel flagBadge = new JPanel() {
+                @Override
+                protected void paintComponent(Graphics g) {
+                    super.paintComponent(g);
+                    Graphics2D g2 = (Graphics2D) g.create();
+                    if (a != null && a.getFlagImage(BOB.getInstance().getScenarioSceneLoader().getCurrentScenario()) != null) g2.drawImage(a.getFlagImage(BOB.getInstance().getScenarioSceneLoader().getCurrentScenario()), 0, 0, getWidth(), getHeight(), null);
+                    else if (a != null) {
+                        g2.setColor(a.countryColor());
+                        g2.fillRect(0, 0, getWidth(), getHeight());
+                    }
+                    g2.setColor(Color.BLACK);
+                    g2.drawRect(0, 0, getWidth() - 1, getHeight() - 1);
+                    g2.dispose();
+                }
+            };
+            flagBadge.setPreferredSize(new Dimension(80, 28));
+            flagBadge.setOpaque(false);
+
+            JPanel textPanel = new JPanel(new GridLayout(2, 1, 0, 2));
+            textPanel.setOpaque(false);
+
+            JLabel titleLabel = new JLabel(title);
+            titleLabel.setFont(new Font("SansSerif", Font.BOLD, 12));
+            titleLabel.setForeground(new Color(235, 75, 75));
+
+            String countryName = a != null ? a.countryName() : "Unknown Nation";
+            String countryName2 = b != null ? b.countryName() : "Unknown Nation";
+            JLabel bodyLabel = new JLabel((a != null ? " " + countryName + " " : "") + text + (b != null ? " " + countryName2 : ""));
+            bodyLabel.setFont(new Font("SansSerif", Font.PLAIN, 11));
+            bodyLabel.setForeground(new Color(210, 215, 220));
+
+            textPanel.add(titleLabel);
+            textPanel.add(bodyLabel);
+
+            capitulateCard.add(flagBadge, BorderLayout.WEST);
+            capitulateCard.add(textPanel, BorderLayout.CENTER);
+
+            Timer timer = new Timer(interval, null);
+            timer.addActionListener(e -> {
+                if (!isPaused()) {
+                    elapsed[0] += interval;
+                    capitulateCard.repaint();
+                }
+
+                if (elapsed[0] >= durationMS) {
+                    timer.stop();
+                    removeCapitulatePopup(capitulateCard);
+                }
+            });
+
+            capitulateCard.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mousePressed(MouseEvent e) {
+                    if (SwingUtilities.isRightMouseButton(e)) {
+                        timer.stop();
+                        removeCapitulatePopup(capitulateCard);
+                    }
+                }
+            });
+
+            popupContainer.add(capitulateCard);
+            popupContainer.setComponentZOrder(capitulateCard, 0);
+            popupContainer.revalidate();
+            popupContainer.repaint();
+
+            timer.start();
+        });
+    }
+
+    private void removeCapitulatePopup(JPanel card) {
+        SwingUtilities.invokeLater(() -> {
+            if (card != null && card.getParent() == popupContainer) {
+                popupContainer.remove(card);
+                popupContainer.revalidate();
+                popupContainer.repaint();
+            }
+        });
+    }
     public void setPaused(boolean on) {
         this.escMenu = on;
     }
