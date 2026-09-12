@@ -10,6 +10,7 @@ import de.idiotischer.bob.render.menu.components.button.TroopVisualButton;
 import de.idiotischer.bob.render.menu.impl.HUD;
 import de.idiotischer.bob.render.menu.impl.ESCMenu;
 import de.idiotischer.bob.render.menu.impl.select.PeaceMenuOverlay;
+import de.idiotischer.bob.theme.Theme;
 import de.idiotischer.bob.troop.Troop;
 import de.idiotischer.bob.troop.TroopDrawer;
 import de.idiotischer.bob.troop.TroopStack;
@@ -417,6 +418,9 @@ public class RenderPanel extends JPanel implements Panel {
     }
 
     public void showGenericPopup(String title, String text, Country a, Country b, int durationMS) {
+        this.showGenericPopup(title,text,a,b,durationMS,new Color(235, 75, 75));
+    }
+    public void showGenericPopup(String title, String text, Country a, Country b, int durationMS, Color titleColor) {
         SwingUtilities.invokeLater(() -> {
             int width = 360;
             int height = 70;
@@ -426,31 +430,39 @@ public class RenderPanel extends JPanel implements Panel {
             int interval = 50;
             int[] elapsed = {0};
 
+            Theme.ColorPalette palette = BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().palette();
+
+            Color dark = palette.darkColor();
+            Color base = palette.defaultColor();
+            Color light = palette.lightColor();
+
             JPanel capitulateCard = new JPanel(new BorderLayout(8, 0)) {
                 @Override
                 protected void paintComponent(Graphics g) {
                     super.paintComponent(g);
+
                     Graphics2D g2 = (Graphics2D) g.create();
                     g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-                    g2.setColor(new Color(30, 33, 36, 235));
+                    g2.setColor(dark.darker());
                     g2.fillRect(0, 0, getWidth(), getHeight());
 
-                    g2.setColor(new Color(150, 35, 35));
+                    g2.setColor(dark.brighter());
                     g2.fillRect(0, 0, getWidth(), 4);
 
-                    g2.setColor(new Color(110, 115, 120));
+                    g2.setColor(base.darker());
                     g2.setStroke(new BasicStroke(1.5f));
                     g2.drawRect(1, 1, getWidth() - 2, getHeight() - 2);
 
-                    g2.setColor(new Color(55, 60, 65));
+                    g2.setColor(base.darker().darker());
                     g2.drawRect(3, 3, getWidth() - 6, getHeight() - 6);
 
                     int progressHeight = 3;
                     double remainingRatio = Math.max(0, 1.0 - ((double) elapsed[0] / durationMS));
+
                     int progressWidth = (int) (getWidth() * remainingRatio);
 
-                    g2.setColor(Color.WHITE);
+                    g2.setColor(light.brighter());
                     g2.fillRect(0, getHeight() - progressHeight, progressWidth, progressHeight);
 
                     g2.dispose();
@@ -484,7 +496,7 @@ public class RenderPanel extends JPanel implements Panel {
 
             JLabel titleLabel = new JLabel(title);
             titleLabel.setFont(new Font("SansSerif", Font.BOLD, 12));
-            titleLabel.setForeground(new Color(235, 75, 75));
+            titleLabel.setForeground(titleColor);
 
             String countryName = a != null ? a.countryName() : "Unknown Nation";
             String countryName2 = b != null ? b.countryName() : "Unknown Nation";

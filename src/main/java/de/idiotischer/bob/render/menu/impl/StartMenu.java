@@ -47,6 +47,10 @@ public class StartMenu extends JPanel {
 
         JButton settingsBtn = createButton("Settings");
 
+        settingsBtn.addActionListener(e -> {
+            BOB.getInstance().getMainRenderer().getMenuPanel().setSettingsMenu(true);
+        });
+
         JButton quitBtn = createButton("Quit");
         quitBtn.addActionListener(e -> System.exit(0));
 
@@ -57,14 +61,7 @@ public class StartMenu extends JPanel {
     }
 
     private JButton createButton(String text) {
-        JButton btn = new BOBButton(text,
-                Color.WHITE,
-                Color.BLACK,
-                Color.DARK_GRAY.brighter(),
-                Color.LIGHT_GRAY,
-                16,
-                5
-        );
+        JButton btn = new BOBButton(text, BOB.getInstance().getSettingsTheme().button().textColor(), BOB.getInstance().getSettingsTheme().button().bgColor(), BOB.getInstance().getSettingsTheme().button().borderColor().brighter(), BOB.getInstance().getSettingsTheme().button().borderColorHover(), 16, 5);
         btn.setPreferredSize(new Dimension(200, 50));
         btn.setFocusable(false);
         return btn;

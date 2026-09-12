@@ -109,16 +109,12 @@ public class MultiplayerMenu extends JPanel {
         this.add(backBtn);
         this.add(joinBtn);
 
-        getInputMap(WHEN_IN_FOCUSED_WINDOW).put(
-                KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
-                "escape"
-        );
+        getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "escape");
 
         getActionMap().put("escape", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                BOB.getInstance().getClient().reconnect("","",AddressUtil.getThisAddress(BOB.getInstance().getLocalServer().getServerSocket().getChannel()),
-                        null);
+                BOB.getInstance().getClient().reconnect("","",AddressUtil.getThisAddress(BOB.getInstance().getLocalServer().getServerSocket().getChannel()), null);
             }
         });
     }
@@ -151,25 +147,20 @@ public class MultiplayerMenu extends JPanel {
         Graphics2D g2 = (Graphics2D) g.create();
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        g2.setColor(Color.DARK_GRAY);
+        Color dark = BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().palette().darkColor();
+
+        g2.setColor(dark);
         g2.fillRoundRect(4, 4, getWidth() - 8, getHeight() - 8, 30, 30);
 
         g2.setStroke(new BasicStroke(8));
-        g2.setColor(Color.DARK_GRAY.darker());
+        g2.setColor(dark.darker());
         g2.drawRoundRect(4, 4, getWidth() - 8, getHeight() - 8, 30, 30);
 
         g2.dispose();
     }
 
     private JButton createButton(String text, int width, int height) {
-        BOBButton btn = new BOBButton(text,
-                Color.WHITE,
-                Color.BLACK,
-                Color.DARK_GRAY.darker(),
-                Color.LIGHT_GRAY,
-                16,
-                5
-        );
+        BOBButton btn = new BOBButton(text, BOB.getInstance().getSettingsTheme().button().textColor(), BOB.getInstance().getSettingsTheme().button().bgColor(), BOB.getInstance().getSettingsTheme().button().borderColor(), BOB.getInstance().getSettingsTheme().button().borderColorHover(),16, 5);
         btn.setPreferredSize(new Dimension(width, height));
         btn.setFocusable(false);
         return btn;

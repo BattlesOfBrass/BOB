@@ -250,6 +250,7 @@ public class ImageUtil {
 
     public static VolatileImage createLowMipmap(VolatileImage source, GraphicsConfiguration config) {
         BufferedImage mipmap = config.createCompatibleImage(source.getWidth(), source.getHeight(), source.getTransparency());
+
         Graphics2D g = mipmap.createGraphics();
 
         g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
@@ -258,6 +259,7 @@ public class ImageUtil {
 
         return ImageUtil.btv(mipmap);
     }
+
 
     public static BufferedImage createLowMipmap(BufferedImage source, GraphicsConfiguration config) {
         BufferedImage mipmap = config.createCompatibleImage(source.getWidth(), source.getHeight(), source.getTransparency());

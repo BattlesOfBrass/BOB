@@ -3,6 +3,7 @@ package de.idiotischer.bob.render;
 import de.idiotischer.bob.BOB;
 import de.idiotischer.bob.render.menu.Panel;
 import de.idiotischer.bob.render.menu.impl.MultiplayerMenu;
+import de.idiotischer.bob.render.menu.impl.SettingsMenu;
 import de.idiotischer.bob.render.menu.impl.select.ScenarioSelectMenu;
 import de.idiotischer.bob.render.menu.impl.StartMenu;
 import de.idiotischer.bob.util.ImageUtil;
@@ -16,6 +17,7 @@ import java.awt.image.VolatileImage;
 
 public class MenuPanel extends JPanel implements Panel {
 
+    private final SettingsMenu stMenu;
     private final MultiplayerMenu mpMenu;
     private final StartMenu startMenu;
 
@@ -38,11 +40,13 @@ public class MenuPanel extends JPanel implements Panel {
         this.layout = new CardLayout();
         this.setLayout(layout);
 
+        this.stMenu = new SettingsMenu();
         this.mpMenu = new MultiplayerMenu();
         this.startMenu = new StartMenu();
 
         this.scenarioMenu = wrap(new ScenarioSelectMenu(BOB.getInstance().getScenarioSceneLoader().getCurrentScenario()));
 
+        this.add(wrap(stMenu), "SETTINGS");
         this.add(wrap(startMenu), "START");
         this.add(scenarioMenu, "SCENARIO");
         this.add(wrap(mpMenu), "MP");
@@ -75,7 +79,8 @@ public class MenuPanel extends JPanel implements Panel {
     public enum MenuTile {
         START,
         SCENARIO_SELECT,
-        MULTIPLAYER
+        MULTIPLAYER,
+        SETTINGS
     }
 
     private void updateMenuVisibility() {
@@ -83,6 +88,7 @@ public class MenuPanel extends JPanel implements Panel {
             case START -> layout.show(this, "START");
             case SCENARIO_SELECT -> layout.show(this, "SCENARIO");
             case MULTIPLAYER -> layout.show(this, "MP");
+            case SETTINGS -> layout.show(this, "SETTINGS");
         }
 
         revalidate();
@@ -107,6 +113,12 @@ public class MenuPanel extends JPanel implements Panel {
         updateMenuVisibility();
     }
 
+
+    public void setSettingsMenu(boolean b) {
+        currentTile = b ? MenuTile.SETTINGS : MenuTile.START;
+        updateMenuVisibility();
+    }
+
     public BufferedImage getFrame() {
         return renderer.getLogicMap();
     }
@@ -114,9 +126,7 @@ public class MenuPanel extends JPanel implements Panel {
     private void updateCachedImages(int w, int h) {
         if (w <= 0 || h <= 0) return;
 
-        if (w == cachedW && h == cachedH && scaledBackground != null) {
-            return;
-        }
+        if (w == cachedW && h == cachedH && scaledBackground != null) return;
 
         cachedW = w;
         cachedH = h;
@@ -131,8 +141,7 @@ public class MenuPanel extends JPanel implements Panel {
         BufferedImage out = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2 = out.createGraphics();
 
-        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-                RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 
         g2.drawImage(src, 0, 0, w, h, null);
         g2.dispose();

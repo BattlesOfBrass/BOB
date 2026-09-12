@@ -42,7 +42,7 @@ public class ScenarioSceneLoader {
         BOB.getInstance().getPeaceHelper().clear();
 
         //TODO: bald nur noch fetchen
-        BOB.getInstance().getCountryManager().reload();
+        BOB.getInstance().getIdeologyManager().reload();
 
         if (awaitingFuture != null && !awaitingFuture.isDone()) awaitingFuture.complete(null);
     }

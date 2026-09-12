@@ -1,5 +1,7 @@
 package de.idiotischer.bob.render.menu.components;
 
+import de.idiotischer.bob.BOB;
+
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicTabbedPaneUI;
 import java.awt.*;
@@ -14,10 +16,6 @@ public class ModernTabbedPane extends JTabbedPane {
 
     private static class DarkTabbedPaneUI extends BasicTabbedPaneUI {
 
-        private final Color bg = Color.DARK_GRAY;
-        private final Color selected = new Color(80, 80, 80);
-        private final Color border = new Color(60, 60, 60);
-
         @Override
         protected void installDefaults() {
             super.installDefaults();
@@ -25,12 +23,19 @@ public class ModernTabbedPane extends JTabbedPane {
         }
 
         @Override
-        protected void paintTabBackground(Graphics g, int tabPlacement,
-                                          int tabIndex, int x, int y, int w, int h,
-                                          boolean isSelected) {
+        protected void paintTabBackground(Graphics g, int tabPlacement, int tabIndex, int x, int y, int w, int h, boolean isSelected) {
+            Color dark = BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().palette().darkColor();
 
-            g.setColor(isSelected ? selected : bg);
+            g.setColor(isSelected ? brighter(dark,20) : dark);
             g.fillRect(x, y, w, h);
+        }
+
+        private static Color brighter(Color color, double factor) {
+            int r = (int) Math.min(255, color.getRed() * (1.0 + factor / 100.0));
+            int g = (int) Math.min(255, color.getGreen() * (1.0 + factor / 100.0));
+            int b = (int) Math.min(255, color.getBlue() * (1.0 + factor / 100.0));
+
+            return new Color(r, g, b, color.getAlpha());
         }
 
         @Override
@@ -47,13 +52,17 @@ public class ModernTabbedPane extends JTabbedPane {
 
         @Override
         protected void paintContentBorder(Graphics g, int tabPlacement, int selectedIndex) {
-            g.setColor(border);
+            Color dark = BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().palette().darkColor();
+
+            g.setColor(dark);
             g.drawRect(0, 0, tabPane.getWidth() - 1, tabPane.getHeight() - 1);
         }
 
         @Override
         protected void paintTabBorder(Graphics g, int tabPlacement, int tabIndex, int x, int y, int w, int h, boolean isSelected) {
-            g.setColor(border);
+            Color dark = BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().palette().darkColor();
+
+            g.setColor(dark);
             g.drawRect(x, y, w, h);
         }
     }

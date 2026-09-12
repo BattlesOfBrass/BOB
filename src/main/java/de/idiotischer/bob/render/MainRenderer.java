@@ -71,7 +71,6 @@ public class MainRenderer extends Thread {
 
         overlay = new DragOverlay(this);
 
-        JFrame frame = new JFrame();
         frame.setContentPane(renderPanel);
 
         frame.setGlassPane(overlay);
@@ -89,6 +88,13 @@ public class MainRenderer extends Thread {
         frame.setContentPane(root);
 
         cardLayout.show(root, MENU);
+
+        if (Taskbar.isTaskbarSupported()) {
+            Taskbar taskbar = Taskbar.getTaskbar();
+            if (taskbar.isSupported(Taskbar.Feature.ICON_IMAGE)) {
+                taskbar.setIconImage(BOB.getInstance().createIcon().getImage());
+            }
+        }
 
         frame.setIconImage(BOB.getInstance().createIcon().getImage());
         frame.setBackground(Color.BLACK);
@@ -248,6 +254,10 @@ public class MainRenderer extends Thread {
 
                     @Override
                     public void mouseReleased(MouseEvent e) {
+                        if(e.getButton() == MouseEvent.BUTTON1 && !keysPressed.contains(KeyEvent.VK_SHIFT)) {
+                            renderPanel.getTroopButtonGroup().clear();
+                        }
+
                         if (dragStart != null) {
                             dragEnd = e.getPoint();
 

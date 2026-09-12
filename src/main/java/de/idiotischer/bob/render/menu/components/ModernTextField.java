@@ -1,5 +1,6 @@
 package de.idiotischer.bob.render.menu.components;
 
+import de.idiotischer.bob.BOB;
 import de.idiotischer.bob.util.FileUtil;
 
 import javax.swing.*;
@@ -11,8 +12,9 @@ public class ModernTextField extends BasicTextFieldUI {
     @Override
     protected void installDefaults() {
         super.installDefaults();
+        Color dark = BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().palette().darkColor();
         this.getComponent().setOpaque(false);
-        this.getComponent().setBorder(new RoundedBorder(12,3,Color.DARK_GRAY.darker()));
+        this.getComponent().setBorder(new RoundedBorder(12,3,dark.darker()));
         this.getComponent().setForeground(Color.WHITE);
         this.getComponent().setCaretColor(Color.WHITE);
         this.getComponent().setBackground(new Color(0, 0, 0, 0));

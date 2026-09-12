@@ -43,6 +43,7 @@ public class ServerScenarioSceneLoader {
     public void loadNew(Scenario scenario) {
         currentScenario = scenario;
 
+        Server.getInstance().getIdeologyManager().reload();
         Server.getInstance().getCountryManager().reload();
         Server.getInstance().getTileManager().reload();
         Server.getInstance().getStateManager().reload();

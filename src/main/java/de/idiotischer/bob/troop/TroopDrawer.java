@@ -34,8 +34,7 @@ public class TroopDrawer {
         }
     }
 
-    public static void drawBG(Graphics2D g2, TroopStack troopStack, Point p,
-                              int width, int height, double zoom) {
+    public static void drawBG(Graphics2D g2, TroopStack troopStack, Point p, int width, int height, double zoom) {
 
         Color c = troopStack.getController().countryColor();
 
@@ -43,7 +42,9 @@ public class TroopDrawer {
 
         Stroke oldStroke = g2.getStroke();
 
-        g2.setColor(Color.DARK_GRAY);
+        Color dark = BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().palette().darkColor();
+
+        g2.setColor(dark);
         g2.fillRect(p.x, p.y, width, height);
 
         g2.setColor(c == null ? Color.GREEN : c);

@@ -1,13 +1,12 @@
 package de.idiotischer.bob.country;
 
-import com.google.gson.JsonArray;
 import de.craftsblock.craftscore.buffer.BufferUtil;
 import de.idiotischer.bob.player.Player;
 import de.idiotischer.bob.scenario.Scenario;
 import de.idiotischer.bob.state.State;
-import de.idiotischer.bob.tile.Tile;
 import de.idiotischer.bob.util.FileUtil;
-import de.idiotischer.bob.war.WarStatus;
+import it.unimi.dsi.fastutil.Pair;
+import org.jspecify.annotations.NonNull;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -16,10 +15,9 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.List;
 import java.util.function.Consumer;
 
-public class Country {
+public class Country /*implements Comparable<Country>*/{
 
     private final String name;
     private final Color color;
@@ -32,6 +30,7 @@ public class Country {
     private Set<State> states = new HashSet<>();
     private boolean capitulated;
     private Country overlord = null;
+    private Set<String> milAccess = new HashSet<>();
 
     public Country(String abbreviation, String name, Color color, boolean major, boolean selectScreen) {
         this.abbreviation = abbreviation;
@@ -48,8 +47,11 @@ public class Country {
     }
 
     public BufferedImage getFlagImage(Scenario scenario) {
+        var path = FileUtil.getFlag(scenario, abbreviation);
+        if(path == null) return null;
+
         try {
-            return ImageIO.read(FileUtil.getFlag(scenario, abbreviation).toFile());
+            return ImageIO.read(path.toFile());
         } catch (IOException e) {
             return null;
         }
@@ -150,6 +152,9 @@ public class Country {
 
         buffer.putInt(getPuppetProgress());
         BufferUtil.of(buffer).putBoolean(isCapitulated());
+
+        buffer.putInt(milAccess.size());
+        for (String country : milAccess) util.putUtf(country);
     }
 
     public static Country readCountry(ByteBuffer buffer) {
@@ -158,11 +163,7 @@ public class Country {
         String name = util.getUtf();
         String abbreviation = util.getUtf();
 
-        Color color = new Color(
-                buffer.get() & 0xFF,
-                buffer.get() & 0xFF,
-                buffer.get() & 0xFF
-        );
+        Color color = new Color(buffer.get() & 0xFF, buffer.get() & 0xFF, buffer.get() & 0xFF);
 
         boolean major = buffer.get() == 1;
         boolean selectScreen = buffer.get() == 1;
@@ -185,6 +186,9 @@ public class Country {
         country.setPuppetTile(puppetTile);
         country.setPuppetProgress(puppetProgress);
         country.setCapitulated(BufferUtil.of(buffer).getBoolean());
+
+        int milAccessSize = buffer.getInt();
+        for (int i = 0; i < milAccessSize; i++) country.addMilAccess(util.getUtf());
 
         return country;
     }
@@ -242,4 +246,39 @@ public class Country {
     public int hashCode() {
         return Objects.hash(abbreviation);
     }
+
+    //returns the abbr
+    public String getIdeology() {
+        return "";
+    }
+
+    public void removeMilAccess(String country) {
+        milAccess.remove(country);
+    }
+
+    public void addMilAccess(String country) {
+        milAccess.add(country);
+    }
+
+    public boolean hasCountryMilAccess(Country country) {
+        return milAccess.contains(country.getAbbreviation()); //TODO: or is in faction
+    }
+
+    public String serializeAccessUpdate(String abbr, boolean added) {
+        return this.getAbbreviation() + ";" +abbr + ";" + added;
+    }
+
+    public static Pair<String, Pair<String, Boolean>> getAccessUpdate(String s) {
+        String[] strings = s.split(";");
+
+        String cAbbr = strings[0];
+        String milCAbbr = strings[1];
+        boolean added = Boolean.parseBoolean(strings[2]);
+
+        return Pair.of(cAbbr, Pair.of(milCAbbr,added));
+    }
+    //@Override
+    //public int compareTo(@NonNull Country o) {
+    //    return this.abbreviation.compareTo(o.getAbbreviation());
+    //}
 }

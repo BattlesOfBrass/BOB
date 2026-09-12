@@ -42,23 +42,6 @@ public class PeaceMenuOverlay extends JPanel {
     private static JPanel waitingPopupOverlay;
     private static JPanel disputedPopupOverlay;
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            JFrame frame = new JFrame("Peace Menu Overlay");
-            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            frame.setSize(800, 600);
-            frame.setLocationRelativeTo(null);
-
-            PeaceConference c = new PeaceConference(new SharedCore(), UUID.randomUUID(), new CountryManager(), Map.of(), Map.of(), Set.of(new Country("hahha", "C1", Color.BLUE, false, false)), Set.of(new Country("hahha", "C2", Color.BLUE, false, false)));
-
-            var o = new PeaceMenuOverlay();
-            o.setPeace(c.getUUID());
-            frame.add(o);
-
-            frame.setVisible(true);
-        });
-    }
-
     public PeaceMenuOverlay() {
         setOpaque(false);
         setLayout(null);
@@ -72,24 +55,26 @@ public class PeaceMenuOverlay extends JPanel {
 
         Graphics2D g2 = (Graphics2D) g.create();
 
+        Color dark = BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().palette().darkColor();
+
         try {
-            g2.setColor(Color.DARK_GRAY);
+            g2.setColor(dark);
             g2.fillRect(0, 0, getWidth(), 40);
 
             g2.setStroke(new BasicStroke(12));
-            g2.setColor(Color.DARK_GRAY.darker());
+            g2.setColor(dark.darker());
             g2.drawRect(0, 0, getWidth(), 40);
 
-            g2.setColor(Color.DARK_GRAY);
+            g2.setColor(dark);
             g2.fillRect(0, 40, 320, getHeight() - 40);
 
-            g2.setColor(Color.DARK_GRAY.darker());
+            g2.setColor(dark.darker());
             g2.drawRect(0, 40, 320, getHeight() - 40);
 
-            g2.setColor(Color.DARK_GRAY);
+            g2.setColor(dark);
             g2.fillRect(getWidth() - 320, 40, 320, getHeight() - 40);
 
-            g2.setColor(Color.DARK_GRAY.darker());
+            g2.setColor(dark.darker());
             g2.drawRect(getWidth() - 320, 40, 320, getHeight() - 40);
         } finally {
             g2.dispose();
@@ -148,7 +133,7 @@ public class PeaceMenuOverlay extends JPanel {
         countryPanel.setOpaque(false);
         countryPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
-        BOBButton countriesButton = new BOBButton("Countries       ▾", Color.WHITE, Color.BLACK, Color.DARK_GRAY.darker(), Color.GRAY, 14, 5);
+        BOBButton countriesButton = new BOBButton("Countries       ▾", BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().textColor(), BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().bgColor(), BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().borderColor(), BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().borderColorHover(), 14, 5);
         countriesButton.setAlignmentX(Component.LEFT_ALIGNMENT);
         countriesButton.setMaximumSize(new Dimension(290, 35));
 
@@ -176,7 +161,7 @@ public class PeaceMenuOverlay extends JPanel {
             countryWrapper.setAlignmentX(Component.LEFT_ALIGNMENT);
             countryWrapper.add(Box.createRigidArea(new Dimension(10, 0)));
 
-            BOBButton countryButton = new BOBButton(country.countryName() + "       ▾", Color.WHITE, Color.BLACK, Color.DARK_GRAY.darker(), Color.GRAY, 13, 5);
+            BOBButton countryButton = new BOBButton(country.countryName() + "       ▾", BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().textColor(), BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().bgColor(), BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().borderColor(), BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().borderColorHover(), 13, 5);
             countryButton.setAlignmentX(Component.LEFT_ALIGNMENT);
             countryButton.setMaximumSize(new Dimension(270, 35));
             countryWrapper.add(countryButton);
@@ -198,7 +183,7 @@ public class PeaceMenuOverlay extends JPanel {
                 selectAllWrapper.setAlignmentX(Component.LEFT_ALIGNMENT);
                 selectAllWrapper.add(Box.createRigidArea(new Dimension(25, 0))); // 25px Indentation
 
-                BOBButton selectAllButton = new BOBButton("Select All", Color.WHITE, Color.BLACK, Color.DARK_GRAY.darker(), Color.GRAY, 12, 5);
+                BOBButton selectAllButton = new BOBButton("Select All", BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().textColor(), BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().bgColor(), BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().borderColor(), BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().borderColorHover(), 12, 5);
                 selectAllButton.setAlignmentX(Component.LEFT_ALIGNMENT);
                 selectAllButton.setMaximumSize(new Dimension(245, 30));
 
@@ -234,7 +219,7 @@ public class PeaceMenuOverlay extends JPanel {
                 tileWrapper.setAlignmentX(Component.LEFT_ALIGNMENT);
                 tileWrapper.add(Box.createRigidArea(new Dimension(25, 0))); // 25px Indentation
 
-                BOBButton tileButton = new BOBButton(tile.getAbbreviation(), tile.getVictoryPoints() + " | " + tile.getName(), Color.WHITE, Color.BLACK, Color.DARK_GRAY.darker(), Color.GRAY, 12, 5);
+                BOBButton tileButton = new BOBButton(tile.getAbbreviation(), tile.getVictoryPoints() + " | " + tile.getName(), BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().textColor(), BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().bgColor(), BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().borderColor(), BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().borderColorHover(), 12, 5);
                 tileButton.setAlignmentX(Component.LEFT_ALIGNMENT);
                 tileButton.setMaximumSize(new Dimension(245, 30));
 
@@ -301,7 +286,7 @@ public class PeaceMenuOverlay extends JPanel {
         Country playerCountry = BOB.getInstance().getPlayer().country();
 
         for (Country country : conf.getWinners()) {
-            BOBButton countryButton = new BOBButton(country.countryName(), Color.WHITE, Color.BLACK, Color.DARK_GRAY.darker(), Color.GRAY, 13, 5);
+            BOBButton countryButton = new BOBButton(country.countryName(), BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().textColor(), BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().bgColor(), BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().borderColor(), BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().borderColorHover(), 13, 5);
 
             countryButton.setAlignmentX(Component.LEFT_ALIGNMENT);
             countryButton.setMaximumSize(new Dimension(280, 35));
@@ -351,7 +336,7 @@ public class PeaceMenuOverlay extends JPanel {
         for (int i = 0; i < TakeTileType.values().length; i++) {
             TakeTileType tileType = TakeTileType.values()[i];
 
-            BOBButton button = new BOBButton(tileType.name(), tileType.getDefaultCharr(), Color.WHITE, Color.BLACK, Color.DARK_GRAY.darker(), Color.GRAY, 16, 5);
+            BOBButton button = new BOBButton(tileType.name(), tileType.getDefaultCharr(), BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().textColor(), BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().bgColor(), BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().borderColor(), BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().borderColorHover(), 16, 5);
 
             button.setBounds(buttonX + i * (buttonWidth + gap), buttonY, buttonWidth, buttonHeight);
 
@@ -375,8 +360,8 @@ public class PeaceMenuOverlay extends JPanel {
 
 
     private void addConferenceButtons() {
-        sendDemandsBtn = new BOBButton("Send Demands", Color.WHITE, Color.BLACK, Color.DARK_GRAY.darker(), Color.GRAY, 14, 5);
-        quitConferenceBtn = new BOBButton("Quit Conference", Color.WHITE, Color.BLACK, Color.DARK_GRAY.darker(), Color.GRAY, 14, 5);
+        sendDemandsBtn = new BOBButton("Send Demands", BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().textColor(), BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().bgColor(), BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().borderColor(), BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().borderColorHover(), 14, 5);
+        quitConferenceBtn = new BOBButton("Quit Conference", BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().textColor(), BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().bgColor(), BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().borderColor(), BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().borderColorHover(), 14, 5);
 
         add(sendDemandsBtn);
         add(quitConferenceBtn);
@@ -520,7 +505,7 @@ public class PeaceMenuOverlay extends JPanel {
             JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
             buttonPanel.setOpaque(false);
 
-            BOBButton okBtn = new BOBButton(buttonText, Color.WHITE, Color.BLACK, new Color(50, 55, 60), Color.GRAY, 13, 5);
+            BOBButton okBtn = new BOBButton(buttonText, BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().textColor(), BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().bgColor(), BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().borderColor(), BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().borderColorHover(), 13, 5);
             okBtn.setPreferredSize(new Dimension(140, 32));
             okBtn.addActionListener(buttonListener);
 

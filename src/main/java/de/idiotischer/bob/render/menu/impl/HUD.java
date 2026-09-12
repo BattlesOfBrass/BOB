@@ -42,8 +42,19 @@ public class HUD extends JPanel {
         topBar = new HUDTopBar();
         topPanel.add(topBar);
 
+        Color dark = BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().palette().darkColor();
+
+        JPanel verticalLine = new JPanel();
+        verticalLine.setBackground(BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().palette().darkColor().darker());
+        verticalLine.setOpaque(true);
+        verticalLine.setMaximumSize(new Dimension(4, getHeight() + 1));
+        verticalLine.setPreferredSize(new Dimension(4, getHeight() + 1));
+        verticalLine.setMinimumSize(new Dimension(4, getHeight() + 1));
+        verticalLine.setAlignmentX(Component.RIGHT_ALIGNMENT);
+        verticalLine.setFocusable(false);
+
         sidePanel = new JPanel();
-        sidePanel.setBackground(Color.DARK_GRAY);
+        sidePanel.setBackground(dark);
         sidePanel.setLayout(new BorderLayout());
         sidePanel.setPreferredSize(new Dimension(panelWidth, 0));
 
@@ -53,6 +64,7 @@ public class HUD extends JPanel {
 
         tabbedPane.setFocusable(false);
 
+        sidePanel.add(verticalLine, BorderLayout.EAST);
         sidePanel.add(tabbedPane, BorderLayout.CENTER);
 
         sidePanel.setVisible(false);
@@ -79,6 +91,16 @@ public class HUD extends JPanel {
         panel.setOpaque(false);
         panel.setFocusable(false);
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+
+        JPanel horizontalLine1 = new JPanel();
+        horizontalLine1.setBackground(BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().palette().darkColor().darker());
+        horizontalLine1.setOpaque(true);
+        horizontalLine1.setMaximumSize(new Dimension(panelWidth, 4));
+        horizontalLine1.setPreferredSize(new Dimension(panelWidth, 4));
+        horizontalLine1.setMinimumSize(new Dimension(panelWidth, 4));
+        horizontalLine1.setAlignmentX(Component.CENTER_ALIGNMENT);
+        horizontalLine1.setFocusable(false);
+        panel.add(horizontalLine1);
 
         JPanel flagPanel = new JPanel(new BorderLayout());
         flagPanel.setOpaque(false);
@@ -125,6 +147,18 @@ public class HUD extends JPanel {
         panel.add(Box.createVerticalStrut(5));
         panel.add(namePanel);
 
+        JPanel horizontalLine = new JPanel();
+        horizontalLine.setBackground(BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().palette().darkColor().darker());
+        horizontalLine.setOpaque(true);
+        horizontalLine.setMaximumSize(new Dimension(panelWidth, 4));
+        horizontalLine.setPreferredSize(new Dimension(panelWidth, 4));
+        horizontalLine.setMinimumSize(new Dimension(panelWidth, 4));
+        horizontalLine.setAlignmentX(Component.CENTER_ALIGNMENT);
+        horizontalLine.setFocusable(false);
+
+        panel.add(Box.createVerticalStrut(8));
+        panel.add(horizontalLine);
+
         if(BOB.getInstance().getPlayer() != null && BOB.getInstance().getPlayer().country() != null && currentTile.getController() != null) {
             if(BOB.getInstance().getWarManager().isAtWar(currentTile.getController(), BOB.getInstance().getPlayer().country())) return panel;
             if(Objects.equals(BOB.getInstance().getPlayer().country().getAbbreviation(), currentTile.getController().getAbbreviation())) return panel;
@@ -159,9 +193,8 @@ public class HUD extends JPanel {
                 tabbedPane.addTab("Industry", createIndustryPanel());
                 tabbedPane.addTab("Deployment", createDeploymentPanel());
             }
-            case FOREIGN -> {
-                tabbedPane.addTab("Diplomacy", createForeignOverviewPanel());
-            }
+            case FOREIGN -> tabbedPane.addTab("Diplomacy", createForeignOverviewPanel());
+
             case NONE -> {}
         }
 
@@ -191,7 +224,8 @@ public class HUD extends JPanel {
 
         JLabel selectedLabel = new JLabel("Selected: " + (strings.isEmpty() ? "None" : strings.getFirst().value()));
 
-        selectedLabel.setForeground(Color.LIGHT_GRAY);
+        Color light = BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().palette().lightColor();
+        selectedLabel.setForeground(light);
         selectedLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         selectedLabel.setFocusable(false);
 
@@ -209,6 +243,7 @@ public class HUD extends JPanel {
         locationDropdown.addActionListener(e -> {
             String selected = ((Pair<String, String>) locationDropdown.getSelectedItem()).value();
             selectedLabel.setText("Selected: " + selected);
+
         });
 
         JSpinner divisionSpinner = new JSpinner(new SpinnerNumberModel(1, 1, 5, 1));
@@ -230,7 +265,7 @@ public class HUD extends JPanel {
 
         ((JSpinner.DefaultEditor) divisionSpinner.getEditor()).getTextField().setHorizontalAlignment(JTextField.CENTER);
 
-        JButton spawnTroopButton = new BOBButton("Spawn", Color.WHITE, Color.BLACK, Color.DARK_GRAY.darker(), Color.LIGHT_GRAY, 16, 5);
+        JButton spawnTroopButton = new BOBButton("Spawn", BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().textColor(), BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().bgColor(), BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().borderColor(), BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().borderColorHover(), 16, 5);
 
         spawnTroopButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         spawnTroopButton.setFocusable(false);
@@ -272,6 +307,16 @@ public class HUD extends JPanel {
         panel.setFocusable(false);
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
+        JPanel horizontalLine1 = new JPanel();
+        horizontalLine1.setBackground(BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().palette().darkColor().darker());
+        horizontalLine1.setOpaque(true);
+        horizontalLine1.setMaximumSize(new Dimension(panelWidth, 4));
+        horizontalLine1.setPreferredSize(new Dimension(panelWidth, 4));
+        horizontalLine1.setMinimumSize(new Dimension(panelWidth, 4));
+        horizontalLine1.setAlignmentX(Component.CENTER_ALIGNMENT);
+        horizontalLine1.setFocusable(false);
+        panel.add(horizontalLine1);
+
         JPanel flagPanel = new JPanel(new BorderLayout());
         flagPanel.setOpaque(false);
         flagPanel.setMaximumSize(new Dimension(140, 90));
@@ -312,7 +357,9 @@ public class HUD extends JPanel {
         namePanel.add(Box.createHorizontalGlue());
         namePanel.setFocusable(false);
 
-        JButton declareWarButton = new BOBButton("Declare War", Color.WHITE, Color.BLACK, Color.DARK_GRAY.darker(), Color.LIGHT_GRAY, 16, 5);
+        JButton milAccess = new BOBButton("Military Access", BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().textColor(), BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().bgColor(), BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().borderColor(), BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().borderColorHover(), 16, 5);
+
+        JButton declareWarButton = new BOBButton("Declare War", BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().textColor(), BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().bgColor(), BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().borderColor(), BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().borderColorHover(), 16, 5);
 
         declareWarButton.setFocusable(false);
         declareWarButton.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -324,9 +371,42 @@ public class HUD extends JPanel {
 
             BOB.getInstance().getSendTool().send(BOB.getInstance().getClient().getChannel(), pack);
 
+            int index = panel.getComponentZOrder(declareWarButton);
             panel.remove(declareWarButton);
 
-            //TODO: add war declaration request (with warhelper)
+            JLabel warLabel = new JLabel("At war: pending");
+            warLabel.setForeground(Color.WHITE);
+            warLabel.setFont(warLabel.getFont().deriveFont(Font.BOLD, 16f));
+            warLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+            panel.add(warLabel, index);
+
+            panel.revalidate();
+            panel.repaint();
+        });
+
+        milAccess.setFocusable(false);
+        milAccess.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        milAccess.addActionListener(e -> {
+            if (currentTile == null || currentTile.getController() == null) return;
+
+            RequestPacket pack = new RequestPacket(Type.MIL_ACCESS, currentTile.getController().getAbbreviation());
+
+            BOB.getInstance().getSendTool().send(BOB.getInstance().getClient().getChannel(), pack);
+
+            int index = panel.getComponentZOrder(milAccess);
+            panel.remove(milAccess);
+
+            JLabel milAccessLabel = new JLabel("Military Access: pending");
+            milAccessLabel.setForeground(Color.WHITE);
+            milAccessLabel.setFont(milAccessLabel.getFont().deriveFont(Font.BOLD, 16f));
+            milAccessLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+            panel.add(milAccessLabel, index);
+
+            panel.revalidate();
+            panel.repaint();
         });
 
         panel.add(Box.createVerticalStrut(10));
@@ -334,12 +414,47 @@ public class HUD extends JPanel {
         panel.add(Box.createVerticalStrut(5));
         panel.add(namePanel);
 
+        JPanel horizontalLine = new JPanel();
+        horizontalLine.setBackground(BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().palette().darkColor().darker());
+        horizontalLine.setOpaque(true);
+        horizontalLine.setMaximumSize(new Dimension(panelWidth, 4));
+        horizontalLine.setPreferredSize(new Dimension(panelWidth, 4));
+        horizontalLine.setMinimumSize(new Dimension(panelWidth, 4));
+        horizontalLine.setAlignmentX(Component.CENTER_ALIGNMENT);
+        horizontalLine.setFocusable(false);
+
+        panel.add(Box.createVerticalStrut(8));
+        panel.add(horizontalLine);
+
         if(BOB.getInstance().getPlayer() != null && BOB.getInstance().getPlayer().country() != null && currentTile.getController() != null) {
-            if(BOB.getInstance().getWarManager().isAtWar(currentTile.getController(), BOB.getInstance().getPlayer().country())) return panel;
+            boolean atWar = BOB.getInstance().getWarManager().isAtWar(currentTile.getController(), BOB.getInstance().getPlayer().country());
+            boolean hasMilitaryAccess = currentTile.getController().hasCountryMilAccess(BOB.getInstance().getPlayer().country());
+
             if(Objects.equals(BOB.getInstance().getPlayer().country().getAbbreviation(), currentTile.getController().getAbbreviation())) return panel;
 
-            panel.add(Box.createVerticalStrut(30));
-            panel.add(declareWarButton);
+            panel.add(Box.createVerticalStrut(50));
+
+            if(atWar) {
+                JLabel warLabel = new JLabel("At war: yes");
+                warLabel.setForeground(Color.WHITE);
+                warLabel.setFont(warLabel.getFont().deriveFont(Font.BOLD, 16f));
+                warLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+                panel.add(warLabel);
+            } else {
+                panel.add(declareWarButton);
+            }
+
+            if(hasMilitaryAccess) {
+                panel.add(Box.createVerticalStrut(15));
+                JLabel milAccessLabel = new JLabel("Military Access: yes");
+                milAccessLabel.setForeground(Color.WHITE);
+                milAccessLabel.setFont(milAccessLabel.getFont().deriveFont(Font.BOLD, 16f));
+                milAccessLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+                panel.add(milAccessLabel);
+            } else {
+                panel.add(Box.createVerticalStrut(15));
+                panel.add(milAccess);
+            }
         }
 
         return panel;

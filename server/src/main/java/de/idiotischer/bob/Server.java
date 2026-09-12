@@ -3,6 +3,7 @@ package de.idiotischer.bob;
 import de.idiotischer.bob.combat.ServerCombatManager;
 import de.idiotischer.bob.conference.ServerConferenceManager;
 import de.idiotischer.bob.country.ServerCountryManager;
+import de.idiotischer.bob.ideology.ServerIdeologyManager;
 import de.idiotischer.bob.listener.ServerPacketListener;
 import de.idiotischer.bob.networking.communication.SendTool;
 import de.idiotischer.bob.player.ServerPlayerManager;
@@ -34,6 +35,7 @@ public class Server {
     private ServerWarManager warManager;
     private ServerCombatManager combatManager;
     private ServerConferenceManager conferenceManager;
+    private ServerIdeologyManager ideologyManager;
 
     public static void main(String[] args) {
         new Server(false);
@@ -60,6 +62,8 @@ public class Server {
         this.config = new MainConfigUtil();
 
         this.serverSocket = new ServerSocket(local);
+
+        this.ideologyManager = new ServerIdeologyManager();
 
         this.playerManager = new ServerPlayerManager();
 
@@ -157,5 +161,9 @@ public class Server {
 
     public ServerConferenceManager getConferenceManager() {
         return conferenceManager;
+    }
+
+    public ServerIdeologyManager getIdeologyManager() {
+        return ideologyManager;
     }
 }

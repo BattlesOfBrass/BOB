@@ -29,17 +29,18 @@ public class TroopVisualButton extends JToggleButton {
 
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        g2.setColor(Color.DARK_GRAY);
+        Color dark = BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().palette().darkColor();
+
+        g2.setColor(dark);
         g2.fillRect(0, 0, getWidth(), getHeight());
 
         if (stack.getOwner() != null) {
             BufferedImage img = stack.getOwner().getFlagImage(BOB.getInstance().getScenarioSceneLoader().getCurrentScenario());
-            g2.drawImage(img, 0, 0, getWidth(), getHeight(), null);
+            if(img != null) g2.drawImage(img, 0, 0, getWidth(), getHeight(), null);
         }
 
         g2.setColor(stack.getController() == null ? Color.GREEN : stack.getController().countryColor());
-        if (stack.getController() != null &&
-                stack.getController() == BOB.getInstance().getPlayer().country()) {
+        if (stack.getController() != null && stack.getController() == BOB.getInstance().getPlayer().country()) {
             g2.setColor(Color.GREEN);
         }
         g2.setStroke(new BasicStroke(7f));

@@ -104,8 +104,15 @@ tasks.register("buildPreRun") {
     }
 }
 val args = listOf(
-    "--enable-native-access=ALL-UNNAMED"
+    "--enable-native-access=ALL-UNNAMED",
+    "--add-opens=java.desktop/sun.awt.X11=ALL-UNNAMED"
 )
+
+
+tasks.withType<JavaExec>().configureEach {
+    jvmArgs(args)
+}
+
 tasks.register<Exec>("jpackageMain") {
     group = "distribution"
     description = "Creates a native app-image for the current platform using jpackage"
@@ -116,7 +123,7 @@ tasks.register<Exec>("jpackageMain") {
     else
         "${System.getProperty("java.home")}/bin/jpackage"
 
-    val inputDir  = layout.buildDirectory.dir("libs").get().asFile
+    val inputDir = layout.buildDirectory.dir("libs").get().asFile
     val outputDir = layout.buildDirectory.dir("jpackage").get().asFile
 
     val iconFile = if (isWindows)
@@ -127,6 +134,7 @@ tasks.register<Exec>("jpackageMain") {
     doFirst {
         outputDir.deleteRecursively()
         outputDir.mkdirs()
+
         require(iconFile.exists()) {
             "Icon not found at ${iconFile.absolutePath}. " +
                     "On Windows, run the 'Convert icon to ICO' workflow step first."
@@ -143,9 +151,10 @@ tasks.register<Exec>("jpackageMain") {
         "--icon", iconFile.absolutePath,
         "--dest", outputDir.absolutePath,
 
-        "--java-options", "--enable-native-access=ALL-UNNAMED"
+        *args.flatMap { listOf("--java-options", it) }.toTypedArray()
     )
 }
+
 
 tasks.register<Exec>("appimageMain") {
     group = "distribution"
@@ -208,9 +217,11 @@ tasks.register<JavaExec>("runApp") {
     classpath = files(jarFile)
     mainClass.set("de.idiotischer.bob.BOB")
 
-    jvmArgs = args
+    jvmArgs(
+        "--enable-native-access=ALL-UNNAMED",
+        "--add-opens=java.desktop/sun.awt.X11=ALL-UNNAMED"
+    )
 }
-
 tasks.jar {
     enabled = false
 }

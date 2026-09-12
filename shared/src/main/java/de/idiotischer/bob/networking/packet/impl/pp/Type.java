@@ -28,4 +28,6 @@ public enum Type {
     ROUND_UPDATE,
     SEND_DEMANDS,
     TROOP_TP,
+    MIL_ACCESS,
+    IDEOLOGIES_SYNC;
 }

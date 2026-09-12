@@ -4,6 +4,7 @@ import de.craftsblock.cnet.modules.packets.common.networker.Networker;
 import de.craftsblock.craftscore.buffer.BufferUtil;
 import de.idiotischer.bob.networking.packet.Packet;
 import de.idiotischer.bob.scenario.Scenario;
+import de.idiotischer.bob.theme.Theme;
 import de.idiotischer.bob.util.FileUtil;
 import de.idiotischer.bob.util.ImageUtil;
 import org.jetbrains.annotations.Contract;
@@ -25,6 +26,7 @@ import java.util.List;
 public class ScenarioSyncPacket implements Packet {
 
 
+    private Theme theme;
     private String abbreviation;
     private String name;
 
@@ -40,6 +42,8 @@ public class ScenarioSyncPacket implements Packet {
     private byte[] statesJson;
     private byte[] troopsJson;
     private byte[] warsJson;
+    private byte[] ideologiesJson;
+    private byte[] themeJson;
 
     private List<FlagEntry> flagEntries = new ArrayList<>();
 
@@ -61,6 +65,10 @@ public class ScenarioSyncPacket implements Packet {
         this.statesJson = scenario.isStatesConfigDefault() ? null : FileUtil.readFile(scenario.getStatesConfig());
         this.troopsJson = scenario.isTroopConfigDefault() ? null : FileUtil.readFile(scenario.getTroopConfig());
         this.warsJson = scenario.isWarsDefault() ? null : FileUtil.readFile(scenario.getWarsConfig());
+        this.themeJson = scenario.isThemesDefault() ? null : FileUtil.readFile(scenario.getThemeConfig());
+        this.ideologiesJson = scenario.isIdeologiesDefault() ? null : FileUtil.readFile(scenario.getIdeologiesConfig());
+
+        this.theme = scenario.getTheme();
 
         Path flagFolder = FileUtil.getDefaultFlagsDir(scenario);
 
@@ -126,6 +134,10 @@ public class ScenarioSyncPacket implements Packet {
             writeBytes(buffer, statesJson);
             writeBytes(buffer, troopsJson);
             writeBytes(buffer, warsJson);
+            writeBytes(buffer, ideologiesJson);
+
+            writeBytes(buffer, themeJson);
+            writeString(buffer, theme == null ? "" : theme.serialize());
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -176,6 +188,10 @@ public class ScenarioSyncPacket implements Packet {
         this.statesJson = readBytes(buffer);
         this.troopsJson = readBytes(buffer);
         this.warsJson = readBytes(buffer);
+        this.ideologiesJson = readBytes(buffer);
+
+        this.themeJson = readBytes(buffer);
+        this.theme = Theme.deserialize(name + "-theme", readString(buffer));
     }
 
     private void writeFlagFolder(Path targetDir) throws IOException {
@@ -218,6 +234,8 @@ public class ScenarioSyncPacket implements Packet {
             writeIfMissing(targetDir.resolve("tiles.json"), tilesJson);
             writeIfMissing(targetDir.resolve("troops.json"), troopsJson);
             writeIfMissing(targetDir.resolve("wars.json"), warsJson);
+            writeIfMissing(targetDir.resolve("theme.json"), themeJson);
+            writeIfMissing(targetDir.resolve("ideologies.json"), ideologiesJson);
 
             writeFlagFolder(targetDir);
 
@@ -265,6 +283,8 @@ public class ScenarioSyncPacket implements Packet {
             writeIfMissing(targetDir.resolve("tiles.json"), tilesJson);
             writeIfMissing(targetDir.resolve("troops.json"), troopsJson);
             writeIfMissing(targetDir.resolve("wars.json"), warsJson);
+            writeIfMissing(targetDir.resolve("theme.json"), themeJson);
+            writeIfMissing(targetDir.resolve("ideologies.json"), ideologiesJson);
 
             writeFlagFolder(targetDir);
 
@@ -337,6 +357,10 @@ public class ScenarioSyncPacket implements Packet {
         byte[] bytes = new byte[length];
         buffer.get(bytes);
         return new String(bytes, StandardCharsets.UTF_8);
+    }
+
+    public Theme getTheme() {
+        return theme;
     }
 
     private static class FlagEntry {

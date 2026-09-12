@@ -3,6 +3,7 @@ package de.idiotischer.bob.scenario;
 import com.google.gson.JsonElement;
 import com.google.gson.stream.JsonReader;
 import de.idiotischer.bob.SharedCore;
+import de.idiotischer.bob.theme.Theme;
 import de.idiotischer.bob.util.FileUtil;
 
 import javax.imageio.ImageIO;
@@ -24,6 +25,7 @@ public class Scenario {
     private final String abbreviation;
     private final boolean server;
     private final List<Color> borderColors = new  ArrayList<>();
+    private Theme theme;
 
     public Scenario(boolean server, String abbreviation, String name, Path dir) {
         this.server = server;
@@ -66,6 +68,32 @@ public class Scenario {
         return path;
     }
 
+    public Path getThemeConfig() {
+        Path path = dir.resolve("theme.json");
+
+        if(Files.notExists(path)) path = FileUtil.getDefaultScenarioDir().resolve("theme.json");
+
+        return path;
+    }
+
+
+    public Path getIdeologiesConfig() {
+        Path path = dir.resolve("ideologies.json");
+
+        if(Files.notExists(path)) path = FileUtil.getDefaultScenarioDir().resolve("ideologies.json");
+
+        return path;
+    }
+
+    public Theme getTheme() {
+        if(theme != null) return theme; //should only happen on client
+
+        Path path = dir.resolve("theme.json");
+
+        if(Files.notExists(path)) return Theme.defaultTheme();
+
+        return Theme.fromJson(name + "-theme", path);
+    }
 
     public Path getWarsConfig() {
         Path path = dir.resolve("wars.json");
@@ -105,8 +133,22 @@ public class Scenario {
         return Files.notExists(path);
     }
 
+
+    public boolean isIdeologiesDefault() {
+        Path path = dir.resolve("ideologies.json");
+
+        return Files.notExists(path);
+    }
+
     public boolean isWarsDefault() {
         Path path = dir.resolve("wars.json");
+
+        return Files.notExists(path);
+    }
+
+
+    public boolean isThemesDefault() {
+        Path path = dir.resolve("theme.json");
 
         return Files.notExists(path);
     }
@@ -226,5 +268,9 @@ public class Scenario {
         Path path = dir.resolve("troops.json");
 
         return Files.notExists(path);
+    }
+
+    public void setTheme(Theme t) {
+        this.theme = t;
     }
 }

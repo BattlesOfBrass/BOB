@@ -1,10 +1,7 @@
 package de.idiotischer.bob.troop;
 
 import de.idiotischer.bob.Server;
-import de.idiotischer.bob.combat.CombatStatus;
 import de.idiotischer.bob.country.Country;
-import de.idiotischer.bob.networking.packet.impl.pp.ReplyPacket;
-import de.idiotischer.bob.networking.packet.impl.pp.Type;
 import de.idiotischer.bob.player.Player;
 import de.idiotischer.bob.tile.Tile;
 import de.idiotischer.bob.tile.TileResolver;
@@ -16,16 +13,6 @@ import java.util.*;
 //TODO: for denmark etc add a isConnectedTo: [ "tile1", "tile2" ] to tiles so we can use it here
 public class TroopValidator {
 
-    public boolean canAttackOrMove(TroopStack stack, Tile target) {
-        Country c = stack.getController();
-        Tile tile = stack.getTile();
-
-        Country tileOwner = tile.getController();
-        Country targetCountry = target.getController();
-
-
-        return true;
-    }
 
     public static MoveStatus validate(Player mover, TroopStack troopStack, Tile tile, TroopResolver tr, TileResolver resolver) {
         Set<Tile> neighbours = resolver.findNeighbors(troopStack.getTile());
@@ -34,16 +21,22 @@ public class TroopValidator {
         Country tileController = troopStack.getTile().getController();
         Country newTileController = tile.getController();
 
-        if(!Objects.equals(newTileController.getAbbreviation(), troopController.getAbbreviation())) {
-            if (!Server.getInstance().getWarManager().isAtWar(troopController, newTileController)) return MoveStatus.FAILURE;
+        if (!Objects.equals(newTileController.getAbbreviation(), troopController.getAbbreviation())) {
+            boolean isAtWar = Server.getInstance().getWarManager().isAtWar(troopController, newTileController);
+            boolean hasMilAccess = newTileController.hasCountryMilAccess(troopController);
+
+            if (!isAtWar && !hasMilAccess) return MoveStatus.FAILURE;
         }
 
-        if(!Objects.equals(tileController.getAbbreviation(), troopController.getAbbreviation())) {
-            if(!Server.getInstance().getWarManager().fightsTogetherWith(troopController, tileController)) return MoveStatus.FAILURE;
+        if (!Objects.equals(tileController.getAbbreviation(), troopController.getAbbreviation())) {
+            boolean fightsTogether = Server.getInstance().getWarManager().fightsTogetherWith(troopController, tileController);
+            boolean hasMilAccess = tileController.hasCountryMilAccess(troopController);
+
+            if (!fightsTogether && !hasMilAccess) return MoveStatus.FAILURE;
         }
 
-        List<Tile> path = Server.getInstance().getTroopManager().findPath(troopStack,tile,resolver);
-        Server.getInstance().getTroopManager().addTroopPath(troopStack,path);
+        List<Tile> path = Server.getInstance().getTroopManager().findPath(troopStack, tile, resolver);
+        Server.getInstance().getTroopManager().addTroopPath(troopStack, path);
         Server.getInstance().getTroopManager().startMovement(troopStack);
 
         boolean pathFound = path != null;

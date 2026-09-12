@@ -204,16 +204,28 @@ public class ServerTroopManager implements TroopResolver{
 
     @Override
     public MoveStatus canTraverse(Country troopController, Tile from, Tile to) {
-        if(Server.getInstance().getConferenceManager().anyActive()) return MoveStatus.FAILURE;
+        if (Server.getInstance().getConferenceManager().anyActive()) return MoveStatus.FAILURE;
 
         Country fromController = from.getController();
         Country toController = to.getController();
 
-        if(!Objects.equals(toController.getAbbreviation(), troopController.getAbbreviation())) if (!Server.getInstance().getWarManager().isAtWar(troopController, toController)) return MoveStatus.FAILURE;
+        if (!Objects.equals(toController.getAbbreviation(), troopController.getAbbreviation())) {
+            boolean isAtWar = Server.getInstance().getWarManager().isAtWar(troopController, toController);
+            boolean hasMilAccess = toController.hasCountryMilAccess(troopController);
 
-        if(Server.getInstance().getWarManager().fightsTogetherWith(troopController, fromController) || Server.getInstance().getWarManager().isAtWar(fromController, toController)) if(!Objects.equals(fromController.getAbbreviation(), toController.getAbbreviation()) && !Objects.equals(fromController.getAbbreviation(), troopController.getAbbreviation())) return MoveStatus.FAILURE;
+            if (!isAtWar && !hasMilAccess) return MoveStatus.FAILURE;
+        }
 
-        if(hasStack(to)) if(Server.getInstance().getWarManager().isEnemy(troopController, toController)) return MoveStatus.FAILURE_FIGHT;
+        boolean fightsTogether = Server.getInstance().getWarManager().fightsTogetherWith(troopController, fromController);
+        boolean hasFromMilAccess = fromController.hasCountryMilAccess(troopController);
+        boolean isFromAtWarWithTo = Server.getInstance().getWarManager().isAtWar(fromController, toController);
+
+        if (fightsTogether || hasFromMilAccess || isFromAtWarWithTo)
+            if (!Objects.equals(fromController.getAbbreviation(), toController.getAbbreviation()) && !Objects.equals(fromController.getAbbreviation(), troopController.getAbbreviation())) {
+                if (!hasFromMilAccess && !fightsTogether) return MoveStatus.FAILURE;
+            }
+
+        if (hasStack(to)) if (Server.getInstance().getWarManager().isEnemy(troopController, toController)) return MoveStatus.FAILURE_FIGHT;
 
         return MoveStatus.SUCCESS;
     }

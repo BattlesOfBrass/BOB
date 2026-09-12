@@ -48,6 +48,8 @@ public class PacketRegistry {
         registerPacket(PlayerAuthUpdatePacket.class, 18);
         registerPacket(CombatSyncPacket.class, 19);
         registerPacket(CombatsSyncPacket.class, 20);
+        registerPacket(IdeologiesSyncPacket.class, 21);
+        registerPacket(IdeologySyncPacket.class, 22);
     }
 
     public void registerPacket(Class<? extends Packet> packet, int id) {

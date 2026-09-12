@@ -9,6 +9,7 @@ import de.idiotischer.bob.conference.PeaceConference;
 import de.idiotischer.bob.conference.PeaceHelper;
 import de.idiotischer.bob.conference.TakeTileType;
 import de.idiotischer.bob.country.Country;
+import de.idiotischer.bob.ideology.Ideology;
 import de.idiotischer.bob.networking.packet.PacketRegistry;
 import de.idiotischer.bob.networking.packet.impl.*;
 import de.idiotischer.bob.networking.packet.impl.pp.ReplyPacket;
@@ -55,6 +56,8 @@ public class PacketListener implements ListenerAdapter {
 
                 Scenario scenario = new Scenario(server, scenarioPacket.getAbbreviation(), scenarioPacket.getName(), scenarioDir);
 
+                if(scenarioPacket.getTheme() == null) scenario.setTheme(BOB.getInstance().getSettingsTheme());
+
                 scenarios.add(scenario);
             });
 
@@ -68,13 +71,15 @@ public class PacketListener implements ListenerAdapter {
 
             Scenario scenario = manager.getScenario(packet.getAbbreviation());
 
-            if(scenario == null) manager.refreshAddNew(scenario);
+            if(scenario != null) manager.refreshAddNew(scenario); //hier stand vorher == null, maybe sollte das so, ich glaube es war n bug
+
+            if(packet.getTheme() == null) if (scenario != null) scenario.setTheme(BOB.getInstance().getSettingsTheme());
 
             BOB.getInstance().getScenarioSceneLoader().completeSync(scenario);
 
             BOB.getInstance().getScenarioSceneLoader().load(scenario, false);
         } else if(event.getPacket() instanceof CountriesSyncPacket packet) {
-            Set<Country> countries = packet.getPackets().stream().map(CountrySyncPacket::getCountry).collect(Collectors.toSet());
+            Set<Country> countries = packet.getPackets().stream().map(csp -> csp.getCountry()).collect(Collectors.toSet());
 
             countries.forEach(c -> BOB.getInstance().getCountryManager().registerCountry(c));
 
@@ -94,7 +99,19 @@ public class PacketListener implements ListenerAdapter {
             });
 
             BOB.getInstance().getTileManager().finishReload();
-        } else if(event.getPacket() instanceof StatesSyncPacket packet) {
+        } else if(event.getPacket() instanceof IdeologiesSyncPacket packet) {
+            if(BOB.getInstance().getIdeologyManager().getAwaitingFuture() == null || BOB.getInstance().getIdeologyManager().getAwaitingFuture().isCancelled() || BOB.getInstance().getIdeologyManager().getAwaitingFuture().isDone()) return;
+
+            List<IdeologySyncPacket> packs = packet.getPackets();
+
+            Set<Ideology> ideologies = packs.stream().map(IdeologySyncPacket::getIdeology).collect(Collectors.toSet());
+
+            BOB.getInstance().getIdeologyManager().getIdeologies().addAll(ideologies);
+
+            BOB.getInstance().getIdeologyManager().finishReload();
+        }
+        else if(event.getPacket() instanceof IdeologySyncPacket packet) BOB.getInstance().getIdeologyManager().getIdeologies().add(packet.getIdeology());
+        else if(event.getPacket() instanceof StatesSyncPacket packet) {
             if(BOB.getInstance().getStateManager().getAwaitingFuture() == null || BOB.getInstance().getStateManager().getAwaitingFuture().isCancelled() || BOB.getInstance().getStateManager().getAwaitingFuture().isDone()) return;
 
             List<StateSyncPacket> packs = packet.getPackets();
@@ -121,6 +138,26 @@ public class PacketListener implements ListenerAdapter {
             BOB.getInstance().getTileManager().registerTile(tile);
         } else if(event.getPacket() instanceof ReplyPacket pack) {
             switch (pack.getReplyType()) {
+                case MIL_ACCESS -> {
+                    var pair = Country.getAccessUpdate(pack.getMessage());
+
+                    Country c1 = BOB.getInstance().getCountryManager().byAbbreviation(pair.key());
+                    Country c2 = BOB.getInstance().getCountryManager().byAbbreviation(pair.value().key());
+                    boolean added = pair.value().value();
+
+                    if(c1 == null) return;
+                    if(c2 == null) return;
+
+                    if(added) {
+                        BOB.getInstance().getMainRenderer().getGamePanel().showGenericPopup("MILITARY ACCESS GRANTED!", "granted military access to", c1, c2, 5000,new Color(80, 235, 75));
+                        c1.addMilAccess(c2.getAbbreviation());
+                    }
+                    else {
+                        BOB.getInstance().getMainRenderer().getGamePanel().showGenericPopup("MILITARY ACCESS DENIED!", "denied military access to", c1, c2, 5000);
+                        c1.removeMilAccess(c2.getAbbreviation());
+                    }
+
+                }
                 case CONFERENCE_STARTED -> {
                     PeaceConference conference = PeaceConference.deserialize(BOB.getInstance().getSharedCore(), BOB.getInstance().getCountryManager(), BOB.getInstance().getTileManager(), pack.getMessage());
 

@@ -112,11 +112,13 @@ public class ScenarioSelectMenu extends JPanel {
         Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        g2.setColor(Color.DARK_GRAY);
+        Color dark = BOB.getInstance().getSettingsTheme().palette().darkColor();
+
+        g2.setColor(dark);
         g2.fillRoundRect(4, 4, getWidth() - 8, getHeight() - 8, 30, 30);
 
         g2.setStroke(new BasicStroke(8));
-        g2.setColor(Color.DARK_GRAY.darker());
+        g2.setColor(dark.darker());
         g2.drawRoundRect(4, 4, getWidth() - 8, getHeight() - 8, 30, 30);
 
         if (selectedScenario != null && selectedScenario.getMapImage() != null) {
@@ -124,7 +126,7 @@ public class ScenarioSelectMenu extends JPanel {
             int imgFrameX = layoutScaleX - imgFrameWidth - 40;
 
             g2.setStroke(new BasicStroke(4));
-            g2.setColor(Color.DARK_GRAY.darker());
+            g2.setColor(dark.darker());
             g2.drawRoundRect(imgFrameX, 40, imgFrameWidth, 360, 24, 24);
 
             MenuPanel p = BOB.getInstance().getMainRenderer().getMenuPanel();
@@ -150,14 +152,7 @@ public class ScenarioSelectMenu extends JPanel {
     }
 
     private JButton createButton(String text, int width, int height) {
-        BOBButton btn = new BOBButton(text,
-                Color.WHITE,
-                Color.BLACK,
-                Color.DARK_GRAY.darker(),
-                Color.LIGHT_GRAY,
-                16,
-                5
-        );
+        BOBButton btn = new BOBButton(text, BOB.getInstance().getSettingsTheme().button().textColor(), BOB.getInstance().getSettingsTheme().button().bgColor(), BOB.getInstance().getSettingsTheme().button().borderColor(), BOB.getInstance().getSettingsTheme().button().borderColorHover(),16, 5);
         btn.setPreferredSize(new Dimension(width, height));
         btn.setFocusable(false);
         return btn;

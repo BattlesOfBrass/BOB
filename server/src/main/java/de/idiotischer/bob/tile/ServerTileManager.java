@@ -37,9 +37,7 @@ public class ServerTileManager implements TileResolver {
         tileSet.clear();
         cache.clear();
 
-        try (JsonReader reader = new JsonReader(
-                Files.newBufferedReader(Server.getInstance().getScenarioSceneLoader().getCurrentScenario().getTilesConfig())
-        )) {
+        try (JsonReader reader = new JsonReader(Files.newBufferedReader(Server.getInstance().getScenarioSceneLoader().getCurrentScenario().getTilesConfig()))) {
 
             JsonElement root = SharedCore.GSON.fromJson(reader, JsonElement.class);
 

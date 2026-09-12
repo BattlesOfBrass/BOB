@@ -1,5 +1,7 @@
 package de.idiotischer.bob.render.menu.components;
 
+import de.idiotischer.bob.BOB;
+
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicComboBoxUI;
 import javax.swing.plaf.basic.BasicComboPopup;
@@ -9,11 +11,9 @@ import java.awt.geom.RoundRectangle2D;
 
 public class ModernComboBoxUI extends BasicComboBoxUI {
 
-    private static final Color OUTLINE = Color.GRAY;
     private static final Color BG = new Color(60, 60, 60);
     private static final Color BG2 = new Color(70, 70, 70);
     private static final Color TC = new Color(220, 220, 220);
-    private static final Color SELECTED = Color.DARK_GRAY.brighter();
 
     @Override
     public void installUI(JComponent c) {
@@ -56,10 +56,11 @@ public class ModernComboBoxUI extends BasicComboBoxUI {
                 super.paintComponent(g);
 
                 Graphics2D g2 = (Graphics2D) g.create();
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                        RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-                g2.setColor(OUTLINE);
+                Color dark = BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().palette().defaultColor();
+
+                g2.setColor(dark);
 
                 int[] x = {6, 11, 16};
                 int[] y = {8, 14, 8};
@@ -85,13 +86,16 @@ public class ModernComboBoxUI extends BasicComboBoxUI {
 
         int w = c.getWidth();
         int h = c.getHeight();
+        Color dark = BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().palette().darkColor();
 
-        g2.setColor(BG);
+        g2.setColor(dark);
         g2.fillRoundRect(0, 0, w - 1, h - 1, 12, 12);
 
         Shape border = new RoundRectangle2D.Float(1, 1, w - 3, h - 3, 12, 12);
 
-        g2.setColor(OUTLINE);
+        Color def = BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().palette().defaultColor();
+
+        g2.setColor(def);
         g2.setStroke(new BasicStroke(1f));
         g2.draw(border);
 
@@ -110,16 +114,30 @@ public class ModernComboBoxUI extends BasicComboBoxUI {
 
                 label.setOpaque(true);
                 label.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
-                label.setForeground(TC);
+
+                Color light = BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().palette().lightColor();
+
+                label.setForeground(brighter(light, 30));
+
+                Color dark = BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().palette().darkColor();
 
                 if (isSelected) {
-                    label.setBackground(SELECTED);
+                    label.setBackground(dark.brighter());
                 } else {
-                    label.setBackground(index % 2 == 0 ? BG : BG2);
+                    label.setBackground(index % 2 == 0 ? dark : brighter(dark,8));
                 }
 
                 return label;
             }
         };
+    }
+
+
+    private static Color brighter(Color color, double factor) {
+        int r = (int) Math.min(255, color.getRed() * (1.0 + factor / 100.0));
+        int g = (int) Math.min(255, color.getGreen() * (1.0 + factor / 100.0));
+        int b = (int) Math.min(255, color.getBlue() * (1.0 + factor / 100.0));
+
+        return new Color(r, g, b, color.getAlpha());
     }
 }

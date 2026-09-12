@@ -88,6 +88,23 @@ public class ServerPacketListener implements ListenerAdapter {
                 case WARS_SYNC -> {
                     Server.getInstance().getSendTool().send(event.getChannel(), new ReplyPacket(Type.WARS_SYNC, Server.getInstance().getWarManager().serializeWars()));
                 }
+                case MIL_ACCESS -> {
+                    String country = pack.getMessage();
+
+                    Country c = Server.getInstance().getCountryManager().byAbbreviation(country);
+
+                    if(c == null) return;
+
+                    if(player == null) return;
+
+                    if(c.hasCountryMilAccess(player.country())) return;
+
+                    c.addMilAccess(player.country().getAbbreviation());
+                    String acc = c.serializeAccessUpdate(player.country().getAbbreviation(), true);
+
+                    ReplyPacket p = new ReplyPacket(Type.MIL_ACCESS, acc);
+                    Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().channels(), p);
+                }
                 case START_WAR -> {
                     String[] parts = pack.getMessage().split(";");
 
@@ -151,8 +168,7 @@ public class ServerPacketListener implements ListenerAdapter {
                             } else {
                                 moveStatus = TroopValidator.validate(p, troopStack, tile, Server.getInstance().getTroopManager(), Server.getInstance().getTileManager());
 
-                                if (moveStatus != MoveStatus.FAILURE_FIGHT && moveStatus != MoveStatus.FAILURE_NO_CONTROL && moveStatus != MoveStatus.FAILURE
-                                        && moveStatus != MoveStatus.FAILURE_KICKED && moveStatus != MoveStatus.FAILURE_IN_COMBAT && moveStatus != MoveStatus.FAILURE_STARTED_PATHFINDING) {
+                                if (moveStatus != MoveStatus.FAILURE_FIGHT && moveStatus != MoveStatus.FAILURE_NO_CONTROL && moveStatus != MoveStatus.FAILURE && moveStatus != MoveStatus.FAILURE_KICKED && moveStatus != MoveStatus.FAILURE_IN_COMBAT && moveStatus != MoveStatus.FAILURE_STARTED_PATHFINDING) {
                                     Server.getInstance().getTroopManager().removePathfinding(troopStack);
                                     troopStack.setTile(tile);
                                 }
@@ -206,6 +222,12 @@ public class ServerPacketListener implements ListenerAdapter {
                 }
                 case TILES_SYNC -> {
                     TilesSyncPacket syncPacket = TilesSyncPacket.fromTiles(Server.getInstance().getTileManager().getTileSet());
+
+                    Server.getInstance().getSendTool().send(event.getChannel(), syncPacket);
+                }
+
+                case IDEOLOGIES_SYNC -> {
+                    IdeologiesSyncPacket syncPacket = IdeologiesSyncPacket.fromIdeologies(Server.getInstance().getIdeologyManager().getIdeologies());
 
                     Server.getInstance().getSendTool().send(event.getChannel(), syncPacket);
                 }
