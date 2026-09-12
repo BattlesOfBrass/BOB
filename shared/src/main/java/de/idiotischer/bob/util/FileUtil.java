@@ -1,27 +1,30 @@
 package de.idiotischer.bob.util;
 
 import com.google.common.reflect.ClassPath;
+
+import java.awt.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.file.*;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
+
+import de.idiotischer.bob.scenario.Scenario;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 //TODO: placeholder aus github asets fetchen
 public class FileUtil {
+    private static final Set<String> EXCLUDED_PREFIXES = Set.of("native/", "net/","META-INF/", "assets/native/", "lib/native/");
+
+    private static final Set<String> EXCLUDED_FILES = Set.of(".DS_Store");
 
     public static Path getJarDir() {
         try {
-            Path path = Path.of(
-                    FileUtil.class.getProtectionDomain()
-                            .getCodeSource()
-                            .getLocation()
-                            .toURI()
-            );
+            Path path = Path.of(FileUtil.class.getProtectionDomain().getCodeSource().getLocation().toURI());
 
             Path p = Files.isRegularFile(path) ? path.getParent() : path;
 
@@ -35,12 +38,8 @@ public class FileUtil {
     }
 
 
-    public static CompletableFuture<Void> replaceIfNotExistingAsync(
-        ClassLoader resourceRoot
-    ) {
-        return CompletableFuture.runAsync(() ->
-            replaceIfNotExisting(resourceRoot)
-        );
+    public static CompletableFuture<Void> replaceIfNotExistingAsync(ClassLoader resourceRoot) {
+        return CompletableFuture.runAsync(() -> replaceIfNotExisting(resourceRoot));
     }
 
     private static void replaceIfNotExisting(ClassLoader resourceRoot) {
@@ -52,57 +51,42 @@ public class FileUtil {
     }
 
     //TODO: copy empty folders too (urgent)
-    //TODO: fix wrong files are created (ibnstead of just map.png for mdoernday it creates states etc)
-    public static void extractFolder(
-        ClassLoader resourceRoot,
-        @NotNull String folderName
-    ) throws Exception {
+    //TODO: fix wrong files are created (ibnstead of just map.png for mdoernday it creates tiles etc)
+    public static void extractFolder(ClassLoader resourceRoot, @NotNull String folderName) throws Exception {
         ClassPath classPath = ClassPath.from(resourceRoot);
 
         //TODO wenn internet zugang dann von github assets holen
-
-        String prefix = folderName.startsWith("/")
-            ? folderName.substring(1)
-            : folderName;
-        if (!prefix.isEmpty() && !prefix.endsWith("/")) {
-            prefix += "/";
-        }
+        String prefix = folderName.startsWith("/") ? folderName.substring(1) : folderName;
+        if (!prefix.isEmpty() && !prefix.endsWith("/")) prefix += "/";
 
         for (ClassPath.ResourceInfo resource : classPath.getResources()) {
             String resourceName = resource.getResourceName();
 
-            if (
-                resourceName.startsWith(prefix) &&
-                !resourceName.endsWith(".class") &&
-                !resourceName.startsWith("META-INF/")
-            ) {
+            if (isExcluded(resourceName)) continue;
+
+            if (resourceName.startsWith(prefix) && !resourceName.endsWith(".class") && !resourceName.startsWith("META-INF/")) {
                 Path destination = getJarDir().resolve(resourceName);
 
                 try {
                     if (Files.notExists(destination)) {
-                        if (destination.getParent() != null) {
-                            Files.createDirectories(destination.getParent());
-                        }
+                        if (destination.getParent() != null) Files.createDirectories(destination.getParent());
 
                         try (InputStream is = resource.url().openStream()) {
-                            Files.copy(
-                                is,
-                                destination,
-                                StandardCopyOption.REPLACE_EXISTING
-                            );
+                            Files.copy(is, destination, StandardCopyOption.REPLACE_EXISTING);
                             System.out.println("Extracted: " + resourceName);
                         }
                     }
                 } catch (Exception e) {
-                    System.err.println(
-                        "Failed to extract " +
-                            resourceName +
-                            ": " +
-                            e.getMessage()
-                    );
+                    System.err.println("Failed to extract " + resourceName + ": " + e.getMessage());
                 }
             }
         }
+    }
+
+    private static boolean isExcluded(String resourceName) {
+        for (String prefix : EXCLUDED_PREFIXES) if (resourceName.startsWith(prefix)) return true;
+
+        return EXCLUDED_FILES.contains(resourceName);
     }
 
     @ApiStatus.Obsolete
@@ -169,7 +153,7 @@ public class FileUtil {
     }
 
     public static Path getIconPath() {
-        Path scenarioDir = getRunningDir();
+        Path scenarioDir = getJarDir().resolve("icons/icon.png");
 
         //TODO: check this ig
         if (Files.notExists(scenarioDir)) {
@@ -210,9 +194,7 @@ public class FileUtil {
     }
 
     public static Path getHostConfig() {
-        Path scenarioDir = getJarDir()
-            .toAbsolutePath()
-            .resolve("config/host.json");
+        Path scenarioDir = getJarDir().toAbsolutePath().resolve("config/host.json");
         if (Files.notExists(scenarioDir)) {
             try {
                 Files.createFile(scenarioDir);
@@ -223,12 +205,28 @@ public class FileUtil {
         return scenarioDir;
     }
 
+    public static Font getFont() {
+        Path fontDir = getJarDir().toAbsolutePath().resolve("font/font.ttf");
+        if (Files.notExists(fontDir)) {
+            try {
+                Files.createFile(fontDir);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        try {
+            return Font.createFont(Font.TRUETYPE_FONT,fontDir.toFile());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public static Path getDefaultFlagsDir() {
         return getFlagsDir(false);
     }
 
-    public static Path getCoatsDir(boolean server) {
-        Path flagsDir = getJarDir().toAbsolutePath().resolve(server ? "icons/temp/server/" : "icons/");
+    public static Path getDefaultFlagsDir(Scenario sc) {
+        Path flagsDir = getScenarioDir(sc.getAbbreviation()).resolve("flags/");
 
         if(Files.notExists(flagsDir)) {
             try {
@@ -241,117 +239,14 @@ public class FileUtil {
         return flagsDir;
     }
 
-    /* WIP */
-    @ApiStatus.Experimental
-    public static Path getCountryFlagsDir(boolean server, String abbreviation) {
-        Path countryFlagsDir = getFlagsDir(server).resolve(abbreviation);
+    public static Path getFlag(Scenario scenario, String abbreviation) {
+        Path countryFlagsDir = getDefaultFlagsDir().resolve(abbreviation).resolve(abbreviation + ".png");
+        Path countryFlagsDirSc = getDefaultFlagsDir(scenario).resolve(abbreviation).resolve(abbreviation + ".png");
 
-        if(Files.notExists(countryFlagsDir)) {
-            try {
-                Files.createDirectory(countryFlagsDir);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
+        if(Files.exists(countryFlagsDir)) return countryFlagsDir;
+        else if(Files.exists(countryFlagsDirSc)) return countryFlagsDirSc;
 
-        return countryFlagsDir;
-    }
-
-    /* WIP */
-    @ApiStatus.Experimental
-    public static Path getCountryFlagsDir(boolean server, String scenario, String abbreviation) {
-        Path countryFlagsDir = getFlagsDir(server).resolve(scenario).resolve(abbreviation);
-
-        if(Files.notExists(countryFlagsDir)) {
-            countryFlagsDir = getFlagsDir(server).resolve(scenario);
-            try {
-                Files.createDirectory(countryFlagsDir);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        return countryFlagsDir;
-    }
-
-    /* WIP */
-    //TODO: Support svg, webp, etc
-    @ApiStatus.Experimental
-    public static Path getCoat(boolean server, String abbreviation) {
-        Path countryFlagsDir = getCoatsDir(server).resolve(abbreviation);
-
-        return countryFlagsDir.resolve(abbreviation + ".png");
-    }
-
-    /* WIP */
-    //TODO: Support svg, webp, etc
-    //@ApiStatus.Experimental
-    //public static Path getCoat(boolean server, String abbreviation, String flagAbbreviation) {
-    //    Path countryFlagsDir = getCoatsDir(server).resolve(abbreviation);
-    //    Path flag = countryFlagsDir.resolve(abbreviation + "_" + flagAbbreviation + ".png");
-    //    if(Files.notExists(flag)) {
-    //        flag = getFlag(abbreviation);
-    //    }
-    //    return flag;
-    //}
-
-    /* WIP */
-    //TODO: Support svg, webp, etc
-    @ApiStatus.Experimental
-    public static Path getCoat(boolean server, String scenario, String abbreviation) {
-        Path countryFlagsDir = getCoatsDir(server).resolve(scenario.isEmpty() ? abbreviation : scenario + "/" + abbreviation);
-
-        return countryFlagsDir.resolve(abbreviation + ".png");
-    }
-
-    /* WIP */
-    //TODO: Support svg, webp, etc
-    @ApiStatus.Experimental
-    public static Path getCoat(boolean server, String scenario, String abbreviation, String flagAbbreviation) {
-        Path countryFlagsDir = getCoatsDir(server).resolve(scenario.isEmpty() ? abbreviation : scenario + "/" + abbreviation);
-        Path flag = countryFlagsDir.resolve(abbreviation + "_" + flagAbbreviation + ".png");
-
-        if(Files.notExists(flag)) {
-            flag = getFlag(abbreviation);
-        }
-
-        return flag;
-    }
-
-    public static Path getFlag(String abbreviation) {
-        Path countryFlagsDir = getDefaultFlagsDir().resolve(abbreviation);
-
-        return countryFlagsDir.resolve(abbreviation + ".png");
-    }
-
-    //flagAbbreviation can also just be any other thing not only ideology yk
-    public static Path getFlag(String abbreviation, String flagAbbreviation) {
-        Path countryFlagsDir = getDefaultFlagsDir().resolve(abbreviation);
-        Path flag = countryFlagsDir.resolve(abbreviation + "_" + flagAbbreviation + ".png");
-
-        if(Files.notExists(flag)) {
-            flag = getFlag(abbreviation);
-        }
-
-        return flag;
-    }
-
-    public static Path getFlag(boolean server, String abbreviation) {
-        Path countryFlagsDir = getFlagsDir(server).resolve(abbreviation);
-
-        return countryFlagsDir.resolve(abbreviation + ".png");
-    }
-
-    //flagAbbreviation can also just be any other thing not only ideology yk
-    public static Path getFlag(boolean server, String abbreviation, String flagAbbreviation) {
-        Path countryFlagsDir = getFlagsDir(server).resolve(abbreviation);
-        Path flag = countryFlagsDir.resolve(abbreviation + "_" + flagAbbreviation + ".png");
-
-        if(Files.notExists(flag)) {
-            flag = getFlag(abbreviation);
-        }
-
-        return flag;
+        return null;
     }
 
     public static Path getFlagsDir(boolean server) {

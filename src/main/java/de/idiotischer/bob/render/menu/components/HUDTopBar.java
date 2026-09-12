@@ -1,5 +1,8 @@
 package de.idiotischer.bob.render.menu.components;
 
+import de.idiotischer.bob.BOB;
+import de.idiotischer.bob.util.FileUtil;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -22,14 +25,16 @@ public class HUDTopBar extends JPanel {
 
         Graphics2D g2 = (Graphics2D) g;
 
-        g2.setColor(Color.DARK_GRAY);
+        Color dark = BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().palette().darkColor();
+
+        g2.setColor(dark);
         g2.fillRect(0, 0, getWidth(), getHeight());
         g2.setStroke(new BasicStroke(12));
-        g2.setColor(Color.DARK_GRAY.darker());
+        g2.setColor(dark.darker());
         g2.drawRect(0, 0, getWidth(), getHeight());
 
         g2.setColor(Color.GREEN);
-        Font font = new Font(Font.SANS_SERIF, Font.BOLD, 15);
+        Font font = /*FileUtil.getFont();*/new Font(Font.SANS_SERIF, Font.BOLD, 15);
         g2.setFont(font);
 
         String text = "Current country: " + countryName;

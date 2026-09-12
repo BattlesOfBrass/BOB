@@ -5,16 +5,12 @@ import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonReader;
 import de.idiotischer.bob.Server;
 import de.idiotischer.bob.SharedCore;
-import de.idiotischer.bob.networking.packet.impl.CountriesSyncPacket;
-import de.idiotischer.bob.networking.packet.impl.StatesSyncPacket;
-import de.idiotischer.bob.state.State;
+import de.idiotischer.bob.tile.Tile;
 
 import java.awt.*;
 import java.nio.file.Files;
-import java.util.Comparator;
-import java.util.HashSet;
+import java.util.*;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
@@ -68,20 +64,12 @@ public class ServerCountryManager implements CountryResolver {
             e.printStackTrace();
         }
 
-        //TODO: make this send sync packets without crashing the client (liek statemanager)
+        //TODO: make this send sync packets without crashing the client (liek tilemanager)
         //Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), CountriesSyncPacket.fromCountries(countrySet));
     }
 
     public Set<Country> getPuppets() {
         return this.getCountries().stream().filter(c -> c.getPuppetState() != PuppetState.NONE).collect(Collectors.toSet());
-    }
-
-    public Country fromNameExact(String name) {
-        return this.getCountries().stream().filter(country -> country.countryName().equals(name)).findFirst().orElse(null);
-    }
-
-    public Country fromAbbreviation(String abbreviation) {
-        return this.getCountries().stream().filter(country -> country.getAbbreviation().equals(abbreviation.toUpperCase())).findFirst().orElse(null);
     }
 
     @Deprecated(forRemoval = true)
@@ -117,16 +105,23 @@ public class ServerCountryManager implements CountryResolver {
         return countrySet.stream().filter(c -> c.getAbbreviation().equals(abbreviation)).findFirst().orElse(null);
     }
 
-    public List<State> getControlled(Country country) {
-        if(Server.getInstance().getStateManager() == null) return List.of();
-        return Server.getInstance().getStateManager().getStateSet().stream().filter(s -> s.getController() == country).toList();
+    public List<Tile> getOwned(Country country) {
+        if(Server.getInstance().getTileManager() == null) return List.of();
+        return Server.getInstance().getTileManager().getTileSet().stream().filter(s -> s.getOwner().getAbbreviation().equals(country.getAbbreviation())).toList();
+    }
+
+    public List<Tile> getControlled(Country country) {
+        if(Server.getInstance().getTileManager() == null) return List.of();
+        return Server.getInstance().getTileManager().getTileSet().stream().filter(s -> s.getController().getAbbreviation().equals(country.getAbbreviation())).toList();
     }
 
     public List<Country> getCountries() {
-        return countrySet
-                .stream()
-                .sorted(Comparator.comparing(Country::getAbbreviation))
-                .toList();
+        return countrySet.stream().sorted(Comparator.comparing(Country::getAbbreviation)).toList();
+    }
+
+    public int getTotalVPs(Country country) {
+        //getOwned(country).;
+        return getOwned(country).stream().mapToInt(Tile::getVictoryPoints).sum();
     }
 
     //public List<Country> getMajors() {
@@ -138,24 +133,24 @@ public class ServerCountryManager implements CountryResolver {
     //}
 
     public List<Country> getMajors() {
-        return getCountries().stream()
-                .filter(Country::isMajor)
-                .sorted(Comparator.comparing(Country::getAbbreviation))
-                .toList();
+        return getCountries().stream().filter(Country::isMajor).sorted(Comparator.comparing(Country::getAbbreviation)).toList();
+    }
+
+    public boolean isAllied(Country a, Country b) {
+        return false;
+    }
+
+    @Override
+    public boolean anyAlliedWith(List<Country> testers, Country country) {
+        return testers.stream().anyMatch(c -> isAllied(c, country));
     }
 
     public List<Country> getOnSelectScreen() {
-        return getCountries().stream()
-                .filter(Country::isSelectScreen)
-                .sorted(Comparator.comparing(Country::getAbbreviation))
-                .toList();
+        return getCountries().stream().filter(Country::isSelectScreen).sorted(Comparator.comparing(Country::getAbbreviation)).toList();
     }
 
     public List<Country> getMinors() {
-        return getCountries().stream()
-                .filter(c -> !c.isMajor())
-                .sorted(Comparator.comparing(Country::getAbbreviation))
-                .toList();
+        return getCountries().stream().filter(c -> !c.isMajor()).sorted(Comparator.comparing(Country::getAbbreviation)).toList();
     }
 
     public void splitCountry(Country country) {

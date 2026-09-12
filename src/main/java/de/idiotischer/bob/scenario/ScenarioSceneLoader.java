@@ -39,12 +39,12 @@ public class ScenarioSceneLoader {
 
         if(setMap) BOB.getInstance().getMainRenderer().setMap(this.currentScenario.getMapImage());
 
-        //TODO: bald nur noch fetchen
-        BOB.getInstance().getCountryManager().reload();
+        BOB.getInstance().getPeaceHelper().clear();
 
-        if (awaitingFuture != null && !awaitingFuture.isDone()) {
-            awaitingFuture.complete(null);
-        }
+        //TODO: bald nur noch fetchen
+        BOB.getInstance().getIdeologyManager().reload();
+
+        if (awaitingFuture != null && !awaitingFuture.isDone()) awaitingFuture.complete(null);
     }
 
     public BufferedImage getMap() {

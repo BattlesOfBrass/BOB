@@ -1,9 +1,11 @@
 package de.idiotischer.bob.country;
 
 import de.idiotischer.bob.BOB;
+import de.idiotischer.bob.Server;
 import de.idiotischer.bob.networking.packet.impl.pp.RequestPacket;
 import de.idiotischer.bob.networking.packet.impl.pp.Type;
-import de.idiotischer.bob.state.State;
+import de.idiotischer.bob.render.menu.impl.select.PeaceMenuOverlay;
+import de.idiotischer.bob.tile.Tile;
 
 import java.awt.*;
 import java.util.Comparator;
@@ -34,7 +36,7 @@ public class CountryManager implements CountryResolver{
     }
 
     public void finishReload() {
-        BOB.getInstance().getStateManager().reload();
+        BOB.getInstance().getTileManager().reload();
 
         if(awaitingFuture == null || awaitingFuture.isDone()) return;
         awaitingFuture.complete(null);
@@ -89,9 +91,19 @@ public class CountryManager implements CountryResolver{
         return countrySet.stream().filter(c -> c.getAbbreviation().equals(abbreviation)).findFirst().orElse(null);
     }
 
-    public List<State> getControlled(Country country) {
-        if(BOB.getInstance().getStateManager() == null) return List.of();
-        return BOB.getInstance().getStateManager().getStateSet().stream().filter(s -> s.getController() == country).toList();
+    public List<Tile> getOwned(Country country) {
+        if(BOB.getInstance().getTileManager() == null) return List.of();
+        return Server.getInstance().getTileManager().getTileSet().stream().filter(s -> s.getOwner().getAbbreviation().equals(country.getAbbreviation())).toList();
+    }
+
+    public List<Tile> getControlled(Country country) {
+        if(BOB.getInstance().getTileManager() == null) return List.of();
+        return BOB.getInstance().getTileManager().getTileSet().stream().filter(s -> s.getController().getAbbreviation().equals(country.getAbbreviation())).toList();
+    }
+
+    public int getTotalVPs(Country country) {
+        //getOwned(country).;
+        return getOwned(country).stream().mapToInt(Tile::getVictoryPoints).sum();
     }
 
     public List<Country> getCountries() {
@@ -99,6 +111,16 @@ public class CountryManager implements CountryResolver{
                 .stream()
                 .sorted(Comparator.comparing(Country::getAbbreviation))
                 .toList();
+    }
+
+    @Override
+    public boolean isAllied(Country a, Country b) {
+        return false;
+    }
+
+    @Override
+    public boolean anyAlliedWith(List<Country> testers, Country country) {
+        return testers.stream().anyMatch(c -> isAllied(c, country));
     }
 
     //public List<Country> getMajors() {

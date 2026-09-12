@@ -1,7 +1,12 @@
 package de.idiotischer.bob;
 
+import de.idiotischer.bob.combat.CombatManager;
+import de.idiotischer.bob.conference.PeaceHelper;
 import de.idiotischer.bob.country.CountryManager;
 import de.idiotischer.bob.debug.Debugger;
+import de.idiotischer.bob.game.GameManager;
+import de.idiotischer.bob.ideology.Ideology;
+import de.idiotischer.bob.ideology.IdeologyManager;
 import de.idiotischer.bob.listener.PacketListener;
 import de.idiotischer.bob.networking.ClientSocket;
 import de.idiotischer.bob.networking.communication.SendTool;
@@ -11,12 +16,24 @@ import de.idiotischer.bob.render.MainRenderer;
 import de.idiotischer.bob.scenario.ScenarioManager;
 import de.idiotischer.bob.scenario.ScenarioSceneLoader;
 import de.idiotischer.bob.state.StateManager;
+import de.idiotischer.bob.theme.Theme;
+import de.idiotischer.bob.tile.Tile;
+import de.idiotischer.bob.tile.TileManager;
+import de.idiotischer.bob.troop.Troop;
 import de.idiotischer.bob.troop.TroopManager;
+import de.idiotischer.bob.troop.TroopStack;
 import de.idiotischer.bob.util.AddressUtil;
 import de.idiotischer.bob.util.FileUtil;
 import de.idiotischer.bob.util.MainConfigUtil;
+import de.idiotischer.bob.war.WarManager;
+
+import java.awt.*;
+import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import javax.swing.*;
 
@@ -28,7 +45,7 @@ public class BOB {
 
     private MainRenderer mapRenderer;
 
-    private StateManager stateManager;
+    private TileManager tileManager;
 
     private Player player;
 
@@ -36,8 +53,7 @@ public class BOB {
 
     private Debugger debugger;
 
-    private final ScenarioSceneLoader scenarioSceneLoader =
-        new ScenarioSceneLoader();
+    private final ScenarioSceneLoader scenarioSceneLoader = new ScenarioSceneLoader();
 
     private ClientSocket client;
 
@@ -51,10 +67,20 @@ public class BOB {
 
     private TroopManager troopManager;
 
+    private WarManager warManager;
+
     private Server localServer;
     private boolean remoteConnected = false;
     private CompletableFuture<Void> awaitingReload;
     private boolean initialized = false;
+    private GameManager gameManager;
+    private StateManager stateManager;
+    private CombatManager combatManager;
+    private PeaceHelper helper = new PeaceHelper();
+
+    private Theme settingsTheme = Theme.defaultTheme(); //TODO: move to Settings class
+
+    private IdeologyManager ideologyManager;
 
     public static void main(String[] args) {
         new BOB();
@@ -62,7 +88,16 @@ public class BOB {
 
     public BOB() {
         System.setProperty("app.name", "BOB");
-        Thread.currentThread().setName(System.getProperty("app.name"));
+        System.setProperty("java.awt.application.name", "BOB");
+
+        try {
+            //THX STACKOVERFLOW
+            Toolkit toolkit = Toolkit.getDefaultToolkit();
+            Field awtAppClassNameField = toolkit.getClass().getDeclaredField("awtAppClassName");
+            awtAppClassNameField.setAccessible(true);
+            awtAppClassNameField.set(toolkit, "BOB");
+        }
+        catch (NoSuchFieldException | IllegalAccessException ignored) {}
 
         BOB.instance = this;
 
@@ -80,12 +115,6 @@ public class BOB {
         if (countries.getCountries().isEmpty()) {
             throw new IllegalStateException("Setup called before countries loaded");
         }
-
-        this.player = playerManager.createPlayer(client.getChannel(), AddressUtil.getThisAddress(client.getChannel()));
-
-        this.playerManager.addPlayer(player);
-
-        this.playerManager.changeCountry(player, countries.getRandom());
 
         this.mapRenderer = new MainRenderer();
 
@@ -113,15 +142,25 @@ public class BOB {
 
         this.scenarioManager = new ScenarioManager();
 
+        this.ideologyManager = new IdeologyManager();
+
         this.countries = new CountryManager();
+
+        this.tileManager = new TileManager();
 
         this.stateManager = new StateManager();
 
         this.troopManager = new TroopManager();
 
+        this.warManager = new WarManager();
+
+        this.combatManager = new CombatManager();
+
         this.awaitingReload = this.scenarioManager.reload().thenRun(() -> {
             this.scenarioSceneLoader.requestScenarioLoad(scenarioManager.getRandom());
         });
+
+        this.gameManager = new GameManager();
     }
 
     public ImageIcon createIcon() {
@@ -130,7 +169,8 @@ public class BOB {
         try {
             imgURL = FileUtil.getIconPath().toUri().toURL();
         } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
+            System.err.println("Could not find icon resource!");
+            return null;
         }
 
         return new ImageIcon(imgURL);
@@ -152,8 +192,8 @@ public class BOB {
         return scenarioSceneLoader;
     }
 
-    public StateManager getStateManager() {
-        return stateManager;
+    public TileManager getTileManager() {
+        return tileManager;
     }
 
     public Player getPlayer() {
@@ -207,6 +247,11 @@ public class BOB {
 
     //und mit remote dann das für den rest also länder etc was jeder server braucht
 
+
+    public StateManager getStateManager() {
+        return stateManager;
+    }
+
     public CompletableFuture<Void> getAwaitingReload() {
         return awaitingReload;
     }
@@ -225,5 +270,33 @@ public class BOB {
 
     public PlayerManager getPlayerManager() {
         return playerManager;
+    }
+
+    public GameManager getGameManager() {
+        return gameManager;
+    }
+
+    public WarManager getWarManager() {
+        return warManager;
+    }
+
+    public void setPlayer(UUID uuid) {
+        this.player = playerManager.createPlayer(client.getChannel(), uuid, AddressUtil.getThisAddress(client.getChannel()));
+    }
+
+    public CombatManager getCombatManager() {
+        return combatManager;
+    }
+
+    public PeaceHelper getPeaceHelper() {
+        return helper;
+    }
+
+    public Theme getSettingsTheme() {
+        return settingsTheme;
+    }
+
+    public IdeologyManager getIdeologyManager() {
+        return ideologyManager;
     }
 }

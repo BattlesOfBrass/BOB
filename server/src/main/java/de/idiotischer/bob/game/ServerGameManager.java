@@ -14,11 +14,11 @@ public class ServerGameManager {
         return state;
     }
 
-    public void sendState(AsynchronousSocketChannel sock) {
+    public void sendTile(AsynchronousSocketChannel sock) {
         Server.getInstance().getSendTool().send(sock, new ReplyPacket(Type.GAMESTATE_SYNC, String.valueOf(state.ordinal())));
     }
 
-    public void broadcastState(AsynchronousSocketChannel sock) {
+    public void broadcastTile(AsynchronousSocketChannel sock) {
         Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new ReplyPacket(Type.GAMESTATE_SYNC, String.valueOf(state.ordinal())));
     }
 

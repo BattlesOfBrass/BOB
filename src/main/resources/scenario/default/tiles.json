@@ -1,0 +1,1741 @@
+{
+  "memel": {
+    "name": "Memel",
+    "locations": "644,114",
+    "controller": "LIT"
+  },
+  "koenigsberg": {
+    "name": "koenigsberg",
+    "locations": "641,117",
+    "controller": "RUS"
+  },
+  "allenstein": {
+    "name": "Allenstein",
+    "locations": "637,121",
+    "controller": "POL"
+  },
+  "danzig": {
+    "name": "Danzig",
+    "locations": "632,119",
+    "controller": "POL"
+  },
+  "gdynia": {
+    "name": "Gdynia",
+    "locations": "631,121",
+    "controller": "POL"
+  },
+  "hinterpommern": {
+    "name": "Hinterpommern",
+    "locations": "627,120",
+    "controller": "POL"
+  },
+  "pommern": {
+    "name": "Pommern",
+    "locations": "623,123",
+    "controller": "POL"
+  },
+  "stettin": {
+    "name": "Stettin",
+    "locations": "619,121",
+    "controller": "POL"
+  },
+  "vorpommern": {
+    "name": "Vorpommern",
+    "locations": "612,120",
+    "controller": "GER"
+  },
+  "ostmark": {
+    "name": "Ostmark",
+    "locations": "621,128",
+    "controller": "POL"
+  },
+  "sachsen": {
+    "name": "Sachsen",
+    "locations": "613,133",
+    "controller": "GER"
+  },
+  "sachsen-anhalt": {
+    "name": "Sachsen-Anhalt",
+    "locations": "608,129",
+    "controller": "GER"
+  },
+  "brandenburg": {
+    "name": "Brandenburg",
+    "locations": "614,127",
+    "controller": "GER"
+  },
+  "Posen": {
+    "name": "Posen",
+    "locations": "628,126",
+    "controller": "POL"
+  },
+  "oberschlesien": {
+    "name": "Oberschlesien",
+    "locations": "624,133",
+    "controller": "POL"
+  },
+  "schleswig": {
+    "name": "Schleswig-Holstein",
+    "locations": "602,120",
+    "controller": "GER"
+  },
+  "nordschleswig": {
+    "name": "Nordschleswig",
+    "locations": "600,115",
+    "controller": "DEN"
+  },
+  "niederschlesien": {
+    "name": "Niederschlesien",
+    "locations": "629,135",
+    "controller": "POL"
+  },
+  "kattowitz": {
+    "name": "Kattowitz",
+    "locations": "634,136",
+    "controller": "POL"
+  },
+  "franken": {
+    "name": "Franken",
+    "locations": "605,138",
+    "controller": "GER"
+  },
+  "bayern": {
+    "name": "Bayern",
+    "locations": "610,144",
+    "controller": "GER"
+  },
+  "schwaben": {
+    "name": "Schwaben",
+    "locations": "603,146",
+    "controller": "GER"
+  },
+  "baden": {
+    "name": "Baden",
+    "locations": "595,143",
+    "controller": "GER"
+  },
+  "wuerttemberg": {
+    "name": "Württemberg",
+    "locations": "600,143",
+    "controller": "GER"
+  },
+  "thueringen": {
+    "name": "Thüringen",
+    "locations": "604,134",
+    "controller": "GER"
+  },
+  "hessen": {
+    "name": "Hessen",
+    "locations": "597,135",
+    "controller": "GER"
+  },
+  "nordrhein-westfalen": {
+    "name": "Nordrhein-Westfalen",
+    "locations": "593,131",
+    "controller": "GER"
+  },
+  "rheinland-pfalz": {
+    "name": "Rheinland-Pfalz",
+    "locations": "592,137",
+    "controller": "GER"
+  },
+  "saarland": {
+    "name": "Saarland",
+    "locations": "591,140",
+    "controller": "GER"
+  },
+  "eupen-malmedy": {
+    "name": "Eupen-Malmedy",
+    "locations": "588,135",
+    "controller": "BEL"
+  },
+  "elsass-lothringen": {
+    "name": "Elsass-Lothringen",
+    "locations": "591,144",
+    "controller": "FRA"
+  },
+  "hannover": {
+    "name": "Hannover",
+    "locations": "603,127",
+    "controller": "GER"
+  },
+  "weser-ems": {
+    "name": "Weser-Ems",
+    "locations": "596,124",
+    "controller": "GER"
+  },
+  "luxembourg": {
+    "name": "Luxemburg",
+    "locations": "587,139",
+    "controller": "LUX"
+  },
+  "pol-upper": {
+    "name": "Poland Upper",
+    "locations": "638,125",
+    "controller": "POL"
+  },
+  "pol-lower": {
+    "name": "Poland Lower",
+    "locations": "640,129",
+    "controller": "POL"
+  },
+  "carpathian-foothills": {
+    "name": "Carpathian foothills",
+    "locations": "645,137",
+    "controller": "POL"
+  },
+  "lublin": {
+    "name": "Lublin",
+    "locations": "649,132",
+    "controller": "POL"
+  },
+  "podlascia": {
+    "name": "Podlascia",
+    "locations": "648,124",
+    "controller": "POL"
+  },
+  "heiligkreuz": {
+    "name": "Swietokrzyskie Voivodeship",
+    "locations": "640,134",
+    "controller": "POL"
+  },
+  "rinkobing": {
+    "name": "Rinkobing",
+    "locations": "598,110",
+    "controller": "DEN"
+  },
+  "aarhus": {
+    "name": "Aarhus",
+    "locations": "602,111",
+    "controller": "DEN"
+  },
+  "north-jutland": {
+    "name": "North-Jutland",
+    "locations": "603,106",
+    "controller": "DEN"
+  },
+  "zealand": {
+    "name": "Zealand",
+    "locations": "608,113",
+    "controller": "DEN"
+  },
+  "storstrom": {
+    "name": "Storstrom",
+    "locations": "607,115",
+    "controller": "DEN"
+  },
+  "sudauen": {
+    "name": "Sudavija",
+    "locations": "648,117",
+    "controller": "LIT"
+  },
+  "niederlitauen": {
+    "name": "Zemaitija",
+    "locations": "646,112",
+    "controller": "LIT"
+  },
+  "oberlitauen": {
+    "name": "Aukstaitija",
+    "locations": "651,114",
+    "controller": "LIT"
+  },
+  "oberlitauen-2-forremoval": {
+    "name": "Aukstaitija-2",
+    "locations": "655,115",
+    "controller": "LIT"
+  },
+  "gelderland": {
+    "name": "Gelderland",
+    "locations": "587,127",
+    "controller": "NET"
+  },
+  "friesland": {
+    "name": "Friesland",
+    "locations": "590,124",
+    "controller": "NET"
+  },
+  "nord-brabant": {
+    "name": "Nord-Brabant",
+    "locations": "586,131",
+    "controller": "NET"
+  },
+  "Zeeland": {
+    "name": "Zeeland",
+    "locations": "580,130",
+    "controller": "NET"
+  },
+  "utrecht": {
+    "name": "Utrecht",
+    "locations": "583,129",
+    "controller": "NET"
+  },
+  "antwerp": {
+    "name": "Antwerp",
+    "locations": "585,133",
+    "controller": "BEL"
+  },
+  "namur": {
+    "name": "Namur",
+    "locations": "585,137",
+    "controller": "BEL"
+  },
+  "hanaut": {
+    "name": "Hanaut",
+    "locations": "581,136",
+    "controller": "BEL"
+  },
+  "flanders": {
+    "name": "Flanderen",
+    "locations": "579,133",
+    "controller": "BEL"
+  },
+  "upper-sudeten": {
+    "name": "Upper Sudeten",
+    "locations": "619,135",
+    "controller": "CZE"
+  },
+  "lower-sudeten": {
+    "name": "Lower Sudeten",
+    "locations": [
+      "617,141",
+      "613,139"
+    ],
+    "controller": "CZE"
+  },
+  "bohemia": {
+    "name": "Bohemia",
+    "locations": "619,139",
+    "controller": "CZE"
+  },
+  "ostrava": {
+    "name": "Ostrava",
+    "locations": "631,140",
+    "controller": "CZE"
+  },
+  "moravia": {
+    "name": "Moravia",
+    "locations": "628,141",
+    "controller": "CZE"
+  },
+  "czech-silesia": {
+    "name": "Czech-Silesia",
+    "locations": "633,139",
+    "controller": "CZE"
+  },
+  "west-slovakia": {
+    "name": "West-Slovakia",
+    "locations": "632,144",
+    "controller": "SVK"
+  },
+  "middle-slovakia": {
+    "name": "Middle-Slovakia",
+    "locations": "637,142",
+    "controller": "SVK"
+  },
+  "east-slovakia": {
+    "name": "East-Slovakia",
+    "locations": "643,142",
+    "controller": "SVK"
+  },
+  "toeri": {
+    "name": "Töri",
+    "locations": "600,151",
+    "controller": "SWI"
+  },
+  "luzern": {
+    "name": "Luzern",
+    "locations": "597,152",
+    "controller": "SWI"
+  },
+  "bern": {
+    "name": "Bern",
+    "locations": "594,150",
+    "controller": "SWI"
+  },
+  "jura": {
+    "name": "Jura",
+    "locations": "590,152",
+    "controller": "SWI"
+  },
+  "tessin": {
+    "name": "Tessin",
+    "locations": "599,154",
+    "controller": "SWI"
+  },
+  "leman": {
+    "name": "Leman",
+    "locations": "592,155",
+    "controller": "SWI"
+  },
+  "upper-corse": {
+    "name": "Upper-Corse",
+    "locations": "599,171",
+    "controller": "FRA"
+  },
+  "lower-corse": {
+    "name": "Lower-Corse",
+    "locations": "599,173",
+    "controller": "FRA"
+  },
+  "calais": {
+    "name": "Calais",
+    "locations": "576,136",
+    "controller": "FRA"
+  },
+  "champagne": {
+    "name": "Champagne",
+    "locations": "581,142",
+    "controller": "FRA"
+  },
+  "lorraine": {
+    "name": "Lorraine",
+    "locations": "586,143",
+    "controller": "FRA"
+  },
+  "picardy": {
+    "name": "Normandy",
+    "locations": "576,140",
+    "controller": "FRA"
+  },
+  "normandy": {
+    "name": "Normandy",
+    "locations": "566,143",
+    "controller": "FRA"
+  },
+  "paris": {
+    "name": "Paris",
+    "locations": "574,144",
+    "controller": "FRA"
+  },
+  "comte": {
+    "name": "Comte",
+    "locations": "588,150",
+    "controller": "FRA"
+  },
+  "auvergne": {
+    "name": "Auvergne",
+    "locations": "577,156",
+    "controller": "FRA"
+  },
+  "rhone-alps": {
+    "name": "Rhone-Alps",
+    "locations": "584,157",
+    "controller": "FRA"
+  },
+  "provence-alps": {
+    "name": "Provence-Alps",
+    "locations": "586,165",
+    "controller": "FRA"
+  },
+  "limousin": {
+    "name": "Limousin",
+    "locations": "570,157",
+    "controller": "FRA"
+  },
+  "burgundy": {
+    "name": "Burgundy",
+    "locations": "581,149",
+    "controller": "FRA"
+  },
+  "centre-val-de-loire": {
+    "name": "Centre-Val-de-Loire",
+    "locations": "572,150",
+    "controller": "FRA"
+  },
+  "pays-de-loire": {
+    "name": "Pays-de-Loire",
+    "locations": "562,150",
+    "controller": "FRA"
+  },
+  "britany": {
+    "name": "Britany",
+    "locations": "556,147",
+    "controller": "FRA"
+  },
+  "poitou-charentes": {
+    "name": "Poitou-Charentes",
+    "locations": "564,155",
+    "controller": "FRA"
+  },
+  "aquitaine": {
+    "name": "Aquitaine",
+    "locations": [
+      "560,162",
+      "565,161",
+      "562,166"
+    ],
+    "controller": "FRA"
+  },
+  "languedoc-R": {
+    "name": "Languedoc-R",
+    "locations": "575,166",
+    "controller": "FRA"
+  },
+  "midi-pyrenees": {
+    "name": "Midi-Pyrenees",
+    "locations": "568,165",
+    "controller": "FRA"
+  },
+  "tirol": {
+    "name": "Tirol",
+    "locations": "608,150",
+    "controller": "AUS"
+  },
+  "steiermark": {
+    "name": "Steiermark",
+    "locations": "622,149",
+    "controller": "AUS"
+  },
+  "nieder-oesterreich": {
+    "name": "Nieder-Österreich",
+    "locations": "624,145",
+    "controller": "AUS"
+  },
+  "burgenland": {
+    "name": "Burgenland",
+    "locations": "627,148",
+    "controller": "AUS"
+  },
+  "ober-oesterreich": {
+    "name": "Ober-Österreich",
+    "locations": "617,145",
+    "controller": "AUS"
+  },
+  "salzburg": {
+    "name": "Salzburg",
+    "locations": "615,150",
+    "controller": "AUS"
+  },
+  "western-transdanubia": {
+    "name": "Western-Transdanubia",
+    "locations": "628,150",
+    "controller": "HUN"
+  },
+  "southern-great-plain": {
+    "name": "Southern-Great-Plain",
+    "locations": "639,153",
+    "controller": "HUN"
+  },
+  "northern-great-plain": {
+    "name": "Northern-Great-Plain",
+    "locations": "642,148",
+    "controller": "HUN"
+  },
+  "central-transdanubia": {
+    "name": "Central-Transdanubia",
+    "locations": "633,152",
+    "controller": "HUN"
+  },
+  "piemont": {
+    "name": "Piemont",
+    "locations": "595,160",
+    "controller": "ITA"
+  },
+  "lombardy": {
+    "name": "Lombardy",
+    "locations": "603,158",
+    "controller": "ITA"
+  },
+  "south-tirol": {
+    "name": "South-Tirol",
+    "locations": "608,153",
+    "controller": "ITA"
+  },
+  "trentino": {
+    "name": "Trentino",
+    "locations": "606,155",
+    "controller": "ITA"
+  },
+  "emilia-romagna": {
+    "name": "Emilia-Romagna",
+    "locations": "606,163",
+    "controller": "ITA"
+  },
+  "tuscany": {
+    "name": "Tuscany",
+    "locations": "608,168",
+    "controller": "ITA"
+  },
+  "latium": {
+    "name": "Latium",
+    "locations": "613,172",
+    "controller": "ITA"
+  },
+  "marken-abruzzen": {
+    "name": "Marken-Abruzzen",
+    "locations": "615,168",
+    "controller": "ITA"
+  },
+  "campania": {
+    "name": "Campania",
+    "locations": "620,177",
+    "controller": "ITA"
+  },
+  "puglia": {
+    "name": "Puglia",
+    "locations": "630,179",
+    "controller": "ITA"
+  },
+  "calabria": {
+    "name": "Calabria",
+    "locations": "627,186",
+    "controller": "ITA"
+  },
+  "sicily": {
+    "name": "Sicily",
+    "locations": "619,193",
+    "controller": "ITA"
+  },
+  "veneto": {
+    "name": "Veneto",
+    "locations": "609,157",
+    "controller": "ITA"
+  },
+  "friuli-venezia": {
+    "name": "Friuli-Venezia",
+    "locations": "613,155",
+    "controller": "ITA"
+  },
+  "upper-sardinia": {
+    "name": "Upper-Sardinia",
+    "locations": "598,180",
+    "controller": "ITA"
+  },
+  "lower-sardinia": {
+    "name": "Lower-Sardinia",
+    "locations": "598,184",
+    "controller": "ITA"
+  },
+  "crisana": {
+    "name": "Crisana",
+    "locations": "651,150",
+    "controller": "ROM"
+  },
+  "bucovina": {
+    "name": "Bucovina",
+    "locations": "659,146",
+    "controller": "ROM"
+  },
+  "banat": {
+    "name": "Banat",
+    "locations": "647,156",
+    "controller": "ROM"
+  },
+  "oltenia": {
+    "name": "Oltenia",
+    "locations": "652,160",
+    "controller": "ROM"
+  },
+  "transilvania": {
+    "name": "Transilvania",
+    "locations": "658,154",
+    "controller": "ROM"
+  },
+  "muntenia": {
+    "name": "Muntenia",
+    "locations": "661,161",
+    "controller": "ROM"
+  },
+  "muntenia-2": {
+    "name": "Muntenia-2",
+    "locations": "667,158",
+    "controller": "ROM"
+  },
+  "moldova": {
+    "name": "Moldova",
+    "locations": "665,151",
+    "controller": "ROM"
+  },
+  "dobrogea": {
+    "name": "Dobrogea",
+    "locations": "672,161",
+    "controller": "ROM"
+  },
+  "dobrogea-2": {
+    "name": "Dobrogea-2",
+    "locations": "670,164",
+    "controller": "ROM"
+  },
+  "slovenia-west": {
+    "name": "Slovenia-West",
+    "locations": "617,155",
+    "controller": "SLO"
+  },
+  "slovenia-east": {
+    "name": "Slovenia-East",
+    "locations": "622,154",
+    "controller": "SLO"
+  },
+  "istria": {
+    "name": "Istria",
+    "locations": "617,159",
+    "controller": "CRO"
+  },
+  "dalmatia": {
+    "name": "Dalmatia",
+    "locations": "624,164",
+    "controller": "CRO"
+  },
+  "central-croatia": {
+    "name": "Central-Croatia",
+    "locations": "625,156",
+    "controller": "CRO"
+  },
+  "danube-croatia": {
+    "name": "Danube-Croatia",
+    "locations": "633,158",
+    "controller": "CRO"
+  },
+  "herzegovina": {
+    "name": "Herzegovina",
+    "locations": "635,166",
+    "controller": "BOS"
+  },
+  "herceg-bosna": {
+    "name": "Herceg-Bosna",
+    "locations": "628,164",
+    "controller": "BOS"
+  },
+  "bosanska-krajina": {
+    "name": "Bosanska-Krajina",
+    "locations": "630,161",
+    "controller": "BOS"
+  },
+  "bosna": {
+    "name": "Bosna",
+    "locations": "634,162",
+    "controller": "BOS"
+  },
+  "montenegro-west": {
+    "name": "Montenegro West",
+    "locations": "636,171",
+    "controller": "MNT"
+  },
+  "montenegro-east": {
+    "name": "Montenegro East",
+    "locations": "638,169",
+    "controller": "MNT"
+  },
+  "kosovo-west": {
+    "name": "Kosovo West",
+    "locations": "642,171",
+    "controller": "KOS"
+  },
+  "kosovo-east": {
+    "name": "Kosovo East",
+    "locations": "643,169",
+    "controller": "KOS"
+  },
+  "central-macedonia": {
+    "name": "Central Macedonia",
+    "locations": "646,175",
+    "controller": "MAC"
+  },
+  "eastern-macedonia": {
+    "name": "Eastern Macedonia",
+    "locations": "648,173",
+    "controller": "MAC"
+  },
+  "southwest-macedonia": {
+    "name": "Southwest Macedonia",
+    "locations": "643,174",
+    "controller": "MAC"
+  },
+  "montana": {
+    "name": "Montana",
+    "locations": "655,168",
+    "controller": "BUL"
+  },
+  "sofiya": {
+    "name": "Sofiya",
+    "locations": "652,173",
+    "city": "Sofya",
+    "controller": "BUL"
+  },
+  "plovdiv": {
+    "name": "Plovdiv",
+    "locations": "660,174",
+    "controller": "BUL"
+  },
+  "ruse": {
+    "name": "Ruse",
+    "locations": "665,167",
+    "controller": "BUL"
+  },
+  "burgas": {
+    "name": "Burgas",
+    "locations": "668,172",
+    "controller": "BUL"
+  },
+  "elbasan": {
+    "name": "Elbasan",
+    "locations": "640,178",
+    "controller": "ALB"
+  },
+  "shkodra": {
+    "name": "Shkodra",
+    "locations": "639,173",
+    "controller": "ALB"
+  },
+  "northern-epirus": {
+    "name": "Northern Epirus",
+    "locations": "641,181",
+    "controller": "ALB"
+  },
+  "pirot": {
+    "name": "Pirot",
+    "locations": "649,167",
+    "controller": "SER"
+  },
+  "belgrade": {
+    "name": "Belgrade",
+    "locations": "641,159",
+    "controller": "SER"
+  },
+  "backa": {
+    "name": "Backa",
+    "locations": "638,157",
+    "controller": "SER"
+  },
+  "north-banat": {
+    "name": "North-Banat",
+    "locations": "642,156",
+    "controller": "SER"
+  },
+  "sumadija": {
+    "name": "Sumadija",
+    "locations": "642,163",
+    "controller": "SER"
+  },
+  "zlatibor": {
+    "name": "Zlatibor",
+    "locations": "639,166",
+    "controller": "SER"
+  },
+  "east-serbia": {
+    "name": "East-Serbia",
+    "locations": "647,164",
+    "controller": "SER"
+  },
+  "leinster": {
+    "name": "Leinster",
+    "locations": "542,124",
+    "controller": "IRE"
+  },
+  "connacht": {
+    "name": "Connacht",
+    "locations": "537,121",
+    "controller": "IRE"
+  },
+  "munster": {
+    "name": "Munster",
+    "locations": "535,128",
+    "controller": "IRE"
+  },
+  "ulster": {
+    "name": "Ulster",
+    "locations": "544,117",
+    "controller": "ENG"
+  },
+  "aberdeen": {
+    "name": "Aberdeen",
+    "locations": "556,109",
+    "controller": "ENG"
+  },
+  "grampian": {
+    "name": "Grampian",
+    "locations":"554,105",
+    "controller": "ENG"
+  },
+  "highland": {
+    "name": "Highland",
+    "locations":"550,108",
+    "controller": "ENG"
+  },
+  "westernisles": {
+    "name": "Western-Isles",
+    "locations":"546,104",
+    "controller": "ENG"
+  },
+  "argyll": {
+    "name": "Argyll",
+    "locations": "552, 114",
+    "controller": "ENG"
+  },
+  "shetland": {
+    "name": "Shetland Islands",
+    "locations": "558,99",
+    "controller": "ENG"
+  },
+  "faroer": {
+    "name": "Faroe Islands",
+    "locations": "549, 89",
+    "controller": "ENG"
+  },
+  "man": {
+    "name": "Isle of Man",
+    "locations": "551, 120",
+    "controller": "ENG"
+  },
+  "border": {
+    "name": "Border",
+    "locations": "557,114",
+    "controller": "ENG"
+  },
+  "northeast": {
+    "name": "North-East",
+    "locations": "563,119",
+    "controller": "ENG"
+  },
+  "northumbria": {
+    "name": "Northumbria",
+    "locations": "561,116",
+    "controller": "ENG"
+  },
+  "clankashire": {
+    "name": "Cumbria and Lancashire",
+    "locations": "558,120",
+    "controller": "ENG"
+  },
+  "west midlands": {
+    "name": "West Midlands",
+    "locations": "559,127",
+    "controller": "ENG"
+  },
+  "east midlands": {
+    "name": "East Midlands",
+    "locations": "564,125",
+    "controller": "ENG"
+  },
+  "anglia": {
+    "name": "East Anglia",
+    "locations": "568,128",
+    "controller": "ENG"
+  },
+  "cornwall": {
+    "name": "Cornwall",
+    "locations": "553,134",
+    "controller": "ENG"
+  },
+  "kent": {
+    "name": "Kent",
+    "locations": "568,133",
+    "controller": "ENG"
+  },
+  "london": {
+    "name": "London",
+    "locations": "563,131",
+    "controller": "ENG"
+  },
+  "gloucestershire": {
+    "name": "Gloucestershire",
+    "locations": "558,133",
+    "controller": "ENG"
+  },
+  "gwynedd": {
+    "name": "Gwynedd",
+    "locations": "554,125",
+    "controller": "ENG"
+  },
+  "deheubarth": {
+    "name": "Deheubarth",
+    "locations": "554,129",
+    "controller": "ENG"
+  },
+  "alabama": {
+    "name": "Alabama",
+    "locations": "218,214",
+    "controller": "USA"
+  },
+  "alaska": {
+    "name": "Alaska",
+    "locations": "92,70",
+    "controller": "USA"
+  },
+  "arizonanorth": {
+    "name": "Arizona-North",
+    "locations": "125,201",
+    "controller": "USA"
+  },
+  "arizonasouth": {
+    "name": "Arizona-South",
+    "locations": "120,214",
+    "controller": "USA"
+  },
+  "arkansas": {
+    "name": "Arkansas",
+    "locations": "197,205",
+    "controller": "USA"
+  },
+  "californiaup": {
+    "name": "California-North",
+    "locations": "96,182",
+    "controller": "USA"
+  },
+  "californiamiddle": {
+    "name": "California-Center",
+    "locations": "96,195",
+    "controller": "USA"
+  },
+  "californiadown": {
+    "name": "California-South",
+    "locations": "103,207",
+    "controller": "USA"
+  },
+  "colorado": {
+    "name": "Colorado",
+    "locations": "154,186",
+    "controller": "USA"
+  },
+  "delaware": {
+    "name": "Delaware",
+    "locations": "278,179",
+    "controller": "USA"
+  },
+  "florida": {
+    "name": "Florida",
+    "locations": "234,235",
+    "controller": "USA"
+  },
+  "georgia": {
+    "name": "Georgia",
+    "locations": "231,213",
+    "controller": "USA"
+  },
+  "hawaii": {
+    "name": "Hawaii",
+    "locations": [
+      "1258,257",
+      "1264,259",
+      "1268,261",
+      "1271,266"
+    ],
+    "controller": "USA"
+  },
+  "idahonorth": {
+    "name": "Idaho North",
+    "locations": "136,152",
+    "controller": "USA"
+  },
+  "idahosouth": {
+    "name": "Idaho South",
+    "locations": "134,165",
+    "controller": "USA"
+  },
+  "illinois": {
+    "name": "Illinois",
+    "locations": "221,181",
+    "controller": "USA"
+  },
+  "indiana": {
+    "name": "Indiana",
+    "locations": "237,178",
+    "controller": "USA"
+  },
+  "iowa": {
+    "name": "Iowa",
+    "locations": "208,172",
+    "controller": "USA"
+  },
+  "kansas": {
+    "name": "Kansas",
+    "locations": "180,188",
+    "controller": "USA"
+  },
+  "kentucky": {
+    "name": "Kentucky",
+    "locations": "229,193",
+    "controller": "USA"
+  },
+  "louisiana": {
+    "name": "Louisiana",
+    "locations": "193,220",
+    "controller": "USA"
+  },
+  "maine": {
+    "name": "Maine",
+    "locations": "307,157",
+    "controller": "USA"
+  },
+  "maryland": {
+    "name": "Maryland",
+    "locations": "274,185",
+    "controller": "USA"
+  },
+  "michigan": {
+    "name": "Michigan",
+    "locations": [
+      "246,166",
+      "237,154"
+    ],
+    "controller": "USA"
+  },
+  "minnesota": {
+    "name": "Minnesota",
+    "locations": "213,155",
+    "controller": "USA"
+  },
+  "mississippi": {
+    "name": "Mississippi",
+    "locations": "206,214",
+    "controller": "USA"
+  },
+  "missouri": {
+    "name": "Missouri",
+    "locations": "205,189",
+    "controller": "USA"
+  },
+  "montanawest": {
+    "name": "Montana West",
+    "locations": "150,150",
+    "controller": "USA"
+  },
+  "montanaeast": {
+    "name": "Montana East",
+    "locations": "169,150",
+    "controller": "USA"
+  },
+  "nebraska": {
+    "name": "Nebraska",
+    "locations": "183,174",
+    "controller": "USA"
+  },
+  "nevadanorth": {
+    "name": "Nevada North",
+    "locations": "115,179",
+    "controller": "USA"
+  },
+  "nevadasouth": {
+    "name": "Nevada South",
+    "locations": "111,192",
+    "controller": "USA"
+  },
+  "new-jersey": {
+    "name": "New Jersey",
+    "locations": "283,175",
+    "controller": "USA"
+  },
+  "newmexiconorth": {
+    "name": "New Mexico North",
+    "locations": "147,201",
+    "controller": "USA"
+  },
+  "newmexicosouth": {
+    "name": "New Mexico South",
+    "locations": "142,213",
+    "controller": "USA"
+  },
+  "new-york": {
+    "name": "New York",
+    "locations": "288,166",
+    "controller": "USA"
+  },
+  "north-carolina": {
+    "name": "North Carolina",
+    "locations": "252,202",
+    "controller": "USA"
+  },
+  "north-dakota": {
+    "name": "North Dakota",
+    "locations": "195,149",
+    "controller": "USA"
+  },
+  "ohionorth": {
+    "name": "Ohio North",
+    "locations": "248,181",
+    "controller": "USA"
+  },
+  "ohiosouth": {
+    "name": "Ohio South",
+    "locations": "251,187",
+    "controller": "USA"
+  },
+  "oklahoma": {
+    "name": "Oklahoma",
+    "locations": "181,201",
+    "controller": "USA"
+  },
+  "oregoneast": {
+    "name": "Oregon-East",
+    "locations": "119,163",
+    "controller": "USA"
+  },
+  "oregonwest": {
+    "name": "Oregon-West",
+    "locations": "106,164",
+    "controller": "USA"
+  },
+  "pennsylvania": {
+    "name": "Pennsylvania",
+    "locations": "266,175",
+    "controller": "USA"
+  },
+  "south-carolina": {
+    "name": "South Carolina",
+    "locations": "243,209",
+    "controller": "USA"
+  },
+  "south-dakota": {
+    "name": "South Dakota",
+    "locations": "188,162",
+    "controller": "USA"
+  },
+  "tennessee": {
+    "name": "Tennessee",
+    "locations": "222,200",
+    "controller": "USA"
+  },
+  "texaseast": {
+    "name": "Texas East",
+    "locations": "179,221",
+    "controller": "USA"
+  },
+  "texasnorth": {
+    "name": "Texas North",
+    "locations": "164,210",
+    "controller": "USA"
+  },
+  "texassouth": {
+    "name": "Texas South",
+    "locations": "162,226",
+    "controller": "USA"
+  },
+  "utah": {
+    "name": "Utah",
+    "locations": "132,184",
+    "controller": "USA"
+  },
+  "virginia": {
+    "name": "Virginia",
+    "locations": "259,192",
+    "controller": "USA"
+  },
+  "washington": {
+    "name": "Washington",
+    "locations": "120,149",
+    "controller": "USA"
+  },
+  "wisconsin": {
+    "name": "Wisconsin",
+    "locations": "226,162",
+    "controller": "USA"
+  },
+  "wyoming": {
+    "name": "Wyoming",
+    "locations": "157,167",
+    "controller": "USA"
+  },
+  "gotland": {
+    "name": "Gotland",
+    "locations": "628,105",
+    "controller": "SWE"
+  },
+  "skane": {
+    "name": "Skane",
+    "locations": "618,107",
+    "controller": "SWE"
+  },
+  "norbotten": {
+    "name": "Norbotten",
+    "locations": "633,68",
+    "controller": "SWE"
+  },
+  "vaesterbotten": {
+    "name": "Västerbotten",
+    "locations": "621,80",
+    "controller": "SWE"
+  },
+  "jaemtland": {
+    "name": "Jämtland",
+    "locations": "621,80",
+    "controller": "SWE"
+  },
+  "uppsala": {
+    "name": "Uppsala",
+    "locations": "624,97",
+    "controller": "SWE"
+  },
+  "vaermland": {
+    "name": "Vämland",
+    "locations": "615,91",
+    "controller": "SWE"
+  },
+  "vaestra": {
+    "name": "Västra",
+    "locations": "611,102",
+    "controller": "SWE"
+  },
+  "aaland": {
+    "name": "Aaland",
+    "locations": "636,95",
+    "controller": "FIN"
+  },
+  "svalbard": {
+    "name": "Svalbard",
+    "locations": "624,26",
+    "controller": "NOR"
+  },
+  "finnmark-west": {
+    "name": "Finnmark West",
+    "locations": "658,54",
+    "controller": "NOR"
+  },
+  "finnmark-east": {
+    "name": "Finnmark East",
+    "locations": "646,56",
+    "controller": "NOR"
+  },
+  "nordland": {
+    "name": "Nordland",
+    "locations": "623,62",
+    "controller": "NOR"
+  },
+  "trondelag": {
+    "name": "Trondelag",
+    "locations": "606,80",
+    "controller": "NOR"
+  },
+  "vestland": {
+    "name": "Vestland",
+    "locations": "591,94",
+    "controller": "NOR"
+  },
+  "telemark": {
+    "name": "Telemark",
+    "locations": "600,96",
+    "controller": "NOR"
+  },
+  "innlandet": {
+    "name": "Innlandet",
+    "locations": "605,89",
+    "controller": "NOR"
+  },
+  "lapland-west": {
+    "name": "Lapland West",
+    "locations": "646,65",
+    "controller": "FIN"
+  },
+  "lapland-east": {
+    "name": "Lapland East",
+    "locations": "654,61",
+    "controller": "FIN"
+  },
+  "north-ostrobothnia": {
+    "name": "North Ostrobothnia",
+    "locations": "655,72",
+    "controller": "FIN"
+  },
+  "south-ostrobothnia": {
+    "name": "South Ostrobothnia",
+    "locations": "647,81",
+    "controller": "FIN"
+  },
+  "paijat-mama": {
+    "name": "Paijat Mama",
+    "locations": "647,90",
+    "controller": "FIN"
+  },
+  "kainuu": {
+    "name": "Kainuu",
+    "locations": "661,79",
+    "controller": "FIN"
+  },
+  "karella": {
+    "name": "Karella",
+    "locations": "658,87",
+    "controller": "FIN"
+  },
+  "riga": {
+    "name": "Riga",
+    "locations": "650,108",
+    "controller": "LAT"
+  },
+  "kurzeme": {
+    "name": "Kurzeme",
+    "locations": "644,107",
+    "controller": "LAT"
+  },
+  "vidzeme": {
+    "name": "Vidzeme",
+    "locations": "656,106",
+    "controller": "LAT"
+  },
+  "latgale": {
+    "name": "Latgale",
+    "locations": "660,111",
+    "controller": "LAT"
+  },
+  "saare": {
+    "name": "Saare",
+    "locations": "646,102",
+    "controller": "EST"
+  },
+  "tallin": {
+    "name": "Tallin",
+    "locations": "651,100",
+    "controller": "EST"
+  },
+  "tartu": {
+    "name": "Tartu",
+    "locations": "658,101",
+    "controller": "EST"
+  },
+  "minsk": {
+    "name": "Minsk",
+    "locations": "665,122",
+    "controller": "BLR"
+  },
+  "homiel": {
+    "name": "Homiel",
+    "locations": "672,127",
+    "controller": "BLR"
+  },
+  "brest": {
+    "name": "Brest",
+    "locations": "656,127",
+    "controller": "BLR"
+  },
+  "hrodna": {
+    "name": "Hrodna",
+    "locations": "655,121",
+    "controller": "BLR"
+  },
+  "viciebsk": {
+    "name": "Viciebsk",
+    "locations": "668,115",
+    "controller": "BLR"
+  },
+  "viciebsk2": {
+    "name": "Viciebsk2", //idk what gav intended for this state
+    "locations": "669,109",
+    "controller": "BLR"
+  },
+  "lviv": {
+    "name": "Lviv",
+    "locations": "652,138",
+    "controller": "UKR"
+  },
+  "zakarpattia": {
+    "name": "Zakarpattia",
+    "locations": "651,145",
+    "controller": "UKR"
+  },
+  "volyn": {
+    "name": "Volyn",
+    "locations": "656,133",
+    "controller": "UKR"
+  },
+  "rivne": {
+    "name": "Rivne",
+    "locations": "662,133",
+    "controller": "UKR"
+  },
+  "zhytomir": {
+    "name": "Zhytomir",
+    "locations": "669,135",
+    "controller": "UKR"
+  },
+  "ternopil": {
+    "name": "Ternopil",
+    "locations": "664,139",
+    "controller": "UKR"
+  },
+  "chernivtsi": {
+    "name": "Chernivtsi",
+    "locations": [
+      "659,146",
+      "663,144"
+    ],
+    "controller": "UKR"
+  },
+  "ivano-frankivsk": {
+    "name": "Ivano-Frankivsk",
+    "locations": "657,142",
+    "controller": "UKR"
+  },
+  "vinnytsia": {
+    "name": "Vinnytsia",
+    "locations": "672,143",
+    "controller": "UKR"
+  },
+  "odessa-upper": {
+    "name": "Upper Odessa",
+    "locations": "677,150",
+    "controller": "UKR"
+  },
+  "odessa-lower": {
+    "name": "Lower Odessa",
+    "locations": "675,156",
+    "controller": "UKR"
+  },
+  "kyiv": {
+    "name": "Kyiv",
+    "locations": "677,137",
+    "city": "Kyiv",
+    "controller": "UKR"
+  },
+  "chernihiv": {
+    "name": "Chernihiv",
+    "locations": "680,131",
+    "controller": "UKR"
+  },
+  "sumy": {
+    "name": "Sumy",
+    "locations": "690,134",
+    "controller": "UKR"
+  },
+  "cherkasy-kirovohrad": {
+    "name": "Cherkasy-Kirovohrad",
+    "locations": "682,143",
+    "controller": "UKR"
+  },
+  "mykolaiv": {
+    "name": "Mykolaiv",
+    "locations": "683,150",
+    "controller": "UKR"
+  },
+  "kherson": {
+    "name": "Kherson",
+    "locations": "691,152",
+    "controller": "UKR"
+  },
+  "poltava": {
+    "name": "Poltava",
+    "locations": "689,139",
+    "controller": "UKR"
+  },
+  "kharkiv": {
+    "name": "Kharkiv",
+    "locations": "700,139",
+    "controller": "UKR"
+  },
+  "luhansk": {
+    "name": "Luhansk",
+    "locations": "708,141",
+    "controller": "UKR"
+  },
+  "donetsk": {
+    "name": "Donetsk",
+    "locations": "704,145",
+    "controller": "UKR"
+  },
+  "zarporizhzhia": {
+    "name": "Zarporizhzhia",
+    "locations": "699,149",
+    "controller": "UKR"
+  },
+  "dnipropetrovsk": {
+    "name": "Dnipropetrovsk",
+    "locations": "694,145",
+    "controller": "UKR"
+  },
+  "crimea": {
+    "name": "Crimea",
+    "locations": "692,158",
+    "controller": "UKR"
+  },
+  "the-real-moldova": {
+    "name": "Moldova",
+    "locations": "670,151",
+    "controller": "MOL"
+  },
+  "transnistria": {
+    "name": "Transnistria",
+    "locations": "672,150",
+    "controller": "TRA"
+  },
+  "barcelona": {
+    "name": "Barcelona",
+    "locations": "571,174",
+    "controller": "SPA"
+  },
+  "huesca": {
+    "name": "Huesca",
+    "locations": "564,172",
+    "controller": "SPA"
+  },
+  "cantabria": {
+    "name": "Cantabria",
+    "locations": "557,169",
+    "controller": "SPA"
+  },
+  "burgos": {
+    "name": "Burgos",
+    "locations": "551,172",
+    "controller": "SPA"
+  },
+  "asturia": {
+    "name": "Asturias",
+    "locations": "542,167",
+    "controller": "SPA"
+  },
+  "lugo": {
+    "name": "Lugo",
+    "locations": "534,169",
+    "controller": "SPA"
+  },
+  "zamora": {
+    "name": "Zamora",
+    "locations": "542,176",
+    "controller": "SPA"
+  },
+  "madrid": {
+    "name": "Madrid",
+    "locations": "547,178",
+    "controller": "SPA"
+  },
+  "teruel": {
+    "name": "Teruel",
+    "locations": "556,180",
+    "controller": "SPA"
+  },
+  "badajoz": {
+    "name": "Badajoz",
+    "locations": "540,186",
+    "controller": "SPA"
+  },
+  "ciudad-real": {
+    "name": "Ciudad Real",
+    "locations": "547,185",
+    "controller": "SPA"
+  },
+  "albacete": {
+    "name": "Albacete",
+    "locations": "556,189",
+    "controller": "SPA"
+  },
+  "valencia": {
+    "name": "Valencia",
+    "locations": "561,185",
+    "controller": "SPA"
+  },
+  "jaen": {
+    "name": "Jaén",
+    "locations": "545,192",
+    "controller": "SPA"
+  },
+  "malaga": {
+    "name": "Málaga",
+    "locations": "544,196",
+    "controller": "SPA"
+  },
+  "balearic-west": {
+    "name": "Balearic West",
+    "locations": "574,184",
+    "controller": "SPA"
+  },
+  "balearic-east": {
+    "name": "Balearic East",
+    "locations": "578,183",
+    "controller": "SPA"
+  },
+  "gibraltar": {
+    "name": "Gibraltar",
+    "locations": "543,198",
+    "controller": "ENG"
+  },
+  "faro": {
+    "name": "Faro",
+    "locations": "533,193",
+    "controller": "POR"
+  },
+  "setubal": {
+    "name": "Setúbal",
+    "locations": "530,187",
+    "controller": "POR"
+  },
+  "evora": {
+    "name": "Évora",
+    "locations": "534,187",
+    "controller": "POR"
+  },
+  "coimbra": {
+    "name": "Coimbra",
+    "locations": "532,181",
+    "controller": "POR"
+  },
+  "vila-real": {
+    "name": "Vila Real",
+    "locations": "535,176",
+    "controller": "POR"
+  },
+  "peleponnese": {
+    "name": "Peleponnese",
+    "locations": "651,194",
+    "controller": "GRE"
+  },
+  "attica": {
+    "name": "Attica",
+    "locations": "655,190",
+    "controller": "GRE"
+  },
+  "epirus": {
+    "name": "Epirus",
+    "locations": "643,184",
+    "controller": "GRE"
+  },
+  "west-greece": {
+    "name": "West Greece",
+    "locations": "646,189",
+    "controller": "GRE"
+  },
+  "thessaly": {
+    "name": "Thessaly",
+    "locations": "649,183",
+    "controller": "GRE"
+  },
+  "central-greece": {
+    "name": "Central Greece",
+    "locations": "651,188",
+    "controller": "GRE"
+  },
+  "north-macedonia": {
+    "name": "North Macedonia",
+    "locations": "654,176",
+    "controller": "GRE"
+  },
+  "west-macedonia": {
+    "name": "West Macedonia",
+    "locations": "647,179",
+    "controller": "GRE"
+  },
+  "central-macedonia-gre": {
+    "name": "Central Macedonia",
+    "locations": "652,179",
+    "controller": "GRE"
+  },
+  "thrace": {
+    "name": "Thrace",
+    "locations": "660,177",
+    "controller": "GRE"
+  },
+  "evvoia": {
+    "name": "Évvoia",
+    "locations": "656,188",
+    "controller": "GRE"
+  },
+  "aegean": {
+    "name": "Aegean",
+    "locations": [
+      "662,186",
+      "661,189",
+      "662,191"
+    ],
+    "controller": "GRE"
+  },
+  "greta": {
+    "name": "Greta",
+    "locations": "660,204",
+    "controller": "GRE"
+  },
+  "east-thrace": {
+    "name": "East Thrace",
+    "locations": "667,175",
+    "controller": "TUR"
+  },
+  "west-istanbul": {
+    "name": "West Istanbul",
+    "locations": "671,175",
+    "controller": "TUR"
+  }
+}

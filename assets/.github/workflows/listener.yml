@@ -1,0 +1,19 @@
+name: Listener
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Trigger update
+        run: |
+          curl -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.LISTENER_TOKEN }}" \
+            https://api.github.com/repos/BattlesOfBrass/BOB/dispatches \
+            -d '{"event_type":"update-submodules"}'
