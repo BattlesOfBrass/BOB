@@ -1,0 +1,159 @@
+package de.idiotischer.bob.country;
+
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.stream.JsonReader;
+import de.idiotischer.bob.Server;
+import de.idiotischer.bob.SharedCore;
+import de.idiotischer.bob.ideology.Ideology;
+import de.idiotischer.bob.tile.Tile;
+
+import java.awt.*;
+import java.nio.file.Files;
+import java.util.*;
+import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
+
+public class ServerCountryManager implements CountryResolver {
+    @Override
+    public Country byAbbreviation(String abbreviation) {
+        return getCountry(abbreviation);
+    }
+
+    private final Set<Country> countrySet = new HashSet<>();
+
+    public ServerCountryManager() {
+    }
+
+    public void reload() {
+        countrySet.clear();
+
+        try (JsonReader reader = new JsonReader(Files.newBufferedReader(Server.getInstance().getScenarioSceneLoader().getCurrentScenario().getCountryConfig()))) {
+            JsonElement root = SharedCore.GSON.fromJson(reader, JsonElement.class);
+
+            root.getAsJsonObject().entrySet().forEach(entry -> {
+                String countryAbbreviation = entry.getKey();
+
+                JsonObject countryElement = entry.getValue().getAsJsonObject();
+
+                String name = countryElement.get("name").getAsString();
+
+                boolean majorAtStart = false;
+                boolean selectScreen = false;
+
+                Ideology rulingIdeology = null;
+                Set<Ideology> availableIdeologies = new HashSet<>();
+
+                if(countryElement.has("majorAtStart") && !countryElement.get("majorAtStart").isJsonNull())
+                    majorAtStart = countryElement.get("majorAtStart").getAsBoolean();
+
+                if(countryElement.has("ideology") && !countryElement.get("ideology").isJsonNull())
+                    rulingIdeology = Server.getInstance().getIdeologyManager().byAbbreviation(countryElement.get("ideology").getAsString());
+
+                if(countryElement.has("availableIdeologies") && !countryElement.get("availableIdeologies").isJsonNull())
+                    availableIdeologies = countryElement.get("availableIdeologies").getAsJsonArray().asList().stream().map(s -> Server.getInstance().getIdeologyManager().byAbbreviation(s.getAsString())).collect(Collectors.toSet());
+
+
+                if(countryElement.has("selectScreen") && !countryElement.get("selectScreen").isJsonNull())
+                    selectScreen = countryElement.get("selectScreen").getAsBoolean();
+
+                String[] colorStrings = countryElement.get("color").getAsString().split("[;,]");
+
+                Color color = new Color(Integer.parseInt(colorStrings[0]), Integer.parseInt(colorStrings[1]), Integer.parseInt(colorStrings[2]));
+
+                Country country = new Country(countryAbbreviation.toUpperCase(), name, color, majorAtStart, selectScreen);
+
+                country.setStartIdeologySimple(rulingIdeology);
+                country.setRulingIdeologySimple(rulingIdeology);
+                availableIdeologies.forEach(country::addAvailableIdeologiesSimple);
+
+                registerCountry(country);
+
+                if(Server.getInstance().isDebug()) System.out.println("registered country: " + countryAbbreviation + " with name: " + name + " and color: " + color);
+            });
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        //TODO: make this send sync packets without crashing the client (liek tilemanager)
+        //Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), CountriesSyncPacket.fromCountries(countrySet));
+    }
+
+    public Set<Country> getPuppets() {
+        return this.getCountries().stream().filter(c -> c.getPuppetState() != PuppetState.NONE).collect(Collectors.toSet());
+    }
+
+    public Country registerCountry(Country country) {
+        countrySet.remove(country);
+
+        countrySet.add(country);
+
+        return country;
+    }
+
+    public Country getCountry(String abbreviation) {
+        return countrySet.stream().filter(c -> c.getAbbreviation().equals(abbreviation)).findFirst().orElse(null);
+    }
+
+    public List<Tile> getOwned(Country country) {
+        if(Server.getInstance().getTileManager() == null) return List.of();
+        return Server.getInstance().getTileManager().getTileSet().stream().filter(s -> s.getOwner().getAbbreviation().equals(country.getAbbreviation())).toList();
+    }
+
+    public List<Tile> getControlled(Country country) {
+        if(Server.getInstance().getTileManager() == null) return List.of();
+        return Server.getInstance().getTileManager().getTileSet().stream().filter(s -> s.getController().getAbbreviation().equals(country.getAbbreviation())).toList();
+    }
+
+    public List<Country> getCountries() {
+        return countrySet.stream().sorted(Comparator.comparing(Country::getAbbreviation)).toList();
+    }
+
+    public int getTotalVPs(Country country) {
+        //getOwned(country).;
+        return getOwned(country).stream().mapToInt(Tile::getVictoryPoints).sum();
+    }
+
+    //public List<Country> getMajors() {
+    //    return getCountrySet().stream().filter(Country::isMajor).toList();
+    //}
+
+    //public List<Country> getOnSelectScreen() {
+    //    return getCountrySet().stream().filter(Country::isSelectScreen).toList();
+    //}
+
+    public List<Country> getMajors() {
+        return getCountries().stream().filter(Country::isMajor).sorted(Comparator.comparing(Country::getAbbreviation)).toList();
+    }
+
+    public boolean isAllied(Country a, Country b) {
+        return false;
+    }
+
+    @Override
+    public boolean anyAlliedWith(List<Country> testers, Country country) {
+        return testers.stream().anyMatch(c -> isAllied(c, country));
+    }
+
+    public List<Country> getOnSelectScreen() {
+        return getCountries().stream().filter(Country::isSelectScreen).sorted(Comparator.comparing(Country::getAbbreviation)).toList();
+    }
+
+    public List<Country> getMinors() {
+        return getCountries().stream().filter(c -> !c.isMajor()).sorted(Comparator.comparing(Country::getAbbreviation)).toList();
+    }
+
+    public void splitCountry(Country country) {
+        //halt um ddr, brd zu machen
+    }
+
+    public Country getRandom() {
+        Country[] country = countrySet.toArray(new Country[0]);
+
+        int n = ThreadLocalRandom.current().nextInt(countrySet.size());
+
+        return country[n];
+    }
+}
