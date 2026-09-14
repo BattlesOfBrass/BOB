@@ -23,6 +23,7 @@ public class HUD extends JPanel {
 
     private final JPanel sidePanel;
     private final JTabbedPane tabbedPane;
+    private final JButton closeBtn;
     private int panelWidth = 300;
     private boolean showingOwn;
 
@@ -66,6 +67,35 @@ public class HUD extends JPanel {
 
         sidePanel.add(verticalLine, BorderLayout.EAST);
         sidePanel.add(tabbedPane, BorderLayout.CENTER);
+
+        closeBtn = new JButton("×");
+        closeBtn.setFocusable(false);
+        closeBtn.setBorderPainted(false);
+        closeBtn.setContentAreaFilled(false);
+        closeBtn.setOpaque(false);
+        closeBtn.setForeground(Color.WHITE);
+        closeBtn.setFont(closeBtn.getFont().deriveFont(Font.BOLD, 24f));
+        closeBtn.setMargin(new Insets(0, 0, 0, 0));
+
+        closeBtn.setPreferredSize(new Dimension(20, 20));
+        closeBtn.setMinimumSize(new Dimension(20, 20));
+        closeBtn.setMaximumSize(new Dimension(20, 20));
+
+        closeBtn.addActionListener(e -> visible(false));
+        closeBtn.addActionListener(e -> visible(false));
+
+        JPanel contentPanel = new JPanel(new BorderLayout());
+        contentPanel.setOpaque(false);
+
+        JPanel closePanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+        closePanel.setOpaque(false);
+        closePanel.add(closeBtn);
+
+        contentPanel.add(closePanel, BorderLayout.NORTH);
+        contentPanel.add(tabbedPane, BorderLayout.CENTER);
+
+        sidePanel.add(contentPanel, BorderLayout.CENTER);
+        sidePanel.add(verticalLine, BorderLayout.EAST);
 
         sidePanel.setVisible(false);
 
@@ -127,6 +157,7 @@ public class HUD extends JPanel {
         flagPanel.add(flagLabel, BorderLayout.CENTER);
 
         JLabel countryName = new JLabel(currentTile == null ? "None" : currentTile.getController().countryName());
+
         countryName.setForeground(Color.WHITE);
         countryName.setFont(countryName.getFont().deriveFont(Font.BOLD, 20f));
         countryName.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -142,10 +173,28 @@ public class HUD extends JPanel {
         namePanel.add(Box.createHorizontalGlue());
         namePanel.setFocusable(false);
 
+        JLabel ideo = new JLabel("Ideology: " + (currentTile == null ? "None" : currentTile.getController().getRulingIdeologyString()));
+        ideo.setForeground(Color.WHITE);
+        ideo.setFont(ideo.getFont().deriveFont(Font.BOLD, 15f));
+        ideo.setAlignmentX(Component.CENTER_ALIGNMENT);
+        ideo.setHorizontalAlignment(SwingConstants.CENTER);
+        ideo.setFocusable(false);
+
+        JPanel ideology = new JPanel();
+        ideology.setOpaque(false);
+        ideology.setLayout(new BoxLayout(ideology, BoxLayout.X_AXIS));
+        ideology.setAlignmentX(Component.CENTER_ALIGNMENT);
+        ideology.add(Box.createHorizontalGlue());
+        ideology.add(ideo);
+        ideology.add(Box.createHorizontalGlue());
+        ideology.setFocusable(false);
+
         panel.add(Box.createVerticalStrut(10));
         panel.add(flagPanel);
         panel.add(Box.createVerticalStrut(5));
         panel.add(namePanel);
+        panel.add(Box.createVerticalStrut(8));
+        panel.add(ideology);
 
         JPanel horizontalLine = new JPanel();
         horizontalLine.setBackground(BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().palette().darkColor().darker());
@@ -409,10 +458,28 @@ public class HUD extends JPanel {
             panel.repaint();
         });
 
+        JLabel ideo = new JLabel("Ideology: " + (currentTile == null ? "None" : currentTile.getController().getRulingIdeologyString()));
+        ideo.setForeground(Color.WHITE);
+        ideo.setFont(ideo.getFont().deriveFont(Font.BOLD, 15f));
+        ideo.setAlignmentX(Component.CENTER_ALIGNMENT);
+        ideo.setHorizontalAlignment(SwingConstants.CENTER);
+        ideo.setFocusable(false);
+
+        JPanel ideology = new JPanel();
+        ideology.setOpaque(false);
+        ideology.setLayout(new BoxLayout(ideology, BoxLayout.X_AXIS));
+        ideology.setAlignmentX(Component.CENTER_ALIGNMENT);
+        ideology.add(Box.createHorizontalGlue());
+        ideology.add(ideo);
+        ideology.add(Box.createHorizontalGlue());
+        ideology.setFocusable(false);
+
         panel.add(Box.createVerticalStrut(10));
         panel.add(flagPanel);
         panel.add(Box.createVerticalStrut(5));
         panel.add(namePanel);
+        panel.add(Box.createVerticalStrut(8));
+        panel.add(ideology);
 
         JPanel horizontalLine = new JPanel();
         horizontalLine.setBackground(BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().palette().darkColor().darker());

@@ -329,6 +329,11 @@ public class Country /*implements Comparable<Country>*/{
         return rulingIdeology;
     }
 
+
+    public String getRulingIdeologyString() {
+        return rulingIdeology == null ? "None" : rulingIdeology.name();
+    }
+
     public void setRulingIdeology(SharedCore c, ChannelResolver r, Ideology rulingIdeology) {
         c.getTool().broadcast(r.channels(), new ReplyPacket(Type.IDEOLOGY_UPDATE, "ruling=" + this.abbreviation + ";" + rulingIdeology.abbreviation()));
 
