@@ -1,7 +1,7 @@
 package de.idiotischer.bob.render.menu.impl;
 
 import de.idiotischer.bob.BOB;
-import de.idiotischer.bob.state.State;
+import de.idiotischer.bob.tile.Tile;
 
 import javax.swing.*;
 import java.awt.*;
@@ -9,7 +9,7 @@ import java.awt.*;
 public class OverviewPanel extends JPanel {
 
     private final JLabel label;
-    private State currentState;
+    private Tile currentTile;
 
     public OverviewPanel() {
         setOpaque(false);
@@ -20,18 +20,18 @@ public class OverviewPanel extends JPanel {
         add(label);
     }
 
-    public void setState(State state) {
-        this.currentState = state;
+    public void setTile(Tile tile) {
+        this.currentTile = tile;
         updateContent();
     }
 
     private void updateContent() {
-        if (currentState == null || currentState.getController() == null || currentState.getController().getPlayer() == null) {
+        if (currentTile == null || currentTile.getController() == null || currentTile.getController().getPlayer() == null) {
             label.setText("");
             return;
         }
 
-        if (currentState.getController().getPlayer().uuid() ==
+        if (currentTile.getController().getPlayer().uuid() ==
                 BOB.getInstance().getPlayer().uuid()) {
             label.setText("Your country overview");
         } else {

@@ -2,6 +2,7 @@ package de.idiotischer.bob.camera;
 
 import org.jetbrains.annotations.ApiStatus;
 
+import java.awt.*;
 import java.awt.geom.AffineTransform;
 
 public class Camera {
@@ -10,8 +11,8 @@ public class Camera {
     private double y = 0;
     private double zoom = 1.0;
 
-    private final int mapWidth;
-    private final int mapHeight;
+    private int mapWidth;
+    private int mapHeight;
 
     private int viewportWidth;
     private int viewportHeight;
@@ -87,7 +88,7 @@ public class Camera {
         zoom *= factor;
 
         double min = getMinZoom();
-        zoom = Math.max(min, Math.min(zoom, 20));
+        zoom = Math.max(min, Math.min(zoom, getMaxZoom()));
 
         x = worldX * zoom - pivotX;
         y = worldY * zoom - pivotY;
@@ -95,6 +96,19 @@ public class Camera {
         wasAtMinZoom = (Math.abs(zoom - min) < 0.001);
 
         clamp();
+    }
+
+    private double getMaxZoom() {
+        if (viewportWidth <= 0 || viewportHeight <= 0) return 1.0;
+
+        double minZoom = getMinZoom();
+
+        double maxByWidth = viewportWidth / (mapWidth / 6.0);
+        double maxByHeight = viewportHeight / (mapHeight / 6.0);
+
+        double maxZoom = Math.min(maxByWidth, maxByHeight);
+
+        return Math.max(minZoom, maxZoom);
     }
 
     public void clamp() {
@@ -141,6 +155,17 @@ public class Camera {
     //            offsetY = Math.max(0, Math.min(offsetY, scaledHeight - panelHeight));
     //        }
     //    }
+    public Rectangle getVisibleWorldBounds(int viewportWidth, int viewportHeight) {
+        int x1 = screenToWorldX(0);
+        int y1 = screenToWorldY(0);
+
+        int x2 = screenToWorldX(viewportWidth);
+        int y2 = screenToWorldY(viewportHeight);
+
+        return new Rectangle(x1, y1, x2 - x1, y2 - y1);
+    }
+
+
 
     public double getMinZoom() {
         if (viewportWidth <= 0 || viewportHeight <= 0) return 1.0;
@@ -172,6 +197,14 @@ public class Camera {
         return (int) ((screenY + y) / zoom);
     }
 
+    public int worldToScreenX(double worldX) {
+        return (int) (worldX * zoom - x);
+    }
+
+    public int worldToScreenY(double worldY) {
+        return (int) (worldY * zoom - y);
+    }
+
     public double getX() { return x; }
     public double getY() { return y; }
     public double getZoom() { return zoom; }
@@ -182,5 +215,10 @@ public class Camera {
 
     public int getMapHeight() {
         return mapHeight;
+    }
+
+    public void setMapSize(int width, int height) {
+        this.mapWidth = width;
+        this.mapHeight = height;
     }
 }

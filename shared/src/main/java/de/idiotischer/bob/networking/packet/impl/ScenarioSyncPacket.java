@@ -1,10 +1,12 @@
 package de.idiotischer.bob.networking.packet.impl;
 
 import de.craftsblock.cnet.modules.packets.common.networker.Networker;
-import de.craftsblock.cnet.modules.packets.common.packet.Packet;
 import de.craftsblock.craftscore.buffer.BufferUtil;
+import de.idiotischer.bob.networking.packet.Packet;
 import de.idiotischer.bob.scenario.Scenario;
+import de.idiotischer.bob.theme.Theme;
 import de.idiotischer.bob.util.FileUtil;
+import de.idiotischer.bob.util.ImageUtil;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -21,8 +23,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 //TODO: alle assets wie flaggen für das scenario etc syncen
-public class ScenarioSyncPacket implements Packet, de.idiotischer.bob.networking.packet.Packet {
+public class ScenarioSyncPacket implements Packet {
 
+
+    private Theme theme;
     private String abbreviation;
     private String name;
 
@@ -30,10 +34,18 @@ public class ScenarioSyncPacket implements Packet, de.idiotischer.bob.networking
     private List<Color> borderColors = new ArrayList<>();
 
     private BufferedImage mapImage;
+    private BufferedImage backgroundImage;
 
     private byte[] unusableJson;
     private byte[] countriesJson;
+    private byte[] tilesJson;
     private byte[] statesJson;
+    private byte[] troopsJson;
+    private byte[] warsJson;
+    private byte[] ideologiesJson;
+    private byte[] themeJson;
+
+    private List<FlagEntry> flagEntries = new ArrayList<>();
 
     public ScenarioSyncPacket() {}
 
@@ -44,43 +56,52 @@ public class ScenarioSyncPacket implements Packet, de.idiotischer.bob.networking
         this.takenColors = new ArrayList<>(scenario.getTakenColors());
         this.borderColors = new ArrayList<>(scenario.getBorderColors());
 
-        this.mapImage = scenario.getMapImage();
+        this.mapImage = scenario.isMapDefault() ? null : scenario.getMapImage();
+        this.backgroundImage = scenario.isBackgroundDefault() ? null : scenario.getBackgroundImage();
 
         this.unusableJson = scenario.isUnusableDefault() ? null : FileUtil.readFile(scenario.getUnusable());
         this.countriesJson = scenario.isCountryConfigDefault() ? null : FileUtil.readFile(scenario.getCountryConfig());
+        this.tilesJson = scenario.isTilesConfigDefault() ? null : FileUtil.readFile(scenario.getTilesConfig());
         this.statesJson = scenario.isStatesConfigDefault() ? null : FileUtil.readFile(scenario.getStatesConfig());
+        this.troopsJson = scenario.isTroopConfigDefault() ? null : FileUtil.readFile(scenario.getTroopConfig());
+        this.warsJson = scenario.isWarsDefault() ? null : FileUtil.readFile(scenario.getWarsConfig());
+        this.themeJson = scenario.isThemesDefault() ? null : FileUtil.readFile(scenario.getThemeConfig());
+        this.ideologiesJson = scenario.isIdeologiesDefault() ? null : FileUtil.readFile(scenario.getIdeologiesConfig());
+
+        this.theme = scenario.getTheme();
+
+        Path flagFolder = FileUtil.getDefaultFlagsDir(scenario);
+
+        if (Files.exists(flagFolder)) {
+            try {
+                flagEntries = readFlagFolder(flagFolder);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
     }
 
-    @Override
-    public void write(BufferUtil buffer) {
-        try {
-            buffer.putUtf(abbreviation);
-            buffer.putUtf(name);
+    private List<FlagEntry> readFlagFolder(Path root) throws IOException {
+        List<FlagEntry> entries = new ArrayList<>();
 
-            buffer.getRaw().putInt(takenColors.size());
-            for (Color c : takenColors) buffer.getRaw().putInt(c.getRGB());
+        Files.walk(root).forEach(path -> {
+            if (path.equals(root)) return;
 
-            buffer.getRaw().putInt(borderColors.size());
-            for (Color c : borderColors) buffer.getRaw().putInt(c.getRGB());
+            try {
+                String relativePath = root.relativize(path).toString().replace(File.separatorChar, '/');
 
-            if (mapImage != null) {
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                ImageIO.write(mapImage, "png", baos); //add support for svg and webp etc which is better
-                byte[] imageData = baos.toByteArray();
-
-                buffer.getRaw().putInt((imageData.length));
-                buffer.getRaw().put(imageData);
-            } else {
-                buffer.getRaw().putInt(0);
+                if (Files.isDirectory(path)) entries.add(new FlagEntry(relativePath, true, null));
+                else {
+                    byte[] data = Files.readAllBytes(path);
+                    entries.add(new FlagEntry(relativePath, false, data));
+                }
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
             }
+        });
 
-            writeBytes(buffer.getRaw(), unusableJson);
-            writeBytes(buffer.getRaw(), countriesJson);
-            writeBytes(buffer.getRaw(), statesJson);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        return entries;
     }
 
     @Override
@@ -89,26 +110,34 @@ public class ScenarioSyncPacket implements Packet, de.idiotischer.bob.networking
             writeString(buffer, abbreviation);
             writeString(buffer, name);
 
+            buffer.putInt(flagEntries.size());
+
+            for (FlagEntry entry : flagEntries) {
+                writeString(buffer, entry.path);
+                buffer.put((byte) (entry.directory ? 1 : 0));
+
+                if (!entry.directory) writeBytes(buffer, entry.data);
+            }
+
             buffer.putInt(takenColors.size());
             for (Color c : takenColors) buffer.putInt(c.getRGB());
 
             buffer.putInt(borderColors.size());
             for (Color c : borderColors) buffer.putInt(c.getRGB());
 
-            if (mapImage != null) {
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                ImageIO.write(mapImage, "png", baos); //add support for svg and webp etc which is better
-                byte[] imageData = baos.toByteArray();
-
-                buffer.putInt((imageData.length));
-                buffer.put(imageData);
-            } else {
-                buffer.putInt(0);
-            }
+            ImageUtil.writeImage(buffer, mapImage);
+            ImageUtil.writeImage(buffer, backgroundImage);
 
             writeBytes(buffer, unusableJson);
             writeBytes(buffer, countriesJson);
+            writeBytes(buffer, tilesJson);
             writeBytes(buffer, statesJson);
+            writeBytes(buffer, troopsJson);
+            writeBytes(buffer, warsJson);
+            writeBytes(buffer, ideologiesJson);
+
+            writeBytes(buffer, themeJson);
+            writeString(buffer, theme == null ? "" : theme.serialize());
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -122,6 +151,22 @@ public class ScenarioSyncPacket implements Packet, de.idiotischer.bob.networking
 
         takenColors.clear();
         borderColors.clear();
+        flagEntries.clear();
+
+        int flagCount = buffer.getInt();
+
+        for (int i = 0; i < flagCount; i++) {
+            String path = readString(buffer);
+            boolean directory = buffer.get() == 1;
+
+            byte[] data = null;
+
+            if (!directory) {
+                data = readBytes(buffer);
+            }
+
+            flagEntries.add(new FlagEntry(path, directory, data));
+        }
 
         int takenSize = buffer.getInt();
         for (int i = 0; i < takenSize; i++) {
@@ -133,21 +178,41 @@ public class ScenarioSyncPacket implements Packet, de.idiotischer.bob.networking
             borderColors.add(new Color(buffer.getInt()));
         }
 
-        int imageLength = buffer.getInt();
-        if (imageLength > 0) {
-            byte[] imageData = new byte[imageLength];
-            buffer.get(imageData);
-            try {
-                this.mapImage = ImageIO.read(new ByteArrayInputStream(imageData));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+        this.mapImage = ImageUtil.readImage(buffer);
+
+        this.backgroundImage = ImageUtil.readImage(buffer);
 
         this.unusableJson = readBytes(buffer);
         this.countriesJson = readBytes(buffer);
+        this.tilesJson = readBytes(buffer);
         this.statesJson = readBytes(buffer);
+        this.troopsJson = readBytes(buffer);
+        this.warsJson = readBytes(buffer);
+        this.ideologiesJson = readBytes(buffer);
+
+        this.themeJson = readBytes(buffer);
+        this.theme = Theme.deserialize(name + "-theme", readString(buffer));
     }
+
+    private void writeFlagFolder(Path targetDir) throws IOException {
+        Path flagsDir = targetDir.resolve("flags");
+
+        if(!flagEntries.isEmpty()) Files.createDirectories(flagsDir);
+
+        for (FlagEntry entry : flagEntries) {
+            Path target = flagsDir.resolve(entry.path).normalize();
+
+            if (!target.startsWith(flagsDir.normalize())) throw new IOException("Invalid flag path: " + entry.path);
+
+            if (entry.directory) Files.createDirectories(target);
+            else {
+                Files.createDirectories(target.getParent());
+
+                if (Files.notExists(target)) Files.write(target, entry.data);
+            }
+        }
+    }
+
 
     public Path applyToDisk2() {
         return applyToDisk2(getAbbreviation());
@@ -166,11 +231,25 @@ public class ScenarioSyncPacket implements Packet, de.idiotischer.bob.networking
             writeIfMissing(targetDir.resolve("unusable.json"), unusableJson);
             writeIfMissing(targetDir.resolve("countries.json"), countriesJson);
             writeIfMissing(targetDir.resolve("states.json"), statesJson);
+            writeIfMissing(targetDir.resolve("tiles.json"), tilesJson);
+            writeIfMissing(targetDir.resolve("troops.json"), troopsJson);
+            writeIfMissing(targetDir.resolve("wars.json"), warsJson);
+            writeIfMissing(targetDir.resolve("theme.json"), themeJson);
+            writeIfMissing(targetDir.resolve("ideologies.json"), ideologiesJson);
+
+            writeFlagFolder(targetDir);
 
             if (mapImage != null) {
                 Path mapPath = targetDir.resolve("map.png");
                 if (Files.notExists(mapPath)) {
                     ImageIO.write(mapImage, "png", mapPath.toFile());
+                }
+            }
+
+            if (backgroundImage != null) {
+                Path mapPath = targetDir.resolve("background.png");
+                if (Files.notExists(mapPath)) {
+                    ImageIO.write(backgroundImage, "png", mapPath.toFile());
                 }
             }
 
@@ -201,11 +280,25 @@ public class ScenarioSyncPacket implements Packet, de.idiotischer.bob.networking
             writeIfMissing(targetDir.resolve("unusable.json"), unusableJson);
             writeIfMissing(targetDir.resolve("countries.json"), countriesJson);
             writeIfMissing(targetDir.resolve("states.json"), statesJson);
+            writeIfMissing(targetDir.resolve("tiles.json"), tilesJson);
+            writeIfMissing(targetDir.resolve("troops.json"), troopsJson);
+            writeIfMissing(targetDir.resolve("wars.json"), warsJson);
+            writeIfMissing(targetDir.resolve("theme.json"), themeJson);
+            writeIfMissing(targetDir.resolve("ideologies.json"), ideologiesJson);
+
+            writeFlagFolder(targetDir);
 
             if (mapImage != null) {
                 Path mapPath = targetDir.resolve("map.png");
                 if (Files.notExists(mapPath)) {
                     ImageIO.write(mapImage, "png", mapPath.toFile());
+                }
+            }
+
+            if (backgroundImage != null) {
+                Path mapPath = targetDir.resolve("background.png");
+                if (Files.notExists(mapPath)) {
+                    ImageIO.write(backgroundImage, "png", mapPath.toFile());
                 }
             }
 
@@ -266,14 +359,26 @@ public class ScenarioSyncPacket implements Packet, de.idiotischer.bob.networking
         return new String(bytes, StandardCharsets.UTF_8);
     }
 
+    public Theme getTheme() {
+        return theme;
+    }
+
+    private static class FlagEntry {
+        private final String path;
+        private final boolean directory;
+        private final byte[] data;
+
+        public FlagEntry(String path, boolean directory, byte[] data) {
+            this.path = path;
+            this.directory = directory;
+            this.data = data;
+        }
+    }
+
+
     public String getAbbreviation() { return abbreviation; }
     public String getName() { return name; }
     public List<Color> getTakenColors() { return takenColors; }
     public List<Color> getBorderColors() { return borderColors; }
     public BufferedImage getMapImage() { return mapImage; }
-
-    @Override
-    public void handle(Networker networker) {
-
-    }
 }

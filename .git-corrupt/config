@@ -1,0 +1,14 @@
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+[remote "origin"]
+	url = https://github.com/battlesofbrass/bob
+	fetch = +refs/heads/*:refs/remotes/origin/*
+[branch "dev/latest"]
+	remote = origin
+	merge = refs/heads/dev/latest
+[remote "BattlesOfBrass"]
+	url = https://github.com/BattlesOfBrass/BOB
+	fetch = +refs/heads/*:refs/remotes/BattlesOfBrass/*

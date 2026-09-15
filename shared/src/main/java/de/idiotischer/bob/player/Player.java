@@ -26,8 +26,6 @@ public interface Player {
 
     void country(Country country);
 
-    List<Troop> selectedTroops();
-
     default InetSocketAddress address() {
         return null;
     }

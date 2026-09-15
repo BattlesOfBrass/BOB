@@ -1,14 +1,12 @@
 package de.idiotischer.bob.render.menu.impl;
 
 import de.idiotischer.bob.BOB;
-import de.idiotischer.bob.render.menu.Menu;
 import de.idiotischer.bob.render.menu.components.button.BOBButton;
-import de.idiotischer.bob.render.menu.impl.select.ScenarioSelectMenu;
 
 import javax.swing.*;
 import java.awt.*;
 
-public class StartMenu extends JPanel implements Menu {
+public class StartMenu extends JPanel {
 
     //ButtonComp start = new ButtonComp("Select Start", Color.WHITE, Color.DARK_GRAY,true,0,100,150,50, 16,16, 15, Color.DARK_GRAY.brighter(), Color.BLACK, true,(b) -> {
     //    System.out.println("clicked mm");
@@ -49,6 +47,10 @@ public class StartMenu extends JPanel implements Menu {
 
         JButton settingsBtn = createButton("Settings");
 
+        settingsBtn.addActionListener(e -> {
+            BOB.getInstance().getMainRenderer().getMenuPanel().setSettingsMenu(true);
+        });
+
         JButton quitBtn = createButton("Quit");
         quitBtn.addActionListener(e -> System.exit(0));
 
@@ -59,14 +61,7 @@ public class StartMenu extends JPanel implements Menu {
     }
 
     private JButton createButton(String text) {
-        JButton btn = new BOBButton(text,
-                Color.WHITE,
-                Color.BLACK,
-                Color.DARK_GRAY.brighter(),
-                Color.LIGHT_GRAY,
-                16,
-                5
-        );
+        JButton btn = new BOBButton(text, BOB.getInstance().getSettingsTheme().button().textColor(), BOB.getInstance().getSettingsTheme().button().bgColor(), BOB.getInstance().getSettingsTheme().button().borderColor().brighter(), BOB.getInstance().getSettingsTheme().button().borderColorHover(), 16, 5);
         btn.setPreferredSize(new Dimension(200, 50));
         btn.setFocusable(false);
         return btn;
