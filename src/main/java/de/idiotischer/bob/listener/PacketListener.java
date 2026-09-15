@@ -180,9 +180,11 @@ public class PacketListener implements ListenerAdapter {
                     if(added) {
                         BOB.getInstance().getMainRenderer().getGamePanel().showGenericPopup("MILITARY ACCESS GRANTED!", "granted military access to", c1, c2, 5000,new Color(80, 235, 75));
                         c1.addMilAccess(c2.getAbbreviation());
+                        BOB.getInstance().getMainRenderer().getGamePanel().getHud().updateTabsFr();
                     } else {
                         BOB.getInstance().getMainRenderer().getGamePanel().showGenericPopup("MILITARY ACCESS DENIED!", "denied military access to", c1, c2, 5000);
                         c1.removeMilAccess(c2.getAbbreviation());
+                        BOB.getInstance().getMainRenderer().getGamePanel().getHud().updateTabsFr();
                     }
 
                 }

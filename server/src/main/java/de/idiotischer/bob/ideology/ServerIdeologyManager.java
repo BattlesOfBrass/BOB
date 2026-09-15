@@ -9,6 +9,7 @@ import de.idiotischer.bob.SharedCore;
 import java.nio.file.Files;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class ServerIdeologyManager implements IdeologyResolver {
 

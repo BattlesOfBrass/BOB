@@ -17,7 +17,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
-public class WarManager {
+public class WarManager implements WarResolver{
 
     private final Map<String, Set<WarStatus>> activeWars = new ConcurrentHashMap<>();
 
@@ -45,12 +45,26 @@ public class WarManager {
         return !Collections.disjoint(getWars(a), getWars(b));
     }
 
+    private boolean isCountry(Collection<Country> countries, Country country) {
+        return countries.stream().anyMatch(c -> c.getAbbreviation().equals(country.getAbbreviation()));
+    }
+
     public boolean fightsTogetherWith(Country one, Country two) {
-        return getWars(one).stream().anyMatch(w -> w.getAttackers().stream().anyMatch(ally -> ally.getAbbreviation().equals(two.getAbbreviation())));
+        return getWars(one).stream().anyMatch(war -> {
+            if (isCountry(war.getAttackers(), one)) return isCountry(war.getAttackers(), two);
+
+            if (isCountry(war.getDefenders(), one)) return isCountry(war.getDefenders(), two);
+
+            return false;
+        });
     }
 
     private Set<WarStatus> getOrCreateWars(Country c) {
         return activeWars.computeIfAbsent(c.getAbbreviation(), k -> ConcurrentHashMap.newKeySet());
+    }
+
+    public boolean isEnemy(Country a, Country b) {
+        return getWars(a).stream().anyMatch(w -> fightsTogetherWith(a,b) && isAtWar(a,b));
     }
 
     public void finishReload(String message) {

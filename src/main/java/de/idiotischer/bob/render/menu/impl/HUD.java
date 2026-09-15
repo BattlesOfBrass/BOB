@@ -1,12 +1,14 @@
 package de.idiotischer.bob.render.menu.impl;
 
 import de.idiotischer.bob.BOB;
+import de.idiotischer.bob.Server;
 import de.idiotischer.bob.country.Country;
 import de.idiotischer.bob.networking.packet.impl.pp.RequestPacket;
 import de.idiotischer.bob.networking.packet.impl.pp.Type;
 import de.idiotischer.bob.render.menu.components.*;
 import de.idiotischer.bob.render.menu.components.button.BOBButton;
 import de.idiotischer.bob.tile.Tile;
+import de.idiotischer.bob.util.MilAccessRules;
 import it.unimi.dsi.fastutil.Pair;
 
 import javax.swing.*;
@@ -217,23 +219,24 @@ public class HUD extends JPanel {
 
         return panel;
     }
+    public void updateTabsFr() {
+        updateTabs();
+        revalidate();
+        repaint();
+    }
 
     private void updateTabs() {
         TabMode newMode;
 
-        if (currentTile == null) {
-            newMode = TabMode.NONE;
-        } else {
+        if (currentTile == null) newMode = TabMode.NONE;
+        else {
             boolean ownCountry = currentTile.getController() != null && Objects.equals(currentTile.getController().getAbbreviation(), BOB.getInstance().getPlayer().country().getAbbreviation())/*currentTile.getController().getPlayer().uuid() == BOB.getInstance().getPlayer().uuid()*/;
             newMode = ownCountry ? TabMode.OWN : TabMode.FOREIGN;
         }
 
-        if (newMode == currentMode) {
-            return;
-        }
+        if (newMode == currentMode) return;
 
         currentMode = newMode;
-
         tabbedPane.removeAll();
 
         switch (currentMode) {
@@ -439,6 +442,11 @@ public class HUD extends JPanel {
 
         milAccess.addActionListener(e -> {
             if (currentTile == null || currentTile.getController() == null) return;
+            if (MilAccessRules.canHave(BOB.getInstance().getWarManager(), currentTile.getController(), BOB.getInstance().getPlayer().country())) {
+                BOB.getInstance().getMainRenderer().getGamePanel().showGenericPopup("ACTION FAILED", "You cant request military access from ", null, currentTile.getController(),5000);
+                return;
+            }
+
 
             RequestPacket pack = new RequestPacket(Type.MIL_ACCESS, currentTile.getController().getAbbreviation());
 
@@ -557,9 +565,7 @@ public class HUD extends JPanel {
     }
 
     public void setTile(Tile tile) {
-        if (this.currentTile == tile) {
-            return;
-        }
+        if (this.currentTile == tile) return;
 
         this.currentTile = tile;
 

@@ -48,9 +48,7 @@ public class ServerCombatManager {
         List<TroopStack> validDefenders = defenders.stream().filter(stack -> !isInCombat(stack)).toList();
 
         Set<String> attackerSet = new HashSet<>(validAttackers).stream().map(t -> t.getController().getAbbreviation()).collect(Collectors.toSet());
-        for (TroopStack defender : validDefenders) {
-            if (attackerSet.contains(defender.getController().getAbbreviation())) return null;
-        }
+        for (TroopStack defender : validDefenders) if (attackerSet.contains(defender.getController().getAbbreviation())) return null;
 
         if (validAttackers.isEmpty() || validDefenders.isEmpty()) return null;
 
@@ -158,15 +156,9 @@ public class ServerCombatManager {
     }
 
     private void checkRemoved(CombatStatus combat) {
-        combat.getAttackers().forEach(c -> {
-            if(!c.isAlive()) c.setHp(0);
+        combat.getAttackers().forEach(c -> {if(!c.isAlive()) c.setHp(0);});
 
-        });
-
-        combat.getDefenders().forEach(c -> {
-            if(!c.isAlive()) c.setHp(0);
-
-        });
+        combat.getDefenders().forEach(c -> {if(!c.isAlive()) c.setHp(0);});
     }
 
     private void removeOrg(CombatStatus combat, Set<TroopStack> stacks, int extra) {
@@ -201,9 +193,7 @@ public class ServerCombatManager {
             }
         }
 
-        for (TroopStack stack : toRemove) {
-            handleOOH(combat, stack);
-        }
+        for (TroopStack stack : toRemove) handleOOH(combat, stack);
     }
 
     private void handleOOH(CombatStatus combat, TroopStack stack) {
@@ -235,9 +225,7 @@ public class ServerCombatManager {
             stack.setTile(fallback);
 
             Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new ReplyPacket(Type.TROOPS_MOVE, reply));
-        } else {
-            Server.getInstance().getTroopManager().removeTroop(stack);
-        }
+        } else Server.getInstance().getTroopManager().removeTroop(stack);
     }
 
     private void applyDamage(CombatStatus combat, Set<TroopStack> stacks, int damage) {
@@ -254,14 +242,10 @@ public class ServerCombatManager {
 
             stack.setHp(newHp);
 
-            if (oldHp > 0 && newHp == 0) {
-                dead.add(stack);
-            }
+            if (oldHp > 0 && newHp == 0) dead.add(stack);
         }
 
-        for (TroopStack deadStack : dead) {
-            handleOOH(combat, deadStack);
-        }
+        for (TroopStack deadStack : dead) handleOOH(combat, deadStack);
 
         CombatSyncPacket packet = new CombatSyncPacket(combat, Server.getInstance().getTroopManager());
 
@@ -278,16 +262,12 @@ public class ServerCombatManager {
     private void cleanupCombat(CombatStatus combat) {
         activeCombats.remove(combat);
 
-        if (combat.getTask() != null) {
-            combat.getTask().cancel(false);
-        }
+        if (combat.getTask() != null) combat.getTask().cancel(false);
 
         combat.getAttackers().forEach(TroopStack::resetAttributes);
         combat.getDefenders().forEach(TroopStack::resetAttributes);
 
-        combatListeners.forEach(l -> {
-            try {l.accept(combat); } catch (Exception ignored) {}
-        });
+        combatListeners.forEach(l -> {try { l.accept(combat); } catch (Exception ignored) {}});
 
         ReplyPacket packet = new ReplyPacket(Type.COMBAT_OVER, combat.getUuid().toString());
 

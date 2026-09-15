@@ -96,25 +96,20 @@ public class BOB {
             Field awtAppClassNameField = toolkit.getClass().getDeclaredField("awtAppClassName");
             awtAppClassNameField.setAccessible(true);
             awtAppClassNameField.set(toolkit, "BOB");
-        }
-        catch (NoSuchFieldException | IllegalAccessException ignored) {}
+        } catch (NoSuchFieldException | IllegalAccessException ignored) {}
 
         BOB.instance = this;
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> this.client.shutdown()));
 
-        FileUtil.replaceIfNotExistingAsync(
-            this.getClass().getClassLoader()
-        ).join();
+        FileUtil.replaceIfNotExistingAsync(this.getClass().getClassLoader()).join();
 
         //TODO: fix this called before all files are created (thenRun doesnt work)
         init();
     }
 
     public void setup() {
-        if (countries.getCountries().isEmpty()) {
-            throw new IllegalStateException("Setup called before countries loaded");
-        }
+        if (countries.getCountries().isEmpty()) throw new IllegalStateException("Setup called before countries loaded");
 
         this.mapRenderer = new MainRenderer();
 

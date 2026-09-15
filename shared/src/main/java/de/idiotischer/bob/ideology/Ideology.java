@@ -23,6 +23,10 @@ public record Ideology(String abbreviation, String name, Buffs buffs) {
         return new Ideology(parts[0], parts[1], new Buffs(Float.parseFloat(parts[2]), Float.parseFloat(parts[3]), Float.parseFloat(parts[4])));
     }
 
+    public boolean likes(Ideology i) {
+        return true;
+    }
+
 
     @Override
     public boolean equals(Object o) {

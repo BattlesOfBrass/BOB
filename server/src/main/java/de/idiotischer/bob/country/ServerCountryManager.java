@@ -49,10 +49,10 @@ public class ServerCountryManager implements CountryResolver {
                     majorAtStart = countryElement.get("majorAtStart").getAsBoolean();
 
                 if(countryElement.has("ideology") && !countryElement.get("ideology").isJsonNull())
-                    rulingIdeology = Server.getInstance().getIdeologyManager().byAbbreviation(countryElement.get("ideology").getAsString());
+                    rulingIdeology = Server.getInstance().getIdeologyManager().byAbbreviation(countryElement.get("ideology").getAsString().toUpperCase());
 
                 if(countryElement.has("availableIdeologies") && !countryElement.get("availableIdeologies").isJsonNull())
-                    availableIdeologies = countryElement.get("availableIdeologies").getAsJsonArray().asList().stream().map(s -> Server.getInstance().getIdeologyManager().byAbbreviation(s.getAsString())).collect(Collectors.toSet());
+                    availableIdeologies = countryElement.get("availableIdeologies").getAsJsonArray().asList().stream().map(s -> Server.getInstance().getIdeologyManager().byAbbreviation(s.getAsString().toUpperCase())).collect(Collectors.toSet());
 
 
                 if(countryElement.has("selectScreen") && !countryElement.get("selectScreen").isJsonNull())

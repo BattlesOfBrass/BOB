@@ -20,6 +20,7 @@ import de.idiotischer.bob.troop.MoveStatus;
 import de.idiotischer.bob.troop.TroopStack;
 import de.idiotischer.bob.troop.TroopValidator;
 import de.idiotischer.bob.util.AddressUtil;
+import de.idiotischer.bob.util.MilAccessRules;
 import it.unimi.dsi.fastutil.Pair;
 
 import java.io.IOException;
@@ -98,6 +99,8 @@ public class ServerPacketListener implements ListenerAdapter {
                     if(player == null) return;
 
                     if(c.hasCountryMilAccess(player.country())) return;
+
+                    if(MilAccessRules.canHave(Server.getInstance().getWarManager(), c, player.country())) return;
 
                     c.addMilAccess(player.country().getAbbreviation());
                     String acc = c.serializeAccessUpdate(player.country().getAbbreviation(), true);

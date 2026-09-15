@@ -31,13 +31,8 @@ public class CombatManager {
     }
 
     public boolean isInCombat(TroopStack stack) {
-        Set<TroopStack> all = activeCombats.stream()
-                .flatMap(combat -> combat.getAttackers().stream())
-                .collect(Collectors.toSet());
-        all.addAll(activeCombats.stream()
-                .flatMap(combat -> combat.getDefenders().stream())
-                .collect(Collectors.toSet()));
-
+        Set<TroopStack> all = activeCombats.stream().flatMap(combat -> combat.getAttackers().stream()).collect(Collectors.toSet());
+        all.addAll(activeCombats.stream().flatMap(combat -> combat.getDefenders().stream()).collect(Collectors.toSet()));
 
         return all.contains(stack);
     }

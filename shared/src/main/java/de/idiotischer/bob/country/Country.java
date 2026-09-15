@@ -329,7 +329,6 @@ public class Country /*implements Comparable<Country>*/{
         return rulingIdeology;
     }
 
-
     public String getRulingIdeologyString() {
         return rulingIdeology == null ? "None" : rulingIdeology.name();
     }

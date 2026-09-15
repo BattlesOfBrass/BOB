@@ -1,3 +1,11 @@
 {
-
+  "DEM": {
+    "name": "democratic"
+  },
+  "FAS": {
+    "name": "fascist"
+  },
+  "COM": {
+    "name": "communism"
+  }
 }
