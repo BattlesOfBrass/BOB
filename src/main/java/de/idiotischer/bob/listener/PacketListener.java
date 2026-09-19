@@ -215,7 +215,7 @@ public class PacketListener implements ListenerAdapter {
 
                     PeaceConference c = BOB.getInstance().getPeaceHelper().getBy(uuid);
                     if(c != null)
-                        BOB.getInstance().getMainRenderer().getGamePanel().showGenericPopup("PEACE ACHIEVED!","achieved peace with", c.getWinners().getFirst(), c.getDefeated().getFirst(), 5000);
+                        BOB.getInstance().getMainRenderer().getGamePanel().showGenericPopup("PEACE ACHIEVED!","achieved peace with", c.getWinners().getFirst(), c.getDefeated().getFirst(), 5000, new Color(80, 235, 75));
 
                     BOB.getInstance().getPeaceHelper().removePeaces(uuid);
                 }

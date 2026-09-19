@@ -123,94 +123,92 @@ public class ServerTileManager implements TileResolver {
 
                 JsonElement connectionsElement = tileElement.get("connections");
 
-                if (connectionsElement != null && !connectionsElement.isJsonNull()) {
-                    if (!connectionsElement.isJsonObject()) if (Server.getInstance().isDebug()) System.err.println("Failed to load connections for tile " + abbreviation + ": connections must be a JSON object.");
-                    else {
-                        JsonObject connectionsObject = connectionsElement.getAsJsonObject();
+                if (connectionsElement == null || connectionsElement.isJsonNull()) {
+                    if (Server.getInstance().isDebug()) System.out.println(abbreviation + ": no connections element");
+                } else if (!connectionsElement.isJsonObject()) {
+                    if (Server.getInstance().isDebug()) System.err.println("Failed to load connections for tile " + abbreviation + ": connections must be a JSON object.");
+                } else {
+                    JsonObject connectionsObject = connectionsElement.getAsJsonObject();
 
-                        for (Map.Entry<String, JsonElement> connectionEntry : connectionsObject.entrySet()) {
-                            String connectionId = connectionEntry.getKey();
-                            JsonElement connectionElement = connectionEntry.getValue();
+                    if (Server.getInstance().isDebug()) System.out.println("Loading " + connectionsObject.size() + " connections for " + abbreviation);
 
-                            try {
-                                if (connectionElement == null || connectionElement.isJsonNull()) throw new IllegalArgumentException("connection value is null");
+                    for (Map.Entry<String, JsonElement> connectionEntry : connectionsObject.entrySet()) {
+                        String connectionId = connectionEntry.getKey();
+                        JsonElement connectionElement = connectionEntry.getValue();
 
-                                if (!connectionElement.isJsonObject()) throw new IllegalArgumentException("connection must be a JSON object");
+                        if (Server.getInstance().isDebug()) System.out.println("Parsing connection " + connectionId + " for " + abbreviation);
 
-                                JsonObject obj = connectionElement.getAsJsonObject();
+                        try {
+                            if (connectionElement == null || connectionElement.isJsonNull()) throw new IllegalArgumentException("connection value is null");
 
-                                JsonElement originElement = obj.get("origin");
+                            if (!connectionElement.isJsonObject()) throw new IllegalArgumentException("connection must be a JSON object");
 
-                                if (originElement == null || originElement.isJsonNull() || !originElement.isJsonPrimitive()) {
-                                    if (Server.getInstance().isDebug()) System.err.println("Skipping connection " + connectionId + " for tile " + abbreviation + ": missing or invalid origin");
-                                    continue;
-                                }
+                            JsonObject obj = connectionElement.getAsJsonObject();
 
-                                String origin = originElement.getAsString().trim();
+                            JsonElement connectedToElement = obj.get("connectedTo");
 
-                                if (origin.isEmpty()) {
-                                    if (Server.getInstance().isDebug()) System.err.println("Skipping connection " + connectionId + " for tile " + abbreviation + ": origin cannot be empty");
-                                    continue;
-                                }
+                            if (connectedToElement == null || connectedToElement.isJsonNull() || !connectedToElement.isJsonPrimitive()) {
+                                if (Server.getInstance().isDebug()) System.err.println("Skipping connection " + connectionId + " for tile " + abbreviation + ": missing or invalid connectedTo");
+                                continue;
+                            }
 
-                                JsonElement connectedToElement = obj.get("connectedTo");
+                            String connectedTo = connectedToElement.getAsString().trim();
 
-                                if (connectedToElement == null || connectedToElement.isJsonNull() || !connectedToElement.isJsonPrimitive()) {
-                                    if (Server.getInstance().isDebug()) System.err.println("Skipping connection " + connectionId + " for tile " + abbreviation + ": missing or invalid connectedTo");
-                                    continue;
-                                }
+                            if (connectedTo.isEmpty()) {
+                                if (Server.getInstance().isDebug()) System.err.println("Skipping connection " + connectionId + " for tile " + abbreviation + ": connectedTo cannot be empty");
+                                continue;
+                            }
 
-                                String connectedTo = connectedToElement.getAsString().trim();
+                            Tile.TileConnection.ConnectionType connectionType = Tile.TileConnection.ConnectionType.BRIDGE;
 
-                                if (connectedTo.isEmpty()) {
-                                    if (Server.getInstance().isDebug()) System.err.println("Skipping connection " + connectionId + " for tile " + abbreviation + ": connectedTo cannot be empty");
-                                    continue;
-                                }
+                            JsonElement typeElement = obj.get("type");
 
-                                Tile.TileConnection.ConnectionType connectionType = Tile.TileConnection.ConnectionType.BRIDGE;
+                            if (typeElement != null &&
+                                    !typeElement.isJsonNull() &&
+                                    typeElement.isJsonPrimitive()) {
 
-                                JsonElement typeElement = obj.get("type");
+                                String typeString = typeElement.getAsString().trim();
 
-                                if (typeElement != null && !typeElement.isJsonNull() && typeElement.isJsonPrimitive()) {
-                                    String typeString = typeElement.getAsString().trim();
-
-                                    if (!typeString.isEmpty()) {
-                                        try {
-                                            connectionType = Tile.TileConnection.ConnectionType.valueOf(typeString.toUpperCase(Locale.ROOT));
-                                        } catch (IllegalArgumentException e) {
-                                            if (Server.getInstance().isDebug()) System.err.println("Invalid connection type " + typeString + " for connection " + connectionId + " on tile " + abbreviation + ", using default " + connectionType);
-                                        }
-                                    }
-                                }
-
-                                boolean broken = false;
-
-                                JsonElement brokenElement = obj.get("broken");
-
-                                if (brokenElement != null && !brokenElement.isJsonNull() && brokenElement.isJsonPrimitive()) {
+                                if (!typeString.isEmpty()) {
                                     try {
-                                        broken = brokenElement.getAsBoolean();
-                                    } catch (Exception e) {
-                                        if (Server.getInstance().isDebug()) System.err.println("Invalid broken value for connection " + connectionId + " on tile " + abbreviation + ", using false");
+                                        connectionType = Tile.TileConnection.ConnectionType.valueOf(typeString.toUpperCase());
+                                    } catch (IllegalArgumentException e) {
+                                        if (Server.getInstance().isDebug()) System.err.println("Invalid connection type " + typeString + " for connection " + connectionId + " on tile " + abbreviation + ", using default " + connectionType);
                                     }
                                 }
+                            }
 
-                                UUID uuid = UUIDUtil.getUnused(usedConnectionIds);
+                            boolean broken = false;
 
-                                if (uuid == null) throw new IllegalStateException("UUIDUtil.getUnused() returned null");
+                            JsonElement brokenElement = obj.get("broken");
 
-                                usedConnectionIds.add(uuid);
+                            if (brokenElement != null && !brokenElement.isJsonNull() && brokenElement.isJsonPrimitive()) {
+                                try {
+                                    broken = brokenElement.getAsBoolean();
+                                } catch (Exception e) {
+                                    if (Server.getInstance().isDebug()) System.err.println("Invalid broken value for connection " + connectionId + " on tile " + abbreviation + ", using false");
+                                }
+                            }
 
-                                Tile.TileConnection connection = new Tile.TileConnection(abbreviation, connectedTo, uuid, connectionType, broken);
+                            UUID uuid = UUIDUtil.getUnused(usedConnectionIds);
 
-                                conns.add(connection);
+                            if (uuid == null) throw new IllegalStateException("UUIDUtil.getUnused() returned null");
 
-                            } catch (Exception e) {
-                                if (Server.getInstance().isDebug()) System.err.println("Failed to load connection " + connectionId + " for tile " + abbreviation + ": " + e.getMessage());
+                            usedConnectionIds.add(uuid);
+
+                            Tile.TileConnection connection = new Tile.TileConnection(abbreviation, connectedTo, uuid, connectionType, broken);
+
+                            conns.add(connection);
+
+                        } catch (Exception e) {
+                            if (Server.getInstance().isDebug()) {
+                                System.err.println("Failed to load connection " + connectionId + " for tile " + abbreviation + ": " + e.getMessage());
+                                e.printStackTrace();
                             }
                         }
                     }
                 }
+
 
                 Tile tile = new Tile(Server.getInstance().getSharedCore(), conns, claims, victoryPoints, cityName, hasCity, abbreviation, name, points, controller, owner);
 

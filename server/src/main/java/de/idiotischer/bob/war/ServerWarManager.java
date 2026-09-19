@@ -66,18 +66,9 @@ public class ServerWarManager implements WarResolver {
         return !Collections.disjoint(getWars(a), getWars(b));
     }
 
-    private boolean isCountry(Collection<Country> countries, Country country) {
-        return countries.stream().anyMatch(c -> c.getAbbreviation().equals(country.getAbbreviation()));
-    }
-
+    //TODO instead of doing || make a method for getting the side directly yk
     public boolean fightsTogetherWith(Country one, Country two) {
-        return getWars(one).stream().anyMatch(war -> {
-            if (isCountry(war.getAttackers(), one)) return isCountry(war.getAttackers(), two);
-
-            if (isCountry(war.getDefenders(), one)) return isCountry(war.getDefenders(), two);
-
-            return false;
-        });
+        return getWars(one).stream().anyMatch(w -> w.getDefenders().stream().anyMatch(ally -> ally.getAbbreviation().equals(two.getAbbreviation())) || w.getAttackers().stream().anyMatch(ally -> ally.getAbbreviation().equals(two.getAbbreviation())));
     }
 
     private Set<WarStatus> getOrCreateWars(Country c) {
@@ -85,7 +76,7 @@ public class ServerWarManager implements WarResolver {
     }
 
     public boolean isEnemy(Country a, Country b) {
-        return getWars(a).stream().anyMatch(w -> fightsTogetherWith(a,b) && isAtWar(a,b));
+        return getWars(a).stream().anyMatch(w -> w.getAttackers().stream().anyMatch(ally -> ally.getAbbreviation().equals(b.getAbbreviation())) || w.getDefenders().stream().anyMatch(ally -> ally.getAbbreviation().equals(b.getAbbreviation())));
     }
 
     /*public boolean isEnemy(Country a, Country b) {

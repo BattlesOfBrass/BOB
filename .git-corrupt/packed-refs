@@ -1,6 +1,0 @@
-# pack-refs with: peeled fully-peeled sorted 
-aae9474e5b8ff37151ab92edb65576fb1361f530 refs/remotes/origin/auto/update-submodule
-73735855ac5af0e02437b77b94ab85c34ec1dd03 refs/remotes/origin/dev/latest
-4dacef365073e1aad308a1eed339e2c5d24c8a0a refs/remotes/origin/master
-a3c1a3931870c096f54e8ea104cfdce06117ef15 refs/remotes/origin/master_old
-1eff8c3ca4e8a5588899d29a758fdc2d5fe94543 refs/remotes/origin/truelockmc-patch-1

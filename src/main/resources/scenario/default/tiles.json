@@ -380,7 +380,14 @@
   "calais": {
     "name": "Calais",
     "locations": "576,136",
-    "controller": "FRA"
+    "controller": "FRA",
+    "connections": {
+      "1": {
+        "connectedTo": "kent",
+        "broken": false,
+        "type": "bridge"
+      }
+    }
   },
   "champagne": {
     "name": "Champagne",

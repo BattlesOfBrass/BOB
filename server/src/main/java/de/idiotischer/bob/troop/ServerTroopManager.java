@@ -187,7 +187,12 @@ public class ServerTroopManager implements TroopResolver{
                 return path;
             }
 
-            for (Tile neighbour : resolver.findNeighbors(current)) {
+            Set<Tile> possibleTiles = new HashSet<>(resolver.findNeighbors(current));
+
+            for (Tile tile : Server.getInstance().getTileManager().getTileSet())
+                if (resolver.hasConnection(current, tile) && !resolver.getConnection(current,tile).isBroken()) possibleTiles.add(tile);
+
+            for (Tile neighbour : possibleTiles) {
                 if (visited.contains(neighbour)) continue;
 
                 if (canTraverse(troopController, current, neighbour) == MoveStatus.FAILURE) continue;
@@ -306,6 +311,9 @@ public class ServerTroopManager implements TroopResolver{
 
                         if(!pushable.isEmpty()) {
                             List<Tile> fallbacks = new ArrayList<>(Server.getInstance().getTileManager().findNeighbors(to));
+
+                            for (Tile tile : Server.getInstance().getTileManager().getTileSet())
+                                if (Server.getInstance().getTileManager().hasConnection(to, tile)) fallbacks.add(tile);
 
                             fallbacks.removeIf(tile1 -> !Objects.equals(tile1.getController().getAbbreviation(), new ArrayList<>(pushable).getFirst().getController().getAbbreviation()) && !Server.getInstance().getWarManager().fightsTogetherWith(tile1.getController(), new ArrayList<>(pushable).getFirst().getController()));
 

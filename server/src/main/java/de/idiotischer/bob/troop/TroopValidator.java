@@ -15,8 +15,6 @@ public class TroopValidator {
 
 
     public static MoveStatus validate(Player mover, TroopStack troopStack, Tile tile, TroopResolver tr, TileResolver resolver) {
-        Set<Tile> neighbours = resolver.findNeighbors(troopStack.getTile());
-
         Country troopController = troopStack.getController();
         Country tileController = troopStack.getTile().getController();
         Country newTileController = tile.getController();
