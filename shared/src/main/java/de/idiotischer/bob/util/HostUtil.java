@@ -16,6 +16,7 @@ public class HostUtil {
     private boolean useSpecifications = false;
     private boolean multiplayerEnabled = false;
     private boolean coop = false;
+    private boolean kickEnabled = true;
 
     public HostUtil() {
         reload();
@@ -80,6 +81,14 @@ public class HostUtil {
                 changed = true;
             }
 
+            if (remote.has("kickEnabled") && !remote.get("kickEnabled").isJsonNull()) {
+                kickEnabled = remote.get("kickEnabled").getAsBoolean();
+            } else {
+                kickEnabled = true;
+                remote.addProperty("kickEnabled", kickEnabled);
+                changed = true;
+            }
+
             if (local.has("localPort") && !local.get("localPort").isJsonNull()) {
                 localPort = local.get("localPort").getAsInt();
             } else {
@@ -137,5 +146,9 @@ public class HostUtil {
 
     public boolean isCoop() {
         return coop;
+    }
+
+    public boolean kickEnabled() {
+        return kickEnabled;
     }
 }

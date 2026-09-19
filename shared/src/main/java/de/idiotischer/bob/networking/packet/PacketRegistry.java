@@ -35,12 +35,21 @@ public class PacketRegistry {
         registerPacket(ScenariosSyncPacket.class, 5);
         registerPacket(CountrySyncPacket.class, 6);
         registerPacket(CountriesSyncPacket.class, 7);
-        registerPacket(StateSyncPacket.class, 8);
-        registerPacket(StatesSyncPacket.class, 9);
+        registerPacket(TileSyncPacket.class, 8);
+        registerPacket(TilesSyncPacket.class, 9);
         registerPacket(PlayerQuitPacket.class, 10);
         registerPacket(PlayerJoinPacket.class, 11);
         registerPacket(PlayerChangedCountryPacket.class, 12);
         registerPacket(LoginPacket.class, 13);
+        registerPacket(StateSyncPacket.class, 14);
+        registerPacket(StatesSyncPacket.class, 15);
+        registerPacket(TroopStackSyncPacket.class, 16);
+        registerPacket(TroopStacksSyncPacket.class, 17);
+        registerPacket(PlayerAuthUpdatePacket.class, 18);
+        registerPacket(CombatSyncPacket.class, 19);
+        registerPacket(CombatsSyncPacket.class, 20);
+        registerPacket(IdeologiesSyncPacket.class, 21);
+        registerPacket(IdeologySyncPacket.class, 22);
     }
 
     public void registerPacket(Class<? extends Packet> packet, int id) {

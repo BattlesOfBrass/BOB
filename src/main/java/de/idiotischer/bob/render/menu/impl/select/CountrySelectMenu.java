@@ -59,6 +59,7 @@ public class CountrySelectMenu extends JPanel {
         JButton startBtn = createButton(label, 140, 40);
         startBtn.setBounds(layoutScaleX - 180, bottomY, 140, 40);
         startBtn.addActionListener(e -> {
+            if(BOB.getInstance().getPlayer() == null || BOB.getInstance().getPlayer().country() == null) return;
             action.accept(this);
         });
 
@@ -79,20 +80,11 @@ public class CountrySelectMenu extends JPanel {
 
         if (selectedCountry == null && !featured.isEmpty()) {
             selectedCountry = featured.get(ThreadLocalRandom.current().nextInt(featured.size()));
+            BOB.getInstance().getPlayerManager().changeCountry(BOB.getInstance().getPlayer(), selectedCountry);
         }
 
         for (Country c : featured) {
-            BOBImageButton btn = new BOBImageButton(
-                    c.getAbbreviation(),
-                    c.countryName().length() > 9 ? c.getAbbreviation() : c.countryName(),
-                    c.getFlagImage(),
-                    Color.WHITE,
-                    Color.DARK_GRAY,
-                    Color.DARK_GRAY.darker(),
-                    Color.LIGHT_GRAY,
-                    16,
-                    5
-            );
+            BOBImageButton btn = new BOBImageButton(c.getAbbreviation(), c.countryName().length() > 9 ? c.getAbbreviation() : c.countryName(), c.getFlagImage(BOB.getInstance().getScenarioSceneLoader().getCurrentScenario()), BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().textColor(), BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().bgColorLight(), BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().borderColor(), BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().borderColorHover(), 16, 5);
 
             btn.setPreferredSize(new Dimension(130, 160));
             btn.setFocusable(false);
@@ -122,26 +114,17 @@ public class CountrySelectMenu extends JPanel {
         group.add(btn);
         btn.addActionListener(e -> {
             java.util.Enumeration<AbstractButton> en = group.getElements();
-            while (en.hasMoreElements()) {
-                en.nextElement().setSelected(false);
-            }
+            while (en.hasMoreElements()) en.nextElement().setSelected(false);
 
             selectedCountry = c;
             btn.setSelected(true);
+            BOB.getInstance().getPlayerManager().changeCountry(BOB.getInstance().getPlayer(), selectedCountry);
             //repaint();
         });
     }
 
     private BOBButton createButton(String text, int width, int height) {
-        BOBButton btn = new BOBButton(
-                text,
-                Color.WHITE,
-                Color.BLACK,
-                Color.DARK_GRAY.darker(),
-                Color.LIGHT_GRAY,
-                16,
-                5
-        );
+        BOBButton btn = new BOBButton(text, BOB.getInstance().getSettingsTheme().button().textColor(), BOB.getInstance().getSettingsTheme().button().bgColor(), BOB.getInstance().getSettingsTheme().button().borderColor(), BOB.getInstance().getSettingsTheme().button().borderColorHover(), 16, 5);
         btn.setPreferredSize(new Dimension(width, height));
         btn.setFocusable(false);
         return btn;
@@ -153,11 +136,13 @@ public class CountrySelectMenu extends JPanel {
         Graphics2D g2 = (Graphics2D) g.create();
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        g2.setColor(Color.DARK_GRAY);
+        Color dark = BOB.getInstance().getSettingsTheme().palette().darkColor();
+
+        g2.setColor(dark);
         g2.fillRoundRect(4, 4, getWidth() - 8, getHeight() - 8, 30, 30);
 
         g2.setStroke(new BasicStroke(8));
-        g2.setColor(Color.DARK_GRAY.darker());
+        g2.setColor(dark.darker());
         g2.drawRoundRect(4, 4, getWidth() - 8, getHeight() - 8, 30, 30);
 
         g2.dispose();

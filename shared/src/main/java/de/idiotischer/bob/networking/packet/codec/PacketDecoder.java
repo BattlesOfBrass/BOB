@@ -19,9 +19,7 @@ public class PacketDecoder implements Coder<Packet, ByteBuffer> {
 
     @Override
     public Packet code(ByteBuffer buffer, AsynchronousSocketChannel channel) {
-        if (buffer.remaining() < 4) {
-            return null;
-        }
+        if (buffer.remaining() < 4) return null;
 
         buffer.mark();
         int length = buffer.getInt();
@@ -33,15 +31,11 @@ public class PacketDecoder implements Coder<Packet, ByteBuffer> {
 
         int id = buffer.getInt();
 
-        if (!registry.isIdValid(id)) {
-            throw new IllegalArgumentException("No packet with id " + id + " found!");
-        }
+        if (!registry.isIdValid(id)) throw new IllegalArgumentException("No packet with id " + id + " found!");
 
         Packet packet;
         try {
-            packet = Objects.requireNonNull(registry.getPacketById(id))
-                    .getDeclaredConstructor()
-                    .newInstance();
+            packet = Objects.requireNonNull(registry.getPacketById(id)).getDeclaredConstructor().newInstance();
         } catch (Exception e) {
             throw new RuntimeException("Failed to create packet instance for id " + id, e);
         }
@@ -57,14 +51,12 @@ public class PacketDecoder implements Coder<Packet, ByteBuffer> {
             buffer.limit(oldLimit);
         }
 
-        PacketRegistry.PacketReceiveEvent event =
-                new PacketRegistry.PacketReceiveEvent(packet, channel);
+        PacketRegistry.PacketReceiveEvent event = new PacketRegistry.PacketReceiveEvent(packet, channel);
 
         registry.getCore().getListenerRegistry().call(event);
 
-        if (event.isCancelled()) {
-            return packet;
-        }
+        if (event.isCancelled()) return packet;
+
 
         return packet;
     }

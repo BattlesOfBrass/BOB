@@ -3,6 +3,7 @@ package de.idiotischer.bob.scenario;
 import com.google.gson.JsonElement;
 import com.google.gson.stream.JsonReader;
 import de.idiotischer.bob.SharedCore;
+import de.idiotischer.bob.theme.Theme;
 import de.idiotischer.bob.util.FileUtil;
 
 import javax.imageio.ImageIO;
@@ -12,7 +13,11 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class Scenario {
@@ -24,6 +29,8 @@ public class Scenario {
     private final String abbreviation;
     private final boolean server;
     private final List<Color> borderColors = new  ArrayList<>();
+    private Theme theme;
+    private Date startDate;
 
     public Scenario(boolean server, String abbreviation, String name, Path dir) {
         this.server = server;
@@ -42,10 +49,26 @@ public class Scenario {
         return dir;
     }
 
+    public Path getConfig() {
+        Path path = dir.resolve("config.json");
+
+        if(Files.notExists(path)) path = FileUtil.getDefaultScenarioDir().resolve("config.json");
+
+        return path;
+    }
+
     public Path getUnusable() {
         Path path = dir.resolve("unusable.json");
 
         if(Files.notExists(path)) path = FileUtil.getDefaultScenarioDir().resolve("unusable.json");
+
+        return path;
+    }
+
+    public Path getStatesConfig() {
+        Path path = dir.resolve("states.json");
+
+        if(Files.notExists(path)) path = FileUtil.getDefaultScenarioDir().resolve("states.json");
 
         return path;
     }
@@ -58,10 +81,44 @@ public class Scenario {
         return path;
     }
 
-    public Path getStatesConfig() {
-        Path path = dir.resolve("states.json");
+    public Path getThemeConfig() {
+        Path path = dir.resolve("theme.json");
 
-        if(Files.notExists(path)) path = FileUtil.getDefaultScenarioDir().resolve("states.json");
+        if(Files.notExists(path)) path = FileUtil.getDefaultScenarioDir().resolve("theme.json");
+
+        return path;
+    }
+
+    public Path getIdeologiesConfig() {
+        Path path = dir.resolve("ideologies.json");
+
+        if(Files.notExists(path)) path = FileUtil.getDefaultScenarioDir().resolve("ideologies.json");
+
+        return path;
+    }
+
+    public Theme getTheme() {
+        if(theme != null) return theme; //should only happen on client
+
+        Path path = dir.resolve("theme.json");
+
+        if(Files.notExists(path)) return Theme.defaultTheme();
+
+        return Theme.fromJson(name + "-theme", path);
+    }
+
+    public Path getWarsConfig() {
+        Path path = dir.resolve("wars.json");
+
+        if(Files.notExists(path)) path = FileUtil.getDefaultScenarioDir().resolve("wars.json");
+
+        return path;
+    }
+
+    public Path getTilesConfig() {
+        Path path = dir.resolve("tiles.json");
+
+        if(Files.notExists(path)) path = FileUtil.getDefaultScenarioDir().resolve("tiles.json");
 
         return path;
     }
@@ -88,14 +145,34 @@ public class Scenario {
         return Files.notExists(path);
     }
 
+
+    public boolean isIdeologiesDefault() {
+        Path path = dir.resolve("ideologies.json");
+
+        return Files.notExists(path);
+    }
+
+    public boolean isWarsDefault() {
+        Path path = dir.resolve("wars.json");
+
+        return Files.notExists(path);
+    }
+
+
+    public boolean isThemesDefault() {
+        Path path = dir.resolve("theme.json");
+
+        return Files.notExists(path);
+    }
+
     public boolean isCountryConfigDefault() {
         Path path = dir.resolve("countries.json");
 
         return Files.notExists(path);
     }
 
-    public boolean isStatesConfigDefault() {
-        Path path = dir.resolve("states.json");
+    public boolean isTilesConfigDefault() {
+        Path path = dir.resolve("tiles.json");
 
         return Files.notExists(path);
     }
@@ -108,6 +185,12 @@ public class Scenario {
 
     public boolean isBackgroundDefault() {
         Path path = dir.resolve("background.png");
+
+        return Files.notExists(path);
+    }
+
+    public boolean isConfigDefault() {
+        Path path = dir.resolve("config.json");
 
         return Files.notExists(path);
     }
@@ -129,6 +212,23 @@ public class Scenario {
             return ImageIO.read(path.toFile());
         } catch (IOException e) {
             return  null;
+        }
+    }
+
+    public Date getStartDate() {
+        if(startDate != null) return startDate;
+
+        try (JsonReader reader = new JsonReader(Files.newBufferedReader(getConfig()))) {
+            JsonElement root = SharedCore.GSON.fromJson(reader, JsonElement.class);
+
+            String dateString = root.getAsJsonObject().get("startDate").getAsString();
+            LocalDate localDate = LocalDate.parse(dateString, DateTimeFormatter.ofPattern("dd.MM.yyyy"));
+
+            startDate = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+
+            return startDate;
+        } catch (Exception e) {
+            return null;
         }
     }
 
@@ -183,5 +283,29 @@ public class Scenario {
 
     public List<Color> getBorderColors() {
         return borderColors;
+    }
+
+    public boolean isStatesConfigDefault() {
+        Path path = dir.resolve("states.json");
+
+        return Files.notExists(path);
+    }
+
+    public Path getTroopConfig() {
+        Path path = dir.resolve("troops.json");
+
+        if(Files.notExists(path)) path = FileUtil.getDefaultScenarioDir().resolve("troops.json");
+
+        return path;
+    }
+
+    public boolean isTroopConfigDefault() {
+        Path path = dir.resolve("troops.json");
+
+        return Files.notExists(path);
+    }
+
+    public void setTheme(Theme t) {
+        this.theme = t;
     }
 }

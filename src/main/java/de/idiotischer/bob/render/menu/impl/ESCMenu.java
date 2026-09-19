@@ -31,7 +31,7 @@ public class ESCMenu extends JPanel {
 
     private JButton createButton(String text) {
         //JButton btn = new JButton(text);
-        JButton btn = new BOBButton(text, Color.WHITE, Color.BLACK, Color.DARK_GRAY.darker(),Color.GRAY,16, 5);
+        JButton btn = new BOBButton(text, BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().textColor(), BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().bgColor(), BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().borderColor().brighter(), BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().borderColorHover(),16, 5);
         btn.setPreferredSize(new Dimension(150, 50));
         btn.setFocusable(false);
         return btn;

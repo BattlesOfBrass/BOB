@@ -1,7 +1,8 @@
 package de.idiotischer.bob.state;
 
-public interface StateResolver {
-    State byAbbreviation(String abbreviation);
+import de.idiotischer.bob.country.Country;
 
-    State fromPos(int x, int y);
+public interface StateResolver {
+
+    State resolve(String abbreviation);
 }
