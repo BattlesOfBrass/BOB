@@ -188,6 +188,15 @@ public class PacketListener implements ListenerAdapter {
                     }
 
                 }
+                case TILE_CONNECTION_CHANGE -> {
+                    if(pack.getMessage().startsWith("broken=")) {
+                        var pair = Tile.TileConnection.deserializeBroken(pack.getMessage());
+                        BOB.getInstance().getTileManager().getConnection(pair.value()).setBrokenSimple(pair.key());
+                    } else if(pack.getMessage().startsWith("type=")) {
+                        var pair = Tile.TileConnection.deserializeType(pack.getMessage());
+                        BOB.getInstance().getTileManager().getConnection(pair.value()).setTypeSimple(pair.key());
+                    }
+                }
                 case CONFERENCE_STARTED -> {
                     PeaceConference conference = PeaceConference.deserialize(BOB.getInstance().getSharedCore(), BOB.getInstance().getCountryManager(), BOB.getInstance().getTileManager(), pack.getMessage());
 

@@ -71,7 +71,7 @@ public class RenderPanel extends JPanel implements Panel {
         this.add(overlay);
         this.add(popupContainer);
 
-        setDoubleBuffered(true);
+        setDoubleBuffered(true); //maybe deactivate again idk, im not too deep into it but i could see it have good operformance
 
         this.overlay.setVisible(false);
         this.escOverlay.setVisible(false);

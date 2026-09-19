@@ -178,21 +178,12 @@
     "name": "Russia",
     "color": "55;96;49",
     "capital": "",
-    "ideology": "DEM",
+    "ideology": "FAS",
     "leader": "",
     
     "base_stability": 60,
     "major": true,
     "selectScreen": true
-  },
-  "OTT": {
-    "name": "Ottoman Empire",
-    "color": "162;20;0",
-    "capital": "",
-    "ideology": "DEM",
-    "leader": "",
-    
-    "base_stability": 60
   },
   "BUL": {
     "name": "Bulgaria",

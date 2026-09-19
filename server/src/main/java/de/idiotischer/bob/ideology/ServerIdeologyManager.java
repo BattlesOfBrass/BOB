@@ -21,6 +21,7 @@ public class ServerIdeologyManager implements IdeologyResolver {
         var path = Server.getInstance().getScenarioSceneLoader().getCurrentScenario().getIdeologiesConfig();
 
         if(path == null) return;
+        if(Files.notExists(path)) return;
 
         try (JsonReader reader = new JsonReader(Files.newBufferedReader(path))) {
             JsonElement root = SharedCore.GSON.fromJson(reader, JsonElement.class);

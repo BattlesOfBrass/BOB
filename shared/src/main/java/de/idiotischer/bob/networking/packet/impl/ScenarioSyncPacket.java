@@ -25,7 +25,6 @@ import java.util.List;
 //TODO: alle assets wie flaggen für das scenario etc syncen
 public class ScenarioSyncPacket implements Packet {
 
-
     private Theme theme;
     private String abbreviation;
     private String name;
@@ -44,6 +43,7 @@ public class ScenarioSyncPacket implements Packet {
     private byte[] warsJson;
     private byte[] ideologiesJson;
     private byte[] themeJson;
+    private byte[] configJson;
 
     private List<FlagEntry> flagEntries = new ArrayList<>();
 
@@ -67,6 +67,7 @@ public class ScenarioSyncPacket implements Packet {
         this.warsJson = scenario.isWarsDefault() ? null : FileUtil.readFile(scenario.getWarsConfig());
         this.themeJson = scenario.isThemesDefault() ? null : FileUtil.readFile(scenario.getThemeConfig());
         this.ideologiesJson = scenario.isIdeologiesDefault() ? null : FileUtil.readFile(scenario.getIdeologiesConfig());
+        this.configJson = scenario.isConfigDefault() ? null : FileUtil.readFile(scenario.getConfig());
 
         this.theme = scenario.getTheme();
 
@@ -135,6 +136,7 @@ public class ScenarioSyncPacket implements Packet {
             writeBytes(buffer, troopsJson);
             writeBytes(buffer, warsJson);
             writeBytes(buffer, ideologiesJson);
+            writeBytes(buffer, configJson);
 
             writeBytes(buffer, themeJson);
             writeString(buffer, theme == null ? "" : theme.serialize());
@@ -161,22 +163,16 @@ public class ScenarioSyncPacket implements Packet {
 
             byte[] data = null;
 
-            if (!directory) {
-                data = readBytes(buffer);
-            }
+            if (!directory) data = readBytes(buffer);
 
             flagEntries.add(new FlagEntry(path, directory, data));
         }
 
         int takenSize = buffer.getInt();
-        for (int i = 0; i < takenSize; i++) {
-            takenColors.add(new Color(buffer.getInt()));
-        }
+        for (int i = 0; i < takenSize; i++) takenColors.add(new Color(buffer.getInt()));
 
         int borderSize = buffer.getInt();
-        for (int i = 0; i < borderSize; i++) {
-            borderColors.add(new Color(buffer.getInt()));
-        }
+        for (int i = 0; i < borderSize; i++) borderColors.add(new Color(buffer.getInt()));
 
         this.mapImage = ImageUtil.readImage(buffer);
 
@@ -189,6 +185,7 @@ public class ScenarioSyncPacket implements Packet {
         this.troopsJson = readBytes(buffer);
         this.warsJson = readBytes(buffer);
         this.ideologiesJson = readBytes(buffer);
+        this.configJson = readBytes(buffer);
 
         this.themeJson = readBytes(buffer);
         this.theme = Theme.deserialize(name + "-theme", readString(buffer));
@@ -236,21 +233,18 @@ public class ScenarioSyncPacket implements Packet {
             writeIfMissing(targetDir.resolve("wars.json"), warsJson);
             writeIfMissing(targetDir.resolve("theme.json"), themeJson);
             writeIfMissing(targetDir.resolve("ideologies.json"), ideologiesJson);
+            writeIfMissing(targetDir.resolve("config.json"), configJson);
 
             writeFlagFolder(targetDir);
 
             if (mapImage != null) {
                 Path mapPath = targetDir.resolve("map.png");
-                if (Files.notExists(mapPath)) {
-                    ImageIO.write(mapImage, "png", mapPath.toFile());
-                }
+                if (Files.notExists(mapPath)) ImageIO.write(mapImage, "png", mapPath.toFile());
             }
 
             if (backgroundImage != null) {
                 Path mapPath = targetDir.resolve("background.png");
-                if (Files.notExists(mapPath)) {
-                    ImageIO.write(backgroundImage, "png", mapPath.toFile());
-                }
+                if (Files.notExists(mapPath)) ImageIO.write(backgroundImage, "png", mapPath.toFile());
             }
 
         } catch (IOException e) {
@@ -285,21 +279,18 @@ public class ScenarioSyncPacket implements Packet {
             writeIfMissing(targetDir.resolve("wars.json"), warsJson);
             writeIfMissing(targetDir.resolve("theme.json"), themeJson);
             writeIfMissing(targetDir.resolve("ideologies.json"), ideologiesJson);
+            writeIfMissing(targetDir.resolve("config.json"), configJson);
 
             writeFlagFolder(targetDir);
 
             if (mapImage != null) {
                 Path mapPath = targetDir.resolve("map.png");
-                if (Files.notExists(mapPath)) {
-                    ImageIO.write(mapImage, "png", mapPath.toFile());
-                }
+                if (Files.notExists(mapPath)) ImageIO.write(mapImage, "png", mapPath.toFile());
             }
 
             if (backgroundImage != null) {
                 Path mapPath = targetDir.resolve("background.png");
-                if (Files.notExists(mapPath)) {
-                    ImageIO.write(backgroundImage, "png", mapPath.toFile());
-                }
+                if (Files.notExists(mapPath)) ImageIO.write(backgroundImage, "png", mapPath.toFile());
             }
 
         } catch (IOException e) {

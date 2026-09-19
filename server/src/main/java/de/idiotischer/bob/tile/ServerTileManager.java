@@ -8,6 +8,7 @@ import de.idiotischer.bob.SharedCore;
 import de.idiotischer.bob.country.Country;
 import de.idiotischer.bob.util.ImageUtil;
 import de.idiotischer.bob.util.PosUtil;
+import de.idiotischer.bob.util.UUIDUtil;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -42,6 +43,10 @@ public class ServerTileManager implements TileResolver {
             JsonElement root = SharedCore.GSON.fromJson(reader, JsonElement.class);
 
             root.getAsJsonObject().entrySet().forEach(entry -> {
+                Set<UUID> usedConnectionIds = new HashSet<>();
+
+                tileSet.stream().map(Tile::getConnectionIds).forEach(usedConnectionIds::addAll);
+
                 String abbreviation = entry.getKey();
                 JsonObject tileElement = entry.getValue().getAsJsonObject();
 
@@ -114,7 +119,100 @@ public class ServerTileManager implements TileResolver {
                     }
                 }
 
-                Tile tile = new Tile(Server.getInstance().getSharedCore(), claims, victoryPoints, cityName, hasCity, abbreviation, name, points, controller, owner);
+                Set<Tile.TileConnection> conns = new HashSet<>();
+
+                JsonElement connectionsElement = tileElement.get("connections");
+
+                if (connectionsElement != null && !connectionsElement.isJsonNull()) {
+                    if (!connectionsElement.isJsonObject()) if (Server.getInstance().isDebug()) System.err.println("Failed to load connections for tile " + abbreviation + ": connections must be a JSON object.");
+                    else {
+                        JsonObject connectionsObject = connectionsElement.getAsJsonObject();
+
+                        for (Map.Entry<String, JsonElement> connectionEntry : connectionsObject.entrySet()) {
+                            String connectionId = connectionEntry.getKey();
+                            JsonElement connectionElement = connectionEntry.getValue();
+
+                            try {
+                                if (connectionElement == null || connectionElement.isJsonNull()) throw new IllegalArgumentException("connection value is null");
+
+                                if (!connectionElement.isJsonObject()) throw new IllegalArgumentException("connection must be a JSON object");
+
+                                JsonObject obj = connectionElement.getAsJsonObject();
+
+                                JsonElement originElement = obj.get("origin");
+
+                                if (originElement == null || originElement.isJsonNull() || !originElement.isJsonPrimitive()) {
+                                    if (Server.getInstance().isDebug()) System.err.println("Skipping connection " + connectionId + " for tile " + abbreviation + ": missing or invalid origin");
+                                    continue;
+                                }
+
+                                String origin = originElement.getAsString().trim();
+
+                                if (origin.isEmpty()) {
+                                    if (Server.getInstance().isDebug()) System.err.println("Skipping connection " + connectionId + " for tile " + abbreviation + ": origin cannot be empty");
+                                    continue;
+                                }
+
+                                JsonElement connectedToElement = obj.get("connectedTo");
+
+                                if (connectedToElement == null || connectedToElement.isJsonNull() || !connectedToElement.isJsonPrimitive()) {
+                                    if (Server.getInstance().isDebug()) System.err.println("Skipping connection " + connectionId + " for tile " + abbreviation + ": missing or invalid connectedTo");
+                                    continue;
+                                }
+
+                                String connectedTo = connectedToElement.getAsString().trim();
+
+                                if (connectedTo.isEmpty()) {
+                                    if (Server.getInstance().isDebug()) System.err.println("Skipping connection " + connectionId + " for tile " + abbreviation + ": connectedTo cannot be empty");
+                                    continue;
+                                }
+
+                                Tile.TileConnection.ConnectionType connectionType = Tile.TileConnection.ConnectionType.BRIDGE;
+
+                                JsonElement typeElement = obj.get("type");
+
+                                if (typeElement != null && !typeElement.isJsonNull() && typeElement.isJsonPrimitive()) {
+                                    String typeString = typeElement.getAsString().trim();
+
+                                    if (!typeString.isEmpty()) {
+                                        try {
+                                            connectionType = Tile.TileConnection.ConnectionType.valueOf(typeString.toUpperCase(Locale.ROOT));
+                                        } catch (IllegalArgumentException e) {
+                                            if (Server.getInstance().isDebug()) System.err.println("Invalid connection type " + typeString + " for connection " + connectionId + " on tile " + abbreviation + ", using default " + connectionType);
+                                        }
+                                    }
+                                }
+
+                                boolean broken = false;
+
+                                JsonElement brokenElement = obj.get("broken");
+
+                                if (brokenElement != null && !brokenElement.isJsonNull() && brokenElement.isJsonPrimitive()) {
+                                    try {
+                                        broken = brokenElement.getAsBoolean();
+                                    } catch (Exception e) {
+                                        if (Server.getInstance().isDebug()) System.err.println("Invalid broken value for connection " + connectionId + " on tile " + abbreviation + ", using false");
+                                    }
+                                }
+
+                                UUID uuid = UUIDUtil.getUnused(usedConnectionIds);
+
+                                if (uuid == null) throw new IllegalStateException("UUIDUtil.getUnused() returned null");
+
+                                usedConnectionIds.add(uuid);
+
+                                Tile.TileConnection connection = new Tile.TileConnection(abbreviation, connectedTo, uuid, connectionType, broken);
+
+                                conns.add(connection);
+
+                            } catch (Exception e) {
+                                if (Server.getInstance().isDebug()) System.err.println("Failed to load connection " + connectionId + " for tile " + abbreviation + ": " + e.getMessage());
+                            }
+                        }
+                    }
+                }
+
+                Tile tile = new Tile(Server.getInstance().getSharedCore(), conns, claims, victoryPoints, cityName, hasCity, abbreviation, name, points, controller, owner);
 
                 registerTile(tile);
 
@@ -130,6 +228,18 @@ public class ServerTileManager implements TileResolver {
         //        Server.getInstance().getServerSocket().getClients(),
         //        TilesSyncPacket.fromTiles(tileSet)
         //);
+    }
+
+    public boolean hasConnection(Tile a, Tile b) {
+        return getConnection(a, b) != null;
+    }
+
+    public Tile.TileConnection getConnection(Tile a, Tile b) {
+        return a.getTileConnections().stream().filter(connection -> connection.getConnectedTo().equals(b.getAbbreviation())).findFirst().orElseGet(() -> b.getTileConnections().stream().filter(connection -> connection.getConnectedTo().equals(a.getAbbreviation())).findFirst().orElse(null));
+    }
+
+    public Tile.TileConnection getConnection(UUID uuid) {
+        return tileSet.stream().map(t -> t.getConnection(uuid)).filter(Objects::nonNull).findFirst().orElse(null);
     }
 
     private String getAsStringSafe(JsonObject obj, String key) {

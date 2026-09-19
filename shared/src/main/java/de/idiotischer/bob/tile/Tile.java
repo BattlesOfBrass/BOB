@@ -3,6 +3,8 @@ package de.idiotischer.bob.tile;
 import de.idiotischer.bob.SharedCore;
 import de.idiotischer.bob.country.Country;
 import de.idiotischer.bob.country.CountryResolver;
+import de.idiotischer.bob.networking.ChannelResolver;
+import de.idiotischer.bob.networking.communication.SendTool;
 import de.idiotischer.bob.networking.packet.impl.pp.ReplyPacket;
 import de.idiotischer.bob.networking.packet.impl.pp.Type;
 import de.idiotischer.bob.tile.event.TileChangedEvent;
@@ -13,10 +15,9 @@ import org.jetbrains.annotations.NotNull;
 //TODO: Point[] speichern können falls ein tile so weirde formen haben bei denen der nicht ganz zusammenhängt
 import java.awt.*;
 import java.nio.channels.AsynchronousSocketChannel;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.stream.Collectors;
 
 public class Tile {
 
@@ -31,8 +32,11 @@ public class Tile {
     private final String cityName;
     private final boolean city;
 
-    public Tile(SharedCore core, Set<Country> claims, int victoryPoints, String cityName, boolean city, String abbreviation, String name, List<Point> points, Country controller, Country owner) {
+    private Set<TileConnection> tileConnections;
+
+    public Tile(SharedCore core,Set<TileConnection> tileConnections, Set<Country> claims, int victoryPoints, String cityName, boolean city, String abbreviation, String name, List<Point> points, Country controller, Country owner) {
         this.core = core;
+        this.tileConnections = tileConnections;
         this.claims = claims;
         this.abbreviation = abbreviation;
         this.name = name;
@@ -159,12 +163,16 @@ public class Tile {
         return cityName;
     }
 
-    public static @NotNull Tile by(SharedCore core, Set<Country> claims, @NotNull CountryResolver resolver, @NotNull String abbreviation, int victoryPoints, String name, String cityName, boolean hasCity, List<Point> points, String controllerAbbreviation, String ownerAbbreviation) {
+    public Set<TileConnection> getTileConnections() {
+        return tileConnections;
+    }
+
+    public static @NotNull Tile by(SharedCore core, Set<TileConnection> tileConnections, Set<Country> claims, @NotNull CountryResolver resolver, @NotNull String abbreviation, int victoryPoints, String name, String cityName, boolean hasCity, List<Point> points, String controllerAbbreviation, String ownerAbbreviation) {
 
         Country controller = "null".equals(controllerAbbreviation) ? null : resolver.byAbbreviation(controllerAbbreviation);
         Country owner = "null".equals(ownerAbbreviation) ? null : resolver.byAbbreviation(ownerAbbreviation);
 
-        return new Tile(core, claims, victoryPoints, cityName, hasCity, abbreviation, name, points, controller,owner);
+        return new Tile(core, tileConnections, claims, victoryPoints, cityName, hasCity, abbreviation, name, points, controller,owner);
     }
 
     public String toDataString() {
@@ -186,7 +194,10 @@ public class Tile {
             if (i < claims.size() - 1) claimsSb.append(",");
         }
 
-        return getAbbreviation() + ";" + getName() + ";" + hasCity() + ";" + getCityName() + ";" + sb + ";" + (getController() != null ? getController().getAbbreviation() : "null") + ";" + (getOwner() != null ? getOwner().getAbbreviation() : "null") + ";" + victoryPoints + ";" + claimsSb;
+
+        String connections = TileConnection.serialize(tileConnections);
+
+        return getAbbreviation() + ";" + getName() + ";" + hasCity() + ";" + getCityName() + ";" + sb + ";" + (getController() != null ? getController().getAbbreviation() : "null") + ";" + (getOwner() != null ? getOwner().getAbbreviation() : "null") + ";" + victoryPoints + ";" + claimsSb + ";" + connections;
     }
 
     public void addClaim(Country c) {
@@ -215,7 +226,6 @@ public class Tile {
                 '}';
     }
 
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -229,4 +239,171 @@ public class Tile {
         return Objects.hash(abbreviation);
     }
 
+    public Set<UUID> getConnectionIds() {
+        return tileConnections.stream().map(TileConnection::getUuid).collect(Collectors.toSet());
+    }
+
+    public TileConnection getConnection(UUID uuid) {
+        return tileConnections.stream().filter(c -> c.getUuid().equals(uuid)).findFirst().orElse(null);
+    }
+
+    public static class TileConnection {
+        private boolean broken;
+        private ConnectionType type;
+
+        private final UUID uuid;
+
+        private String origin;
+        private String connectedTo;
+
+        public TileConnection(String origin, String connectedTo, UUID uuid, ConnectionType type, boolean broken) {
+            this.origin = origin;
+            this.connectedTo = connectedTo;
+            this.uuid = uuid;
+            this.type = type;
+            this.broken = broken;
+        }
+
+        public UUID getUuid() {
+            return uuid;
+        }
+
+        public Tile getOrigin(TileResolver r) {
+            return r.byAbbreviation(origin);
+        }
+
+        public Tile getConnectedTo(TileResolver r) {
+            return r.byAbbreviation(connectedTo);
+        }
+
+        public void setBroken(SendTool t, ChannelResolver r, boolean broken) {
+            this.broken = broken;
+
+            t.broadcast(r.channels(), new ReplyPacket(Type.TILE_CONNECTION_CHANGE,serializeBrokenChange()));
+        }
+
+        public String getConnectedTo() {
+            return connectedTo;
+        }
+
+        public String getOrigin() {
+            return origin;
+        }
+
+        public void setBrokenSimple(boolean broken) {
+            this.broken = broken;
+        }
+
+        public boolean isBroken() {
+            return broken;
+        }
+
+        public void setTypeSimple(ConnectionType type) {
+            this.type = type;
+        }
+
+        public void setType(SendTool t, ChannelResolver r, ConnectionType type) {
+            this.type = type;
+
+            t.broadcast(r.channels(), new ReplyPacket(Type.TILE_CONNECTION_CHANGE, serializeTypeChange()));
+        }
+
+        public ConnectionType getType() {
+            return type;
+        }
+
+        public String serializeTypeChange() {
+            return "type=" + type + ";" + uuid.toString();
+        }
+
+        public String serializeBrokenChange() {
+            return "broken=" + broken + ";" + uuid.toString();
+        }
+
+        public static Pair<ConnectionType, UUID> deserializeType(String s) {
+            if(!s.startsWith("broken=")) return Pair.of(null,null);
+
+            String[] strings = s.split("=");
+
+            String[] strings1 = strings[1].split(";");
+
+            ConnectionType b = ConnectionType.valueOf(strings[0]);
+            UUID uuid = UUID.fromString(strings1[1]);
+
+            return Pair.of(b,uuid);
+        }
+
+        public static Pair<Boolean, UUID> deserializeBroken(String s) {
+            if(!s.startsWith("broken=")) return Pair.of(null,null);
+
+            String[] strings = s.split("=");
+
+            String[] strings1 = strings[1].split(";");
+
+            boolean b = Boolean.parseBoolean(strings[0]);
+            UUID uuid = UUID.fromString(strings1[1]);
+
+            return Pair.of(b,uuid);
+        }
+
+        public String toDataString() {
+            return origin + "," + connectedTo + "," + uuid + "," + type.name() + "," + broken;
+        }
+
+        public static TileConnection fromDataString(String data) {
+            String[] parts = data.split(",", -1);
+
+            if (parts.length != 5) throw new IllegalArgumentException("Invalid TileConnection data: " + data);
+
+            String origin = parts[0];
+            String connectedTo = parts[1];
+            UUID uuid = UUID.fromString(parts[2]);
+            ConnectionType type = ConnectionType.valueOf(parts[3]);
+            boolean broken = Boolean.parseBoolean(parts[4]);
+
+            return new TileConnection(origin, connectedTo, uuid, type, broken);
+        }
+
+        public static String serialize(Set<TileConnection> connections) {
+            return connections.stream().map(TileConnection::toDataString).collect(Collectors.joining("|"));
+        }
+
+        public static Set<TileConnection> deserialize(String data) {
+            Set<TileConnection> connections = new HashSet<>();
+
+            if (data == null || data.isEmpty()) return connections;
+
+            for (String connectionData : data.split("\\|", -1)) if (!connectionData.isEmpty()) connections.add(TileConnection.fromDataString(connectionData));
+
+            return connections;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof TileConnection other)) return false;
+
+            return Objects.equals(uuid, other.getUuid());
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(uuid);
+        }
+
+        public enum ConnectionType {
+            TUNNEL(true),
+            BRIDGE(true);
+
+            private final boolean canBeBlown;
+
+            ConnectionType(boolean canBeBlown) {
+                this.canBeBlown = canBeBlown;
+            }
+
+            public boolean canBeBlown() {
+                return canBeBlown;
+            }
+        }
+    }
 }

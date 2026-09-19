@@ -188,7 +188,6 @@ public class ServerTroopManager implements TroopResolver{
             }
 
             for (Tile neighbour : resolver.findNeighbors(current)) {
-
                 if (visited.contains(neighbour)) continue;
 
                 if (canTraverse(troopController, current, neighbour) == MoveStatus.FAILURE) continue;

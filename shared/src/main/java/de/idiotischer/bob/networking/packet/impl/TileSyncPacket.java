@@ -26,6 +26,7 @@ public class TileSyncPacket implements de.idiotischer.bob.networking.packet.Pack
     private boolean city;
     private int victoryPoints;
     private Set<String> claims = new HashSet<>();
+    private Set<Tile.TileConnection> connections = new HashSet<>();
 
     public TileSyncPacket() {}
 
@@ -65,9 +66,9 @@ public class TileSyncPacket implements de.idiotischer.bob.networking.packet.Pack
 
         this.claims = new HashSet<>();
 
-        if (!parts[8].isEmpty()) {
-            this.claims.addAll(Arrays.asList(parts[8].split(",")));
-        }
+        if (!parts[8].isEmpty()) this.claims.addAll(Arrays.asList(parts[8].split(",")));
+
+        this.connections = Tile.TileConnection.deserialize(parts[9]);
     }
 
     public void reconstruct(SharedCore core, CountryResolver resolver) {
@@ -77,7 +78,7 @@ public class TileSyncPacket implements de.idiotischer.bob.networking.packet.Pack
     public void reconstruct(SharedCore core, CountryResolver resolver, boolean forceReconstruct) {
         if(!forceReconstruct && reconstructed) return;
 
-        this.tile = Tile.by(core, claims.stream().map(resolver::byAbbreviation).filter(Objects::nonNull).collect(Collectors.toSet()), resolver, abbreviation, victoryPoints, name, cityName, city, points, countryAbbreviation,ownerAbbreviation);
+        this.tile = Tile.by(core, connections, claims.stream().map(resolver::byAbbreviation).filter(Objects::nonNull).collect(Collectors.toSet()), resolver, abbreviation, victoryPoints, name, cityName, city, points, countryAbbreviation,ownerAbbreviation);
 
         reconstructed = true;
     }

@@ -13,7 +13,11 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class Scenario {
@@ -26,6 +30,7 @@ public class Scenario {
     private final boolean server;
     private final List<Color> borderColors = new  ArrayList<>();
     private Theme theme;
+    private Date startDate;
 
     public Scenario(boolean server, String abbreviation, String name, Path dir) {
         this.server = server;
@@ -42,6 +47,14 @@ public class Scenario {
 
     public Path getDir() {
         return dir;
+    }
+
+    public Path getConfig() {
+        Path path = dir.resolve("config.json");
+
+        if(Files.notExists(path)) path = FileUtil.getDefaultScenarioDir().resolve("config.json");
+
+        return path;
     }
 
     public Path getUnusable() {
@@ -75,7 +88,6 @@ public class Scenario {
 
         return path;
     }
-
 
     public Path getIdeologiesConfig() {
         Path path = dir.resolve("ideologies.json");
@@ -177,6 +189,12 @@ public class Scenario {
         return Files.notExists(path);
     }
 
+    public boolean isConfigDefault() {
+        Path path = dir.resolve("config.json");
+
+        return Files.notExists(path);
+    }
+
     public BufferedImage getBackgroundImage() {
         Path path = getBackground();
 
@@ -194,6 +212,23 @@ public class Scenario {
             return ImageIO.read(path.toFile());
         } catch (IOException e) {
             return  null;
+        }
+    }
+
+    public Date getStartDate() {
+        if(startDate != null) return startDate;
+
+        try (JsonReader reader = new JsonReader(Files.newBufferedReader(getConfig()))) {
+            JsonElement root = SharedCore.GSON.fromJson(reader, JsonElement.class);
+
+            String dateString = root.getAsJsonObject().get("startDate").getAsString();
+            LocalDate localDate = LocalDate.parse(dateString, DateTimeFormatter.ofPattern("dd.MM.yyyy"));
+
+            startDate = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+
+            return startDate;
+        } catch (Exception e) {
+            return null;
         }
     }
 

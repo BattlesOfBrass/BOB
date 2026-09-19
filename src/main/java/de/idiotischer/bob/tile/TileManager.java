@@ -44,6 +44,17 @@ public class TileManager implements TileResolver {
         return awaitingFuture;
     }
 
+    public boolean hasConnection(Tile a, Tile b) {
+        return getConnection(a, b) != null;
+    }
+
+    public Tile.TileConnection getConnection(Tile a, Tile b) {
+        return a.getTileConnections().stream().filter(connection -> connection.getConnectedTo().equals(b.getAbbreviation())).findFirst().orElseGet(() -> b.getTileConnections().stream().filter(connection -> connection.getConnectedTo().equals(a.getAbbreviation())).findFirst().orElse(null));
+    }
+
+    public Tile.TileConnection getConnection(UUID uuid) {
+        return tileSet.stream().map(t -> t.getConnection(uuid)).filter(Objects::nonNull).findFirst().orElse(null);
+    }
     public boolean has(String tileAbbreviation) {
         return getTileSet().stream().map(Tile::getAbbreviation).collect(Collectors.toSet()).contains(tileAbbreviation);
     }
