@@ -5,7 +5,6 @@ import de.idiotischer.bob.conference.PeaceHelper;
 import de.idiotischer.bob.country.CountryManager;
 import de.idiotischer.bob.debug.Debugger;
 import de.idiotischer.bob.game.GameManager;
-import de.idiotischer.bob.ideology.Ideology;
 import de.idiotischer.bob.ideology.IdeologyManager;
 import de.idiotischer.bob.listener.PacketListener;
 import de.idiotischer.bob.networking.ClientSocket;
@@ -17,11 +16,9 @@ import de.idiotischer.bob.scenario.ScenarioManager;
 import de.idiotischer.bob.scenario.ScenarioSceneLoader;
 import de.idiotischer.bob.state.StateManager;
 import de.idiotischer.bob.theme.Theme;
-import de.idiotischer.bob.tile.Tile;
 import de.idiotischer.bob.tile.TileManager;
-import de.idiotischer.bob.troop.Troop;
+import de.idiotischer.bob.time.TimeManager;
 import de.idiotischer.bob.troop.TroopManager;
-import de.idiotischer.bob.troop.TroopStack;
 import de.idiotischer.bob.util.AddressUtil;
 import de.idiotischer.bob.util.FileUtil;
 import de.idiotischer.bob.util.MainConfigUtil;
@@ -31,8 +28,6 @@ import java.awt.*;
 import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import javax.swing.*;
@@ -81,6 +76,7 @@ public class BOB {
     private Theme settingsTheme = Theme.defaultTheme(); //TODO: move to Settings class
 
     private IdeologyManager ideologyManager;
+    private TimeManager timeManager;
 
     public static void main(String[] args) {
         new BOB();
@@ -125,6 +121,8 @@ public class BOB {
 
         FileUtil.getScenarioDir();
 
+        this.timeManager = new TimeManager();
+
         this.sharedCore = new SharedCore();
 
         this.sharedCore.getListenerRegistry().register(new PacketListener());
@@ -151,11 +149,11 @@ public class BOB {
 
         this.combatManager = new CombatManager();
 
+        this.gameManager = new GameManager();
+
         this.awaitingReload = this.scenarioManager.reload().thenRun(() -> {
             this.scenarioSceneLoader.requestScenarioLoad(scenarioManager.getRandom());
         });
-
-        this.gameManager = new GameManager();
     }
 
     public ImageIcon createIcon() {
@@ -293,5 +291,9 @@ public class BOB {
 
     public IdeologyManager getIdeologyManager() {
         return ideologyManager;
+    }
+
+    public TimeManager getTimeManager() {
+        return timeManager;
     }
 }

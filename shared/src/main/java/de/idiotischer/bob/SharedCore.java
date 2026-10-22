@@ -3,12 +3,10 @@ package de.idiotischer.bob;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.luciad.imageio.webp.WebP;
-import de.craftsblock.craftscore.buffer.BufferUtil;
 import de.craftsblock.craftscore.event.ListenerRegistry;
 import de.idiotischer.bob.networking.communication.SendTool;
 import de.idiotischer.bob.networking.packet.PacketRegistry;
 import de.idiotischer.bob.util.FileUtil;
-import de.idiotischer.bob.util.MainConfigUtil;
 
 import java.nio.file.Path;
 
@@ -22,6 +20,7 @@ public class SharedCore {
     public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
     private static final int maxNameLength = 16;
+    private static final long TICK_NANOS = 1000000;
 
     public SharedCore() {
         WebP.loadNativeLibrary();
@@ -49,5 +48,9 @@ public class SharedCore {
 
     public static int getMaxNameLength() {
         return maxNameLength;
+    }
+
+    public static long getTickNanos() {
+        return TICK_NANOS;
     }
 }

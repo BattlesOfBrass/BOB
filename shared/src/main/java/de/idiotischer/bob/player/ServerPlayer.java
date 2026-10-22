@@ -93,4 +93,9 @@ public class ServerPlayer implements Player {
 
         return true;
     }
+
+    @Override
+    public boolean hasOP() {
+        return true;
+    }
 }

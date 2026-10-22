@@ -10,6 +10,7 @@ import de.idiotischer.bob.conference.PeaceHelper;
 import de.idiotischer.bob.conference.TakeTileType;
 import de.idiotischer.bob.country.Country;
 import de.idiotischer.bob.country.CountryResolver;
+import de.idiotischer.bob.game.GameState;
 import de.idiotischer.bob.ideology.Ideology;
 import de.idiotischer.bob.networking.packet.PacketRegistry;
 import de.idiotischer.bob.networking.packet.impl.*;
@@ -139,6 +140,16 @@ public class PacketListener implements ListenerAdapter {
             BOB.getInstance().getTileManager().registerTile(tile);
         } else if(event.getPacket() instanceof ReplyPacket pack) {
             switch (pack.getReplyType()) {
+                case GAMESTATE_SYNC -> {
+                    if(pack.getMessage() == null) return;
+
+                    try {
+                        GameState s = GameState.valueOf(pack.getMessage());
+                        BOB.getInstance().getGameManager().setGameState(s);
+                    } catch (IllegalArgumentException e) {
+                        if(BOB.getInstance().isDebug()) System.out.println("couldn't find gamestate named: " + pack.getMessage());
+                    }
+                }
                 case IDEOLOGY_UPDATE -> {
                     CountryResolver r = BOB.getInstance().getCountryManager();
 
@@ -385,15 +396,11 @@ public class PacketListener implements ListenerAdapter {
 
                     Country country = BOB.getInstance().getCountryManager().byAbbreviation(abbreviation);
 
-                    if(country == null) {
-                        return;
-                    }
+                    if(country == null) return;
 
                     Player p = BOB.getInstance().getPlayerManager().getPlayer(AddressUtil.getRemoteAddress(event.getChannel()));
 
-                    if(p == null) {
-                        return;
-                    }
+                    if(p == null) return;
 
                     p.country(country);
                 }
@@ -457,6 +464,8 @@ public class PacketListener implements ListenerAdapter {
             BOB.getInstance().getCombatManager().addStatus(pack.getStatus(BOB.getInstance().getTroopManager()));
         } else if(event.getPacket() instanceof CombatsSyncPacket pack) {
             BOB.getInstance().getCombatManager().addStatus(pack.getPackets().stream().map(p -> p.getStatus(BOB.getInstance().getTroopManager())).toList());
+        } else if (event.getPacket() instanceof TimeCheckAndCorrectPacket pack) {
+            BOB.getInstance().getTimeManager().sync(pack.getStartDate(), pack.getTimeTicks(), pack.getSpeed());
         }
     }
 }

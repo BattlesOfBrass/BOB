@@ -1,12 +1,17 @@
+
 package de.idiotischer.bob.game;
 
 import de.idiotischer.bob.Server;
+import de.idiotischer.bob.SharedCore;
 import de.idiotischer.bob.networking.packet.impl.TimeCheckAndCorrectPacket;
+import de.idiotischer.bob.networking.packet.impl.pp.ReplyPacket;
+import de.idiotischer.bob.networking.packet.impl.pp.Type;
 
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.Date;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 public class ServerGameManager {
@@ -15,31 +20,43 @@ public class ServerGameManager {
 
     private GameState state = GameState.PAUSED;
     private int speed = 1;
-    private long timeTicks; //in minutes
 
-    public ServerGameManager() {
+    private long lastUpdate;
+    private long timeTicks; // in minutes
+
+    private ScheduledFuture<?> nextTick;
+
+    private static final long SYNC_INTERVAL = 3;
+
+    public void begin() {
         clear();
         scheduleNextTick();
+
+        timeService.scheduleAtFixedRate(() -> {
+            if (state == GameState.INGAME) broadcastTimeSync();
+        }, SYNC_INTERVAL, SYNC_INTERVAL, TimeUnit.SECONDS);
     }
 
     private void scheduleNextTick() {
-        //TODO: resync tume sometimes so people arent behind (like correction packets ig)
-        timeService.schedule(() -> {
+        if (timeService.isShutdown()) return;
+
+        nextTick = timeService.schedule(() -> {
             try {
                 tickTime();
             } finally {
                 scheduleNextTick();
             }
-        }, getTickDelay(), TimeUnit.MILLISECONDS);
+        }, getTickDelay(), TimeUnit.NANOSECONDS);
+    }
+
+    private void rescheduleNextTick() {
+        if (nextTick != null) nextTick.cancel(false);
+
+        scheduleNextTick();
     }
 
     private long getTickDelay() {
-        return 250L * getSpeed();
-    }
-
-    private void clear() {
-        speed = 1;
-        timeTicks = 0;
+        return SharedCore.getTickNanos() / getSpeed();
     }
 
     public GameState getState() {
@@ -47,23 +64,47 @@ public class ServerGameManager {
     }
 
     public void setState(GameState state) {
+        if (this.state == state) return;
+
+        if(state == GameState.INGAME) begin();
+
         this.state = state;
+        rescheduleNextTick();
+
+        broadcastTimeSync();
+        broadcastStateChange();
+    }
+
+    private void broadcastStateChange() {
+        Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().channels(), new ReplyPacket(Type.GAMESTATE_SYNC, state.name()));
     }
 
     public void clientConnectTimeSync(AsynchronousSocketChannel ch) {
+        // TODO: Send a time sync packet to this client directly
+    }
 
+    private void clear() {
+        speed = 1;
+        timeTicks = 0;
+        lastUpdate = System.nanoTime();
     }
 
     public void tickTime() {
-        if(state == GameState.PAUSED || state == GameState.WAITING || state == GameState.LOBBY) return;
+        if (state != GameState.INGAME) {
+            lastUpdate = System.nanoTime();
+            return;
+        }
 
         timeTicks++;
 
-        if (timeTicks % 40 == 0) broadcastTimeSync();
+        if (timeTicks % (60 * 12) == 0) broadcastTimeSync();
     }
 
     public void broadcastTimeSync() {
-        TimeCheckAndCorrectPacket packet = new TimeCheckAndCorrectPacket(timeTicks, speed);
+        lastUpdate = System.nanoTime();
+
+        TimeCheckAndCorrectPacket packet = new TimeCheckAndCorrectPacket(timeTicks, speed, Server.getInstance().getScenarioSceneLoader().getCurrentScenario().getStartDate());
+
         Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().channels(), packet);
     }
 
@@ -78,9 +119,14 @@ public class ServerGameManager {
     }
 
     public void setSpeed(int speed) {
-        this.speed = Math.clamp(speed, 1, 5);
+        int newSpeed = Math.clamp(speed, 1, 5);
 
-        if (state == GameState.INGAME) broadcastTimeSync();
+        if (this.speed == newSpeed) return;
+
+        this.speed = newSpeed;
+
+        rescheduleNextTick();
+        broadcastTimeSync();
     }
 
     public long getTimeTicks() {
@@ -89,5 +135,7 @@ public class ServerGameManager {
 
     public void reload() {
         clear();
+        rescheduleNextTick();
+        broadcastTimeSync();
     }
 }

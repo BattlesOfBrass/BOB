@@ -17,6 +17,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -228,7 +229,7 @@ public class Scenario {
 
             return startDate;
         } catch (Exception e) {
-            return null;
+            return new Date(2026, Calendar.JANUARY,1,1,1);
         }
     }
 

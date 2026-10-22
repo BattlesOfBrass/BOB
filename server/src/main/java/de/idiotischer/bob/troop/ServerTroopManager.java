@@ -208,6 +208,7 @@ public class ServerTroopManager implements TroopResolver{
 
     @Override
     public MoveStatus canTraverse(Country troopController, Tile from, Tile to) {
+        //TODO: if the country is not at war with your enemy but you have mil acces with them dont move the troops (e.g. ger has mil with fra and is at war with eng than make it not be able to move into eng)
         if (Server.getInstance().getConferenceManager().anyActive()) return MoveStatus.FAILURE;
 
         Country fromController = from.getController();
@@ -246,6 +247,7 @@ public class ServerTroopManager implements TroopResolver{
         final int[] i = {startIndex};
         ScheduledFuture<?>[] scheduledFutures = new ScheduledFuture<?>[1];
 
+        //TODO: movement speed changes with speed (also gets renewed when the speed changed during run)
         scheduledFutures[0] = movementExecutor.scheduleAtFixedRate(() -> {
             try {
                 List<Tile> currentPath = activePathfindings.get(troopStack);

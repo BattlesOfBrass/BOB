@@ -37,6 +37,8 @@ public class ScenarioSceneLoader {
     public void load(Scenario scenario, boolean setMap) {
         currentScenario = scenario;
 
+        BOB.getInstance().getTimeManager().begin(this.getCurrentScenario().getStartDate());
+
         if(setMap) BOB.getInstance().getMainRenderer().setMap(this.currentScenario.getMapImage());
 
         BOB.getInstance().getPeaceHelper().clear();

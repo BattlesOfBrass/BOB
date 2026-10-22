@@ -24,6 +24,11 @@ public class RequestPacket implements Packet, de.idiotischer.bob.networking.pack
         this.message = message;
     }
 
+    public RequestPacket(Type requestType, int message) {
+        this.requestType = requestType;
+        this.message = String.valueOf(message);
+    }
+
     public Type getRequestType() {
         return requestType;
     }

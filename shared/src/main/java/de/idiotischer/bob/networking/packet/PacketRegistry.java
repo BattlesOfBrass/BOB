@@ -50,6 +50,7 @@ public class PacketRegistry {
         registerPacket(CombatsSyncPacket.class, 20);
         registerPacket(IdeologiesSyncPacket.class, 21);
         registerPacket(IdeologySyncPacket.class, 22);
+        registerPacket(TimeCheckAndCorrectPacket.class, 23);
     }
 
     public void registerPacket(Class<? extends Packet> packet, int id) {

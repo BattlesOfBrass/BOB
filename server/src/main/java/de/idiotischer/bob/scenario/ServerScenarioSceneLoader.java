@@ -1,6 +1,7 @@
 package de.idiotischer.bob.scenario;
 
 import de.idiotischer.bob.Server;
+import de.idiotischer.bob.game.GameState;
 import de.idiotischer.bob.networking.packet.impl.ScenarioSyncPacket;
 
 import javax.swing.*;
@@ -42,6 +43,9 @@ public class ServerScenarioSceneLoader {
 
     public void loadNew(Scenario scenario) {
         currentScenario = scenario;
+
+        //TODO: later only set it ingame when the game started and someone unpaused!
+        Server.getInstance().getGameManager().setState(GameState.INGAME);
 
         Server.getInstance().getGameManager().reload();
         Server.getInstance().getIdeologyManager().reload();

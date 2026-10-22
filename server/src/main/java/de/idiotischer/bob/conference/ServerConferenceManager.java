@@ -3,6 +3,7 @@ package de.idiotischer.bob.conference;
 import de.idiotischer.bob.Server;
 import de.idiotischer.bob.country.Country;
 import de.idiotischer.bob.country.CountryResolver;
+import de.idiotischer.bob.game.GameState;
 import de.idiotischer.bob.tile.Tile;
 import de.idiotischer.bob.tile.TileResolver;
 import de.idiotischer.bob.util.UUIDUtil;
@@ -20,6 +21,7 @@ public class ServerConferenceManager {
         PeaceConference conf = PeaceConference.fromWar(Server.getInstance().getSharedCore(), UUIDUtil.getUnused(conferences.stream().map(PeaceConference::getUUID).collect(Collectors.toSet())), Server.getInstance().getServerSocket(), Server.getInstance().getCountryManager(), status);
 
         if(conf == null) return;
+        Server.getInstance().getGameManager().setState(GameState.PAUSED);
 
         conf.getDefeated().forEach(c -> {
             Server.getInstance().getTroopManager().getForController(c).forEach(con -> Server.getInstance().getTroopManager().removePathfinding(con));
@@ -31,6 +33,8 @@ public class ServerConferenceManager {
         });
 
         conf.setEndHook(() -> {
+            Server.getInstance().getGameManager().setState(GameState.INGAME);
+
             remove(conf);
 
             conf.getWinners().forEach(winner -> {
@@ -71,7 +75,6 @@ public class ServerConferenceManager {
     public boolean anyActive() {
         return !this.conferences.isEmpty();
     }
-
 
     public PeaceConference.Demands readDemands(CountryResolver r1, TileResolver r, String s) {
         String[] parts = s.split(";");

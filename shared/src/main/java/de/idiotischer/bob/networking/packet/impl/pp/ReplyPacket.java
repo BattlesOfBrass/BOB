@@ -22,6 +22,11 @@ public class ReplyPacket implements de.idiotischer.bob.networking.packet.Packet 
         this.message = message;
     }
 
+    public ReplyPacket(Type replyType, int newSpeed) {
+        this.replyType = replyType;
+        this.message = String.valueOf(newSpeed);
+    }
+
     public Type getReplyType() {
         return replyType;
     }

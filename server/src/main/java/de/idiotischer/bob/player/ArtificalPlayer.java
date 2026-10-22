@@ -71,4 +71,9 @@ public class ArtificalPlayer implements Player {
         }
         else service.shutdownNow();
     }
+
+    @Override
+    public boolean hasOP() {
+        return false;
+    }
 }

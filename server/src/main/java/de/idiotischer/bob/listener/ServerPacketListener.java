@@ -53,6 +53,15 @@ public class ServerPacketListener implements ListenerAdapter {
         } else if(event.getPacket() instanceof RequestPacket pack) {
             //so ping pong like
             switch (pack.getRequestType()) {
+                case GAMESPEED_CHANGE -> {
+                    int speed = Integer.parseInt(pack.getMessage());
+
+                    if(player == null) return;
+
+                    if(!player.hasOP()) return;
+
+                    Server.getInstance().getGameManager().setSpeed(speed);
+                }
                 case SEND_DEMANDS -> {
                     PeaceConference.Demands demands = Server.getInstance().getConferenceManager().readDemands(Server.getInstance().getCountryManager(), Server.getInstance().getTileManager(), pack.getMessage());
 
