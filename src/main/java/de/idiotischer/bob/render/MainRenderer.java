@@ -162,11 +162,27 @@ public class MainRenderer extends Thread {
             }
 
             try {
-                Thread.sleep(16);
+                Thread.sleep(getFPSMills(70)); //check what framerate works best ig i like 70 but 240 for example is too weird to play
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+
+            //50 FPS	20.00 ms	20 ms
+            //40 FPS	25.00 ms	25 ms
+            //30 FPS	33.33 ms	33 ms
+            //60 FPS	16.67 ms	17 ms i used 16 normally
+            //90 FPS	11.11 ms	11 ms
+            //120 FPS	8.33 ms	8 ms
+            //144 FPS	6.94 ms	7 ms
+            //240 FPS	4.17 ms	4 ms
+
         }
+    }
+
+    public long getFPSMills(int fps) {
+        if (fps <= 20) throw new RuntimeException("Don't play it under 20 FPS, trust me...");
+
+        return Math.round(1000.0 / fps);
     }
 
     public void listen() {

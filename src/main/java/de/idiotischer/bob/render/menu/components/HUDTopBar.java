@@ -115,11 +115,19 @@ public class HUDTopBar extends JPanel {
         g2.drawString(text, x, y);
 
         Date currentDate = BOB.getInstance().getTimeManager().getDate();
+        long ticks = BOB.getInstance().getTimeManager().getTimeTicks();
 
         String date = new SimpleDateFormat("dd.MM.yyyy").format(currentDate);
 
-        int dateX = getWidth() - fm.stringWidth(date) - 20;
-        g2.drawString(date, dateX, y);
+        long hours = (ticks / 60) % 24;
+        long minutes = ticks % 60;
+
+        String time = String.format("%02d:%02d", hours, minutes);
+
+        time = time.concat(" ").concat(date);
+
+        int dateX = getWidth() - fm.stringWidth(time) - 20;
+        g2.drawString(time, dateX, y);
 
         g2.setStroke(new BasicStroke(2));
 

@@ -580,6 +580,10 @@ public class HUD extends JPanel {
         return currentTile;
     }
 
+    public HUDTopBar getTopBar() {
+        return topBar;
+    }
+
     private enum TabMode {
         NONE,
         OWN,

@@ -27,12 +27,10 @@ public class ServerTroopManager implements TroopResolver{
     private final List<Troop> troops = new ArrayList<>();
     private final Map<UUID, TroopStack> troopStacks = new HashMap<>();
 
-    private final ScheduledExecutorService movementExecutor = Executors.newScheduledThreadPool(2);
+    private final ScheduledExecutorService movementExecutor = Executors.newScheduledThreadPool(3);
 
     private final Map<TroopStack, List<Tile>> activePathfindings = new ConcurrentHashMap<>();
     private final Map<TroopStack, Integer> pausedMovementIndex = new ConcurrentHashMap<>();
-
-    private final Map<TroopStack, ScheduledFuture<?>> movementTasks = new ConcurrentHashMap<>();
 
     public void reload() {
         troopStacks.clear();
@@ -229,9 +227,9 @@ public class ServerTroopManager implements TroopResolver{
         boolean isFromAtWarWithTo = Server.getInstance().getWarManager().isAtWar(fromController, toController);
 
         if (fightsTogether || hasFromMilAccess || isFromAtWarWithTo)
-            if (!Objects.equals(fromController.getAbbreviation(), toController.getAbbreviation()) && !Objects.equals(fromController.getAbbreviation(), troopController.getAbbreviation())) {
+            if (!Objects.equals(fromController.getAbbreviation(), toController.getAbbreviation()) && !Objects.equals(fromController.getAbbreviation(), troopController.getAbbreviation()))
                 if (!hasFromMilAccess && !fightsTogether) return MoveStatus.FAILURE;
-            }
+
 
         if (hasStack(to)) if (Server.getInstance().getWarManager().isEnemy(troopController, toController)) return MoveStatus.FAILURE_FIGHT;
 
@@ -243,10 +241,6 @@ public class ServerTroopManager implements TroopResolver{
     }
 
     private void startMovement(TroopStack troopStack, int startIndex) {
-        ScheduledFuture<?> oldTask = movementTasks.remove(troopStack);
-
-        if (oldTask != null) oldTask.cancel(false);
-
         List<Tile> path = activePathfindings.get(troopStack);
 
         if (path == null || path.size() < 2) return;
@@ -256,7 +250,6 @@ public class ServerTroopManager implements TroopResolver{
 
         final long[] lastMoveTime = {System.nanoTime()};
 
-        //TODO: movement speed changes with speed (also gets renewed when the speed changed during run)
         scheduledFutures[0] = movementExecutor.scheduleAtFixedRate(() -> {
             if (Server.getInstance().getGameManager().getState() != GameState.INGAME) return;
 
@@ -273,13 +266,11 @@ public class ServerTroopManager implements TroopResolver{
                 if (currentPath == null || currentPath.size() < 2) {
                     //activePathfindings.remove(troopStack); muss das da? is mir grad aufgefallen maybe?
                     scheduledFutures[0].cancel(false);
-                    movementTasks.remove(troopStack);
                     return;
                 }
 
                 if (i[0] >= currentPath.size()) {
                     activePathfindings.remove(troopStack);
-                    movementTasks.remove(troopStack);
                     scheduledFutures[0].cancel(false);
                     return;
                 }
@@ -291,14 +282,12 @@ public class ServerTroopManager implements TroopResolver{
 
                 if(Server.getInstance().getCombatManager().isInCombat(troopStack)) {
                     activePathfindings.remove(troopStack);
-                    movementTasks.remove(troopStack);
                     scheduledFutures[0].cancel(false);
                     return;
                 }
 
                 if (status == MoveStatus.FAILURE) {
                     activePathfindings.remove(troopStack);
-                    movementTasks.remove(troopStack);
                     scheduledFutures[0].cancel(false);
                     return;
                 }
@@ -392,19 +381,15 @@ public class ServerTroopManager implements TroopResolver{
 
                 if (i[0] >= currentPath.size()) {
                     activePathfindings.remove(troopStack);
-                    movementTasks.remove(troopStack);
                     scheduledFutures[0].cancel(false);
                 }
 
             } catch (Exception e) {
                 e.printStackTrace();
                 activePathfindings.remove(troopStack);
-                movementTasks.remove(troopStack);
                 scheduledFutures[0].cancel(false);
             }
         }, 0, 1, TimeUnit.MILLISECONDS);
-
-        movementTasks.put(troopStack, scheduledFutures[0]);
     }
 
     public void rescheduleAllTroopMovements() {
