@@ -254,9 +254,18 @@ public class ServerTroopManager implements TroopResolver{
         final int[] i = {startIndex};
         ScheduledFuture<?>[] scheduledFutures = new ScheduledFuture<?>[1];
 
+        final long[] lastMoveTime = {System.nanoTime()};
+
         //TODO: movement speed changes with speed (also gets renewed when the speed changed during run)
         scheduledFutures[0] = movementExecutor.scheduleAtFixedRate(() -> {
             if (Server.getInstance().getGameManager().getState() != GameState.INGAME) return;
+
+            long now = System.nanoTime();
+            long delay = TimeUnit.MILLISECONDS.toNanos(getInterval(troopStack));
+
+            if (now - lastMoveTime[0] < delay) return;
+
+            lastMoveTime[0] = now;
 
             try {
                 List<Tile> currentPath = activePathfindings.get(troopStack);
@@ -393,7 +402,7 @@ public class ServerTroopManager implements TroopResolver{
                 movementTasks.remove(troopStack);
                 scheduledFutures[0].cancel(false);
             }
-        }, 0, getInterval(troopStack), TimeUnit.MILLISECONDS);
+        }, 0, 1, TimeUnit.MILLISECONDS);
 
         movementTasks.put(troopStack, scheduledFutures[0]);
     }
