@@ -10,6 +10,7 @@ import java.awt.event.MouseEvent;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+//TODO: add pause button with tooltip when you can unpause again (if you arent host or alone in the game) maybe as || and > symbols
 public class HUDTopBar extends JPanel {
     private String countryName = "---";
 
@@ -143,10 +144,10 @@ public class HUDTopBar extends JPanel {
 
             boolean selected = speed == i + 1;
 
-            g2.setColor(selected ? new Color(190, 155, 65) : new Color(55, 55, 55));
+            g2.setColor(selected ? new Color(33, 161, 41) : new Color(55, 55, 55));
             g2.fillRoundRect(speedX, controlY, SPEED_WIDTH, controlHeight, 5, 5);
 
-            g2.setColor(selected ? new Color(255, 225, 145) : new Color(100, 100, 100));
+            g2.setColor(selected ? new Color(163, 230, 110) : new Color(100, 100, 100));
             g2.drawRoundRect(speedX, controlY, SPEED_WIDTH, controlHeight, 5, 5);
 
             String label = Integer.toString(i + 1);

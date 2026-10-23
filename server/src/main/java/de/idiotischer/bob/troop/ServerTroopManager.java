@@ -7,6 +7,7 @@ import de.idiotischer.bob.Server;
 import de.idiotischer.bob.SharedCore;
 import de.idiotischer.bob.combat.CombatStatus;
 import de.idiotischer.bob.country.Country;
+import de.idiotischer.bob.game.GameState;
 import de.idiotischer.bob.networking.packet.impl.TroopStackSyncPacket;
 import de.idiotischer.bob.networking.packet.impl.pp.ReplyPacket;
 import de.idiotischer.bob.networking.packet.impl.pp.Type;
@@ -30,6 +31,8 @@ public class ServerTroopManager implements TroopResolver{
 
     private final Map<TroopStack, List<Tile>> activePathfindings = new ConcurrentHashMap<>();
     private final Map<TroopStack, Integer> pausedMovementIndex = new ConcurrentHashMap<>();
+
+    private final Map<TroopStack, ScheduledFuture<?>> movementTasks = new ConcurrentHashMap<>();
 
     public void reload() {
         troopStacks.clear();
@@ -240,6 +243,10 @@ public class ServerTroopManager implements TroopResolver{
     }
 
     private void startMovement(TroopStack troopStack, int startIndex) {
+        ScheduledFuture<?> oldTask = movementTasks.remove(troopStack);
+
+        if (oldTask != null) oldTask.cancel(false);
+
         List<Tile> path = activePathfindings.get(troopStack);
 
         if (path == null || path.size() < 2) return;
@@ -249,16 +256,21 @@ public class ServerTroopManager implements TroopResolver{
 
         //TODO: movement speed changes with speed (also gets renewed when the speed changed during run)
         scheduledFutures[0] = movementExecutor.scheduleAtFixedRate(() -> {
+            if (Server.getInstance().getGameManager().getState() != GameState.INGAME) return;
+
             try {
                 List<Tile> currentPath = activePathfindings.get(troopStack);
 
                 if (currentPath == null || currentPath.size() < 2) {
+                    //activePathfindings.remove(troopStack); muss das da? is mir grad aufgefallen maybe?
                     scheduledFutures[0].cancel(false);
+                    movementTasks.remove(troopStack);
                     return;
                 }
 
                 if (i[0] >= currentPath.size()) {
                     activePathfindings.remove(troopStack);
+                    movementTasks.remove(troopStack);
                     scheduledFutures[0].cancel(false);
                     return;
                 }
@@ -270,12 +282,14 @@ public class ServerTroopManager implements TroopResolver{
 
                 if(Server.getInstance().getCombatManager().isInCombat(troopStack)) {
                     activePathfindings.remove(troopStack);
+                    movementTasks.remove(troopStack);
                     scheduledFutures[0].cancel(false);
                     return;
                 }
 
                 if (status == MoveStatus.FAILURE) {
                     activePathfindings.remove(troopStack);
+                    movementTasks.remove(troopStack);
                     scheduledFutures[0].cancel(false);
                     return;
                 }
@@ -369,17 +383,28 @@ public class ServerTroopManager implements TroopResolver{
 
                 if (i[0] >= currentPath.size()) {
                     activePathfindings.remove(troopStack);
+                    movementTasks.remove(troopStack);
                     scheduledFutures[0].cancel(false);
                 }
 
             } catch (Exception e) {
                 e.printStackTrace();
                 activePathfindings.remove(troopStack);
+                movementTasks.remove(troopStack);
                 scheduledFutures[0].cancel(false);
             }
-        }, 0, 500, TimeUnit.MILLISECONDS);
+        }, 0, getInterval(troopStack), TimeUnit.MILLISECONDS);
+
+        movementTasks.put(troopStack, scheduledFutures[0]);
     }
 
+    public void rescheduleAllTroopMovements() {
+      //TODO: instantly reschedule all movement tasks with new changed speed
+    }
+
+    public long getInterval(TroopStack stack) {
+        return (long) ((float) 2500L / Server.getInstance().getGameManager().getSpeed() / stack.getSpeed());
+    }
 
     public void removeTroops(Country country) {
         List<UUID> toRemove = troopStacks.entrySet().stream().filter(e -> e.getValue().getController() != null && e.getValue().getController().getAbbreviation().equals(country.getAbbreviation())).map(Map.Entry::getKey).toList();

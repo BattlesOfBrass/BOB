@@ -22,6 +22,7 @@ public class TroopStack extends Troop {
     private int defense = baseDefense;
     private int org = baseOrg;
     private boolean alive = true;
+    private float speed = 1f;
 
     public TroopStack(String name, Tile tile, Country owner,Country controller, int count, String template) {
         super(name,tile, owner, controller, template);
@@ -76,21 +77,16 @@ public class TroopStack extends Troop {
                 ";attack=" + attack +
                 ";defense=" + defense +
                 ";org=" + org +
-                ";alive=" + alive;
+                ";alive=" + alive +
+                ";speed=" + speed;
     }
 
-    public static Pair<UUID, TroopStack> deserialize(
-            String data,
-            CountryResolver countryResolver,
-            TileResolver tileResolver
-    ) {
+    public static Pair<UUID, TroopStack> deserialize(String data, CountryResolver countryResolver, TileResolver tileResolver) {
         Map<String, String> values = new HashMap<>();
 
         for (String part : data.split(";")) {
             String[] keyValue = part.split("=", 2);
-            if (keyValue.length == 2) {
-                values.put(keyValue[0], keyValue[1]);
-            }
+            if (keyValue.length == 2) values.put(keyValue[0], keyValue[1]);
         }
 
         UUID uuid = UUID.fromString(values.get("uuid"));
@@ -103,14 +99,7 @@ public class TroopStack extends Troop {
 
         String template = values.get("template");
 
-        TroopStack stack = new TroopStack(
-                name,
-                tile,
-                owner,
-                controller,
-                count,
-                template
-        );
+        TroopStack stack = new TroopStack(name, tile, owner, controller, count, template);
 
         stack.baseHp = Integer.parseInt(values.getOrDefault("baseHp", "200"));
         stack.baseAttack = Integer.parseInt(values.getOrDefault("baseAttack", "25"));
@@ -123,6 +112,8 @@ public class TroopStack extends Troop {
         stack.org = Integer.parseInt(values.getOrDefault("org", String.valueOf(stack.baseOrg)));
 
         stack.alive = Boolean.parseBoolean(values.getOrDefault("alive", "true"));
+
+        stack.speed = Float.parseFloat(values.getOrDefault("speed", String.valueOf(stack.speed)));
 
         return Pair.of(uuid, stack);
     }
@@ -184,4 +175,12 @@ public class TroopStack extends Troop {
         this.alive = b;
     }
 
+    public void setSpeed(float speed) {
+        //update client too xD
+        this.speed = speed;
+    }
+
+    public float getSpeed() {
+        return speed;
+    }
 }

@@ -6,6 +6,7 @@ import de.idiotischer.bob.SharedCore;
 import de.idiotischer.bob.networking.packet.impl.TimeCheckAndCorrectPacket;
 import de.idiotischer.bob.networking.packet.impl.pp.ReplyPacket;
 import de.idiotischer.bob.networking.packet.impl.pp.Type;
+import de.idiotischer.bob.player.Player;
 
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.Date;
@@ -27,6 +28,9 @@ public class ServerGameManager {
     private ScheduledFuture<?> nextTick;
 
     private static final long SYNC_INTERVAL = 3;
+
+    private long lastStoppedTime;
+    private Player whoStopped;
 
     public void begin() {
         clear();
@@ -123,6 +127,8 @@ public class ServerGameManager {
 
         if (this.speed == newSpeed) return;
 
+        Server.getInstance().getTroopManager().rescheduleAllTroopMovements();
+
         this.speed = newSpeed;
 
         rescheduleNextTick();
@@ -137,5 +143,11 @@ public class ServerGameManager {
         clear();
         rescheduleNextTick();
         broadcastTimeSync();
+    }
+
+    public void setStopped(Player whoStopped) {
+        this.whoStopped = whoStopped;
+        this.lastStoppedTime = System.nanoTime();
+        setState(GameState.PAUSED);
     }
 }

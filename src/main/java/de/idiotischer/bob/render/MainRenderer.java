@@ -302,13 +302,12 @@ public class MainRenderer extends Thread {
                         int x = camera.screenToWorldX(e.getX());
                         int y = camera.screenToWorldY(e.getY());
 
-                        if (x < 0 || y < 0 || x >= logicMap.getWidth() || y >= logicMap.getHeight()) {
-                            return;
-                        }
+                        if (x < 0 || y < 0 || x >= logicMap.getWidth() || y >= logicMap.getHeight()) return;
 
                         Tile tile = BOB.getInstance().getTileManager().getTileAt(x, y);
 
                         if (tile != null) {
+                            if(draggedTiles.size() == getGamePanel().selected.size()) return;
                             draggedTiles.add(tile);
                         }
                         //panel.repaint();
