@@ -5,6 +5,7 @@ import de.craftsblock.craftscore.event.ListenerAdapter;
 import de.idiotischer.bob.Server;
 import de.idiotischer.bob.conference.PeaceConference;
 import de.idiotischer.bob.country.Country;
+import de.idiotischer.bob.game.GameState;
 import de.idiotischer.bob.networking.packet.PacketRegistry;
 import de.idiotischer.bob.networking.packet.impl.*;
 import de.idiotischer.bob.networking.packet.impl.pp.ReplyPacket;
@@ -53,14 +54,26 @@ public class ServerPacketListener implements ListenerAdapter {
         } else if(event.getPacket() instanceof RequestPacket pack) {
             //so ping pong like
             switch (pack.getRequestType()) {
+                case GAMESTATE_SET -> {
+                    try {
+                        GameState state = GameState.valueOf(pack.getMessage());
+
+                        if(state == null) return;
+
+                        if(player == null) return;
+
+                        Server.getInstance().getGameManager().setState(state);
+                    } catch (Exception e) {
+                        if (Server.getInstance().isDebug()) System.out.println("couldn't find gamestate named: " + pack.getMessage());
+                    }
+                }
                 case GAMESPEED_CHANGE -> {
                     int speed = Integer.parseInt(pack.getMessage());
 
                     if(player == null) return;
 
-                    if(!player.hasOP()) return;
-
-                    Server.getInstance().getGameManager().setSpeed(speed);
+                    if(player.hasOP() || Server.getInstance().getPlayerManager().getPlayers().size() <= 1)
+                        Server.getInstance().getGameManager().setSpeed(speed);
                 }
                 case SEND_DEMANDS -> {
                     PeaceConference.Demands demands = Server.getInstance().getConferenceManager().readDemands(Server.getInstance().getCountryManager(), Server.getInstance().getTileManager(), pack.getMessage());

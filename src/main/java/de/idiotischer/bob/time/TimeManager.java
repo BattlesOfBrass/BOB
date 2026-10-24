@@ -40,17 +40,13 @@ public class TimeManager {
             } finally {
                 scheduleNextTick();
             }
-        }, getTickDelay(), TimeUnit.NANOSECONDS);
+        }, SharedCore.getTickDelay(speed), TimeUnit.NANOSECONDS);
     }
 
     private void rescheduleNextTick() {
         if (nextTick != null) nextTick.cancel(false);
 
         scheduleNextTick();
-    }
-
-    private long getTickDelay() {
-        return SharedCore.getTickNanos() / getSpeed();
     }
 
     private void tickTime() {
@@ -73,8 +69,6 @@ public class TimeManager {
 
     public void setSpeed(int speed) {
         int newSpeed = Math.clamp(speed, 1, 5);
-
-        if (this.speed == newSpeed) return;
 
         RequestPacket pack = new RequestPacket(Type.GAMESPEED_CHANGE, newSpeed);
 

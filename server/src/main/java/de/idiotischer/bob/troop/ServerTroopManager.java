@@ -241,6 +241,7 @@ public class ServerTroopManager implements TroopResolver{
     }
 
     private void startMovement(TroopStack troopStack, int startIndex) {
+        //TODO: later make it so all movements get called on a server tick so they are nto that delayed
         List<Tile> path = activePathfindings.get(troopStack);
 
         if (path == null || path.size() < 2) return;

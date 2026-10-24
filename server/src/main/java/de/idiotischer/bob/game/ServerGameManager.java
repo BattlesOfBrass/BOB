@@ -29,8 +29,8 @@ public class ServerGameManager {
 
     private static final long SYNC_INTERVAL = 3;
 
-    private long lastStoppedTime;
-    private Player whoStopped;
+    private long lastChangedTime;
+    private Player whoChanged;
 
     public void begin() {
         clear();
@@ -50,7 +50,7 @@ public class ServerGameManager {
             } finally {
                 scheduleNextTick();
             }
-        }, getTickDelay(), TimeUnit.NANOSECONDS);
+        }, SharedCore.getTickDelay(speed), TimeUnit.NANOSECONDS);
     }
 
     private void rescheduleNextTick() {
@@ -59,18 +59,29 @@ public class ServerGameManager {
         scheduleNextTick();
     }
 
-    private long getTickDelay() {
-        return SharedCore.getTickNanos() / getSpeed();
-    }
-
     public GameState getState() {
         return state;
     }
 
     public void setState(GameState state) {
-        if (this.state == state) return;
+        this.setState(state,null);
+    }
 
-        if(state == GameState.INGAME) begin();
+    public void setState(GameState state, Player whoChanged) {
+        this.lastChangedTime = System.currentTimeMillis();
+        this.whoChanged = whoChanged;
+
+        if(state != GameState.INGAME && state != GameState.PAUSED) begin();
+
+        if(state == GameState.INGAME) {
+            if(this.state == GameState.PAUSED && whoChanged != null) {
+                if(Server.getInstance().getPlayerManager().getPlayers().size() > 1) {
+                    //when the configured time hasn't passed than dont allow to unpause
+                }
+            }
+
+            scheduleNextTick();
+        }
 
         this.state = state;
         rescheduleNextTick();
@@ -123,13 +134,9 @@ public class ServerGameManager {
     }
 
     public void setSpeed(int speed) {
-        int newSpeed = Math.clamp(speed, 1, 5);
-
-        if (this.speed == newSpeed) return;
+        this.speed = Math.clamp(speed, 1, 5);
 
         Server.getInstance().getTroopManager().rescheduleAllTroopMovements();
-
-        this.speed = newSpeed;
 
         rescheduleNextTick();
         broadcastTimeSync();
@@ -143,11 +150,5 @@ public class ServerGameManager {
         clear();
         rescheduleNextTick();
         broadcastTimeSync();
-    }
-
-    public void setStopped(Player whoStopped) {
-        this.whoStopped = whoStopped;
-        this.lastStoppedTime = System.nanoTime();
-        setState(GameState.PAUSED);
     }
 }

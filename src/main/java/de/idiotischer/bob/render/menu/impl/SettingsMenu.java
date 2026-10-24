@@ -5,8 +5,10 @@ import de.idiotischer.bob.render.menu.components.ModernScrollBarUI;
 import de.idiotischer.bob.render.menu.components.button.BOBButton;
 
 import javax.swing.*;
+import javax.swing.border.StrokeBorder;
 import java.awt.*;
 
+//TODO: add theme support to this
 public class SettingsMenu extends JPanel {
 
     private final JButton graphicsButton;
@@ -151,6 +153,7 @@ public class SettingsMenu extends JPanel {
         boolean active = button.isSelected();
 
         button.setText(text + " [" + (active ? "ON" : "OFF") + "]");
+        button.setBorder(new StrokeBorder(new BasicStroke(2)));
 
         button.setBackground(active ? new Color(60, 150, 80) : new Color(100, 100, 100));
     }

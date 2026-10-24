@@ -2,6 +2,9 @@
 package de.idiotischer.bob.render.menu.components;
 
 import de.idiotischer.bob.BOB;
+import de.idiotischer.bob.game.GameState;
+import de.idiotischer.bob.networking.packet.impl.pp.RequestPacket;
+import de.idiotischer.bob.networking.packet.impl.pp.Type;
 
 import javax.swing.*;
 import java.awt.*;
@@ -11,6 +14,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 //TODO: add pause button with tooltip when you can unpause again (if you arent host or alone in the game) maybe as || and > symbols
+//TODO: add theme support to this
 public class HUDTopBar extends JPanel {
     private String countryName = "---";
 
@@ -23,6 +27,9 @@ public class HUDTopBar extends JPanel {
     private final Rectangle fasterBounds = new Rectangle();
     private final Rectangle[] speedBounds = {new Rectangle(), new Rectangle(), new Rectangle(), new Rectangle(), new Rectangle()};
 
+    private final Rectangle pauseBounds = new Rectangle();
+    private static final int PAUSE_WIDTH = 24;
+
     public HUDTopBar() {
         setOpaque(false);
         setLayout(new BorderLayout());
@@ -32,7 +39,9 @@ public class HUDTopBar extends JPanel {
             public void mouseClicked(MouseEvent e) {
                 int speed = BOB.getInstance().getTimeManager().getSpeed();
 
-                if (slowerBounds.contains(e.getPoint())) {
+                if (pauseBounds.contains(e.getPoint())) {
+                    onPause();
+                } else if (slowerBounds.contains(e.getPoint())) {
                     changeSpeed(speed - 1);
                 } else if (fasterBounds.contains(e.getPoint())) {
                     changeSpeed(speed + 1);
@@ -50,7 +59,7 @@ public class HUDTopBar extends JPanel {
         addMouseMotionListener(new MouseAdapter() {
             @Override
             public void mouseMoved(MouseEvent e) {
-                boolean hovering = slowerBounds.contains(e.getPoint()) || fasterBounds.contains(e.getPoint());
+                boolean hovering = pauseBounds.contains(e.getPoint()) || slowerBounds.contains(e.getPoint()) || fasterBounds.contains(e.getPoint());
 
                 for (Rectangle bounds : speedBounds) {
                     if (bounds.contains(e.getPoint())) {
@@ -64,22 +73,26 @@ public class HUDTopBar extends JPanel {
         });
     }
 
+    protected void onPause() {
+        boolean paused = BOB.getInstance().getGameManager().getGameState() != GameState.INGAME;
+
+        RequestPacket pack = new RequestPacket(Type.GAMESTATE_SET, paused ? GameState.INGAME.name() : GameState.PAUSED.name());
+
+        BOB.getInstance().getSharedCore().getTool().send(BOB.getInstance().getClient().getChannel(), pack);
+    }
+
     public void changeSpeed(int newSpeed) {
         int currentSpeed = BOB.getInstance().getTimeManager().getSpeed();
 
         newSpeed = Math.max(1, Math.min(5, newSpeed));
 
-        if (newSpeed == currentSpeed) {
-            return;
-        }
-
         onSpeedChange(currentSpeed, newSpeed);
     }
 
     protected void onSpeedChange(int oldSpeed, int newSpeed) {
-        boolean op = BOB.getInstance().getPlayer().hasOP();
+        //boolean op = BOB.getInstance().getPlayer().hasOP();
 
-        if(!op) return;
+        //if(!op) return;
 
         BOB.getInstance().getTimeManager().setSpeed(newSpeed);
     }
@@ -133,12 +146,31 @@ public class HUDTopBar extends JPanel {
 
         int speed = BOB.getInstance().getTimeManager().getSpeed();
 
-        int totalWidth = ARROW_WIDTH + CONTROL_GAP + 5 * SPEED_WIDTH + 4 * SPEED_GAP + CONTROL_GAP + ARROW_WIDTH;
+        int totalWidth = PAUSE_WIDTH + CONTROL_GAP + ARROW_WIDTH + CONTROL_GAP + 5 * SPEED_WIDTH + 4 * SPEED_GAP + CONTROL_GAP + ARROW_WIDTH;
 
         int startX = dateX - totalWidth - CONTROL_GAP;
 
         int controlY = (getHeight() - 26) / 2;
         int controlHeight = 26;
+        int pauseX = startX;
+
+        boolean paused = BOB.getInstance().getGameManager().getGameState() == GameState.INGAME; //Condition is named wrong but visually better
+
+        pauseBounds.setBounds(pauseX, controlY, PAUSE_WIDTH, controlHeight);
+
+        g2.setColor(paused ? new Color(33, 161, 41) : new Color(161, 33, 33));
+        g2.fillRoundRect(pauseX, controlY, PAUSE_WIDTH, controlHeight, 5, 5);
+
+        g2.setColor(paused ? new Color(163, 230, 110) : new Color(230, 110, 110));
+        g2.drawRoundRect(pauseX, controlY, PAUSE_WIDTH, controlHeight, 5, 5);
+
+        g2.setColor(Color.WHITE);
+
+        String symbol = paused ? "▶" : "⏸";
+
+        g2.drawString(symbol, pauseX + (PAUSE_WIDTH - fm.stringWidth(symbol)) / 2, (getHeight() - fm.getHeight()) / 2 + fm.getAscent());
+
+        startX += PAUSE_WIDTH + CONTROL_GAP;
 
         slowerBounds.setBounds(startX, controlY, ARROW_WIDTH, controlHeight);
         drawArrow(g2, slowerBounds, false, speed > 1);

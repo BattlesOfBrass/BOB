@@ -119,7 +119,7 @@ public class BOB {
     public void init() {
         config = new MainConfigUtil();
 
-        FileUtil.getScenarioDir();
+        //FileUtil.getScenarioDir();
 
         this.timeManager = new TimeManager();
 

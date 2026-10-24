@@ -20,7 +20,7 @@ public class SharedCore {
     public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
     private static final int maxNameLength = 16;
-    private static final long TICK_NANOS = 1000000;
+    private static final long TICK_NANOS = 550000000; //so you can see every minute
 
     public SharedCore() {
         WebP.loadNativeLibrary();
@@ -52,5 +52,16 @@ public class SharedCore {
 
     public static long getTickNanos() {
         return TICK_NANOS;
+    }
+
+    public static long getTickDelay(int speed) {
+        return switch (speed) {
+            case 1 -> SharedCore.getTickNanos();
+            case 2 -> SharedCore.getTickNanos() / speed / 3;
+            case 3 -> SharedCore.getTickNanos() / speed / 8;
+            case 4 -> SharedCore.getTickNanos() / speed / 20;
+            case 5 -> SharedCore.getTickNanos() / speed / 40;
+            default -> SharedCore.getTickNanos();
+        };
     }
 }
