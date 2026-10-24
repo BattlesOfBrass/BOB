@@ -21,6 +21,7 @@ public class SharedCore {
 
     private static final int maxNameLength = 16;
     private static final long TICK_NANOS = 550000000; //so you can see every minute
+    private static int PAUSE_DELAY = 20000;
 
     public SharedCore() {
         WebP.loadNativeLibrary();
@@ -52,6 +53,11 @@ public class SharedCore {
 
     public static long getTickNanos() {
         return TICK_NANOS;
+    }
+
+    //fetch from config
+    public static int getPauseDelay() {
+        return PAUSE_DELAY;
     }
 
     public static long getTickDelay(int speed) {

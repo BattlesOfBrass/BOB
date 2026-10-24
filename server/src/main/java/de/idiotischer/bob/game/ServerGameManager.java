@@ -68,20 +68,24 @@ public class ServerGameManager {
     }
 
     public void setState(GameState state, Player whoChanged) {
-        this.lastChangedTime = System.currentTimeMillis();
-        this.whoChanged = whoChanged;
-
         if(state != GameState.INGAME && state != GameState.PAUSED) begin();
 
         if(state == GameState.INGAME) {
             if(this.state == GameState.PAUSED && whoChanged != null) {
+                //if we are not in singleplayer
                 if(Server.getInstance().getPlayerManager().getPlayers().size() > 1) {
-                    //when the configured time hasn't passed than dont allow to unpause
+                    int delay = SharedCore.getPauseDelay(); // 20s
+
+                    //and another person tries to unpause and the delay hasn't passed dont change the state
+                    if(whoChanged != this.whoChanged && System.currentTimeMillis() - lastChangedTime < delay) return;
                 }
             }
 
             scheduleNextTick();
         }
+
+        this.lastChangedTime = System.currentTimeMillis();
+        this.whoChanged = whoChanged;
 
         this.state = state;
         rescheduleNextTick();
