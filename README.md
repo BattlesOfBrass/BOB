@@ -12,6 +12,7 @@ A game inspired by [Spirits of Steel](https://gavgrub.itch.io/sos), made in java
 - [x] Add Main Menu
 - [x] Add Settings Menu
 - [x] Add Multiplayer Menu
+- [ ] Add Multiplayer Lobby overlay
 - [x] Add country select menu
 - [x] Add scenario selection menu
 - [x] Add Country Info
