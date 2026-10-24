@@ -28,6 +28,8 @@ dependencies {
     implementation("com.google.guava:guava:33.5.0-jre")
     // Source: https://mvnrepository.com/artifact/it.unimi.dsi/fastutil
     implementation("it.unimi.dsi:fastutil:8.5.18")
+    implementation("at.yawk.lz4:lz4-java:1.11.0")// Source: https://mvnrepository.com/artifact/com.github.gotson/webp-imageio
+    implementation("com.github.gotson:webp-imageio:0.2.2")
 }
 
 java {

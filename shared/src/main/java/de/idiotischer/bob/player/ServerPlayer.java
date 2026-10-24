@@ -57,11 +57,7 @@ public class ServerPlayer implements Player {
     @Override
     public void country(Country country) {
         this.country = country;
-    }
-
-    @Override
-    public List<Troop> selectedTroops() {
-        return List.of();
+        if(country != null) country.setPlayer(this);
     }
 
     @Override
@@ -95,6 +91,11 @@ public class ServerPlayer implements Player {
         this.name(name);
         this.authorized = true;
 
-        return authorized();
+        return true;
+    }
+
+    @Override
+    public boolean hasOP() {
+        return true;
     }
 }

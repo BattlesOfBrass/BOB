@@ -1,1186 +1,742 @@
 {
   "memel": {
+    "tile": "memel",
     "name": "Memel",
-    "locations": "644,114",
-    "controller": "LIT",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "LIT"
   },
   "koenigsberg": {
+    "tile": "koenigsberg",
     "name": "koenigsberg",
-    "locations": "641,117",
-    "controller": "RUS",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "RUS"
   },
   "allenstein": {
+    "tile": "allenstein",
     "name": "Allenstein",
-    "locations": "637,121",
-    "controller": "POL",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "POL"
   },
   "danzig": {
+    "tile": "danzig",
     "name": "Danzig",
-    "locations": "632,119",
-    "controller": "POL",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "POL"
   },
   "gdynia": {
+    "tile": "gdynia",
     "name": "Gdynia",
-    "locations": "631,121",
-    "controller": "POL",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "POL"
   },
   "hinterpommern": {
+    "tile": "hinterpommern",
     "name": "Hinterpommern",
-    "locations": "627,120",
-    "controller": "POL",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "POL"
   },
   "pommern": {
+    "tile": "pommern",
     "name": "Pommern",
-    "locations": "623,123",
-    "controller": "POL",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "POL"
   },
   "stettin": {
+    "tile": "stettin",
     "name": "Stettin",
-    "locations": "619,121",
-    "controller": "POL",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "POL"
   },
   "vorpommern": {
+    "tile": "vorpommern",
     "name": "Vorpommern",
-    "locations": "612,120",
-    "controller": "GER",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "GER"
   },
   "ostmark": {
+    "tile": "ostmark",
     "name": "Ostmark",
-    "locations": "621,128",
-    "controller": "POL",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "POL"
   },
   "sachsen": {
+    "tile": "sachsen",
     "name": "Sachsen",
-    "locations": "613,133",
-    "controller": "GER",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "GER"
   },
   "sachsen-anhalt": {
+    "tile": "sachsen-anhalt",
     "name": "Sachsen-Anhalt",
-    "locations": "608,129",
-    "controller": "GER",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "GER"
   },
   "brandenburg": {
+    "tile": "brandenburg",
     "name": "Brandenburg",
-    "locations": "614,127",
-    "controller": "GER",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "GER"
   },
   "Posen": {
+    "tile": "Posen",
     "name": "Posen",
-    "locations": "628,126",
-    "controller": "POL",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "POL"
   },
   "oberschlesien": {
+    "tile": "oberschlesien",
     "name": "Oberschlesien",
-    "locations": "624,133",
-    "controller": "POL",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "POL"
   },
   "schleswig": {
+    "tile": "schleswig",
     "name": "Schleswig-Holstein",
-    "locations": "602,120",
-    "controller": "GER",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "GER"
   },
   "nordschleswig": {
+    "tile": "nordschleswig",
     "name": "Nordschleswig",
-    "locations": "600,115",
-    "controller": "DEN",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "DEN"
   },
   "niederschlesien": {
+    "tile": "niederschlesien",
     "name": "Niederschlesien",
-    "locations": "629,135",
-    "controller": "POL",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "POL"
   },
   "kattowitz": {
+    "tile": "kattowitz",
     "name": "Kattowitz",
-    "locations": "634,136",
-    "controller": "POL",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "POL"
   },
   "franken": {
+    "tile": "franken",
     "name": "Franken",
-    "locations": "605,138",
-    "controller": "GER",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "GER"
   },
   "bayern": {
+    "tile": "bayern",
     "name": "Bayern",
-    "locations": "610,144",
-    "controller": "GER",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "GER"
   },
   "schwaben": {
+    "tile": "schwaben",
     "name": "Schwaben",
-    "locations": "603,146",
-    "controller": "GER",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "GER"
   },
   "baden": {
+    "tile": "baden",
     "name": "Baden",
-    "locations": "595,143",
-    "controller": "GER",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "GER"
   },
   "wuerttemberg": {
+    "tile": "wuerttemberg",
     "name": "Württemberg",
-    "locations": "600,143",
-    "controller": "GER",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "GER"
   },
   "thueringen": {
+    "tile": "thueringen",
     "name": "Thüringen",
-    "locations": "604,134",
-    "controller": "GER",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "GER"
   },
   "hessen": {
+    "tile": "hessen",
     "name": "Hessen",
-    "locations": "597,135",
-    "controller": "GER",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "GER"
   },
   "nordrhein-westfalen": {
+    "tile": "nordrhein-westfalen",
     "name": "Nordrhein-Westfalen",
-    "locations": "593,131",
-    "controller": "GER",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "GER"
   },
   "rheinland-pfalz": {
+    "tile": "rheinland-pfalz",
     "name": "Rheinland-Pfalz",
-    "locations": "592,137",
-    "controller": "GER",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "GER"
   },
   "saarland": {
+    "tile": "saarland",
     "name": "Saarland",
-    "locations": "591,140",
-    "controller": "GER",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "GER"
   },
   "eupen-malmedy": {
+    "tile": "eupen-malmedy",
     "name": "Eupen-Malmedy",
-    "locations": "588,135",
-    "controller": "BEL",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "BEL"
   },
   "elsass-lothringen": {
+    "tile": "elsass-lothringen",
     "name": "Elsass-Lothringen",
-    "locations": "591,144",
-    "controller": "FRA",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "FRA"
   },
   "hannover": {
+    "tile": "hannover",
     "name": "Hannover",
-    "locations": "603,127",
-    "controller": "GER",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "GER"
   },
   "weser-ems": {
+    "tile": "weser-ems",
     "name": "Weser-Ems",
-    "locations": "596,124",
-    "controller": "GER",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "GER"
   },
   "luxembourg": {
+    "tile": "luxembourg",
     "name": "Luxemburg",
-    "locations": "587,139",
-    "controller": "LUX",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "LUX"
   },
   "pol-upper": {
+    "tile": "pol-upper",
     "name": "Poland Upper",
-    "locations": "638,125",
-    "controller": "POL",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "POL"
   },
   "pol-lower": {
+    "tile": "pol-lower",
     "name": "Poland Lower",
-    "locations": "640,129",
-    "controller": "POL",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "POL"
   },
   "carpathian-foothills": {
+    "tile": "carpathian-foothills",
     "name": "Carpathian foothills",
-    "locations": "645,137",
-    "controller": "POL",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "POL"
   },
   "lublin": {
+    "tile": "lublin",
     "name": "Lublin",
-    "locations": "649,132",
-    "controller": "POL",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "POL"
   },
   "podlascia": {
+    "tile": "podlascia",
     "name": "Podlascia",
-    "locations": "648,124",
-    "controller": "POL",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "POL"
   },
   "heiligkreuz": {
+    "tile": "heiligkreuz",
     "name": "Swietokrzyskie Voivodeship",
-    "locations": "640,134",
-    "controller": "POL",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "POL"
   },
   "rinkobing": {
+    "tile": "rinkobing",
     "name": "Rinkobing",
-    "locations": "598,110",
-    "controller": "DEN",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "DEN"
   },
   "aarhus": {
+    "tile": "aarhus",
     "name": "Aarhus",
-    "locations": "602,111",
-    "controller": "DEN",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "DEN"
   },
   "north-jutland": {
+    "tile": "north-jutland",
     "name": "North-Jutland",
-    "locations": "603,106",
-    "controller": "DEN",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "DEN"
   },
   "zealand": {
+    "tile": "zealand",
     "name": "Zealand",
-    "locations": "608,113",
-    "controller": "DEN",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "DEN"
   },
   "storstrom": {
+    "tile": "storstrom",
     "name": "Storstrom",
-    "locations": "607,115",
-    "controller": "DEN",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "DEN"
   },
   "sudauen": {
+    "tile": "sudauen",
     "name": "Sudavija",
-    "locations": "648,117",
-    "controller": "LIT",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "LIT"
   },
   "niederlitauen": {
+    "tile": "niederlitauen",
     "name": "Zemaitija",
-    "locations": "646,112",
-    "controller": "LIT",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "LIT"
   },
   "oberlitauen": {
+    "tile": "oberlitauen",
     "name": "Aukstaitija",
-    "locations": "651,114",
-    "controller": "LIT",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "LIT"
   },
   "oberlitauen-2-forremoval": {
+    "tile": "oberlitauen-2-forremoval",
     "name": "Aukstaitija-2",
-    "locations": "655,115",
-    "controller": "LIT",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "LIT"
   },
   "gelderland": {
+    "tile": "gelderland",
     "name": "Gelderland",
-    "locations": "587,127",
-    "controller": "NET",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "NET"
   },
   "friesland": {
+    "tile": "friesland",
     "name": "Friesland",
-    "locations": "590,124",
-    "controller": "NET",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "NET"
   },
   "nord-brabant": {
+    "tile": "nord-brabant",
     "name": "Nord-Brabant",
-    "locations": "586,131",
-    "controller": "NET",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "NET"
   },
   "Zeeland": {
+    "tile": "Zeeland",
     "name": "Zeeland",
-    "locations": "580,130",
-    "controller": "NET",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "NET"
   },
   "utrecht": {
+    "tile": "utrecht",
     "name": "Utrecht",
-    "locations": "583,129",
-    "controller": "NET",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "NET"
   },
   "antwerp": {
+    "tile": "antwerp",
     "name": "Antwerp",
-    "locations": "585,133",
-    "controller": "BEL",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "BEL"
   },
   "namur": {
+    "tile": "namur",
     "name": "Namur",
-    "locations": "585,137",
-    "controller": "BEL",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "BEL"
   },
   "hanaut": {
+    "tile": "hanaut",
     "name": "Hanaut",
-    "locations": "581,136",
-    "controller": "BEL",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "BEL"
   },
   "flanders": {
+    "tile": "flanders",
     "name": "Flanderen",
-    "locations": "579,133",
-    "controller": "BEL",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "BEL"
   },
   "upper-sudeten": {
+    "tile": "upper-sudeten",
     "name": "Upper Sudeten",
-    "locations": "619,135",
-    "controller": "CZE",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "CZE"
   },
   "lower-sudeten": {
+    "tile": "lower-sudeten",
     "name": "Lower Sudeten",
-    "locations": [ "617,141", "613,139" ],
-    "controller": "CZE",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "CZE"
   },
   "bohemia": {
+    "tile": "bohemia",
     "name": "Bohemia",
-    "locations": "619,139",
-    "controller": "CZE",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "CZE"
   },
   "ostrava": {
+    "tile": "ostrava",
     "name": "Ostrava",
-    "locations": "631,140",
-    "controller": "CZE",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "CZE"
   },
   "moravia": {
+    "tile": "moravia",
     "name": "Moravia",
-    "locations": "628,141",
-    "controller": "CZE",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "CZE"
   },
   "czech-silesia": {
+    "tile": "czech-silesia",
     "name": "Czech-Silesia",
-    "locations": "633,139",
-    "controller": "CZE",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "CZE"
   },
   "west-slovakia": {
+    "tile": "west-slovakia",
     "name": "West-Slovakia",
-    "locations": "632,144",
-    "controller": "SVK",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "SVK"
   },
   "middle-slovakia": {
+    "tile": "middle-slovakia",
     "name": "Middle-Slovakia",
-    "locations": "637,142",
-    "controller": "SVK",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "SVK"
   },
   "east-slovakia": {
+    "tile": "east-slovakia",
     "name": "East-Slovakia",
-    "locations": "643,142",
-    "controller": "SVK",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "SVK"
   },
   "toeri": {
+    "tile": "toeri",
     "name": "Töri",
-    "locations": "600,151",
-    "controller": "SWI",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "SWI"
   },
   "luzern": {
+    "tile": "luzern",
     "name": "Luzern",
-    "locations": "597,152",
-    "controller": "SWI",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "SWI"
   },
   "bern": {
+    "tile": "bern",
     "name": "Bern",
-    "locations": "594,150",
-    "controller": "SWI",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "SWI"
   },
   "jura": {
+    "tile": "jura",
     "name": "Jura",
-    "locations": "590,152",
-    "controller": "SWI",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "SWI"
   },
   "tessin": {
+    "tile": "tessin",
     "name": "Tessin",
-    "locations": "599,154",
-    "controller": "SWI",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "SWI"
   },
   "leman": {
+    "tile": "leman",
     "name": "Leman",
-    "locations": "592,155",
-    "controller": "SWI",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "SWI"
   },
-  "upper-corse":  {
+  "upper-corse": {
+    "tile": "upper-corse",
     "name": "Upper-Corse",
-    "locations": "599,171",
-    "controller": "FRA",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "FRA"
   },
-  "lower-corse":  {
+  "lower-corse": {
+    "tile": "lower-corse",
     "name": "Lower-Corse",
-    "locations": "599,173",
-    "controller": "FRA",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "FRA"
   },
   "calais": {
+    "tile": "calais",
     "name": "Calais",
-    "locations": "576,136",
-    "controller": "FRA",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "FRA"
   },
   "champagne": {
+    "tile": "champagne",
     "name": "Champagne",
-    "locations": "581,142",
-    "controller": "FRA",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "FRA"
   },
   "lorraine": {
+    "tile": "lorraine",
     "name": "Lorraine",
-    "locations": "586,143",
-    "controller": "FRA",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "FRA"
   },
   "picardy": {
+    "tile": "picardy",
     "name": "Normandy",
-    "locations": "576,140",
-    "controller": "FRA",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "FRA"
   },
   "normandy": {
+    "tile": "normandy",
     "name": "Normandy",
-    "locations": "566,143",
-    "controller": "FRA",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "FRA"
   },
   "paris": {
+    "tile": "paris",
     "name": "Paris",
-    "locations": "574,144",
-    "controller": "FRA",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "FRA"
   },
   "comte": {
+    "tile": "comte",
     "name": "Comte",
-    "locations": "588,150",
-    "controller": "FRA",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "FRA"
   },
   "auvergne": {
+    "tile": "auvergne",
     "name": "Auvergne",
-    "locations": "577,156",
-    "controller": "FRA",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "FRA"
   },
   "rhone-alps": {
+    "tile": "rhone-alps",
     "name": "Rhone-Alps",
-    "locations": "584,157",
-    "controller": "FRA",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "FRA"
   },
   "provence-alps": {
+    "tile": "provence-alps",
     "name": "Provence-Alps",
-    "locations": "586,165",
-    "controller": "FRA",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "FRA"
   },
   "limousin": {
+    "tile": "limousin",
     "name": "Limousin",
-    "locations": "570,157",
-    "controller": "FRA",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "FRA"
   },
   "burgundy": {
+    "tile": "burgundy",
     "name": "Burgundy",
-    "locations": "581,149",
-    "controller": "FRA",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "FRA"
   },
   "centre-val-de-loire": {
+    "tile": "centre-val-de-loire",
     "name": "Centre-Val-de-Loire",
-    "locations": "572,150",
-    "controller": "FRA",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "FRA"
   },
   "pays-de-loire": {
+    "tile": "pays-de-loire",
     "name": "Pays-de-Loire",
-    "locations": "562,150",
-    "controller": "FRA",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "FRA"
   },
   "britany": {
+    "tile": "britany",
     "name": "Britany",
-    "locations": "556,147",
-    "controller": "FRA",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "FRA"
   },
   "poitou-charentes": {
+    "tile": "poitou-charentes",
     "name": "Poitou-Charentes",
-    "locations": "564,155",
-    "controller": "FRA",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "FRA"
   },
   "aquitaine": {
+    "tile": "aquitaine",
     "name": "Aquitaine",
-    "locations": [ "560,162", "565,161", "562,166" ], //die 2 letzten nur für aquitaine in modern day so, in ww2 dann halt theoretisch nur 1 aquitaine der rest separat
-    "controller": "FRA",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "FRA"
   },
   "languedoc-R": {
+    "tile": "languedoc-R",
     "name": "Languedoc-R",
-    "locations": "575,166",
-    "controller": "FRA",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "FRA"
   },
   "midi-pyrenees": {
+    "tile": "midi-pyrenees",
     "name": "Midi-Pyrenees",
-    "locations": "568,165",
-    "controller": "FRA",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "FRA"
   },
   "tirol": {
+    "tile": "tirol",
     "name": "Tirol",
-    "locations": "608,150",
-    "controller": "AUS",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "AUS"
   },
   "steiermark": {
+    "tile": "steiermark",
     "name": "Steiermark",
-    "locations": "622,149",
-    "controller": "AUS",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "AUS"
   },
   "nieder-oesterreich": {
+    "tile": "nieder-oesterreich",
     "name": "Nieder-Österreich",
-    "locations": "624,145",
-    "controller": "AUS",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "AUS"
   },
   "burgenland": {
+    "tile": "burgenland",
     "name": "Burgenland",
-    "locations": "627,148",
-    "controller": "AUS",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "AUS"
   },
   "ober-oesterreich": {
+    "tile": "ober-oesterreich",
     "name": "Ober-Österreich",
-    "locations": "617,145",
-    "controller": "AUS",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "AUS"
   },
   "salzburg": {
+    "tile": "salzburg",
     "name": "Salzburg",
-    "locations": "615,150",
-    "controller": "AUS",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "AUS"
   },
   "western-transdanubia": {
+    "tile": "western-transdanubia",
     "name": "Western-Transdanubia",
-    "locations": "628,150",
-    "controller": "HUN",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "HUN"
   },
   "southern-great-plain": {
+    "tile": "southern-great-plain",
     "name": "Southern-Great-Plain",
-    "locations": "639,153",
-    "controller": "HUN",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "HUN"
   },
   "northern-great-plain": {
+    "tile": "northern-great-plain",
     "name": "Northern-Great-Plain",
-    "locations": "642,148",
-    "controller": "HUN",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "HUN"
   },
   "central-transdanubia": {
+    "tile": "central-transdanubia",
     "name": "Central-Transdanubia",
-    "locations": "633,152",
-    "controller": "HUN",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "HUN"
   },
   "piemont": {
+    "tile": "piemont",
     "name": "Piemont",
-    "locations": "595,160",
-    "controller": "ITA",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "ITA"
   },
   "lombardy": {
+    "tile": "lombardy",
     "name": "Lombardy",
-    "locations": "603,158",
-    "controller": "ITA",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "ITA"
   },
   "south-tirol": {
+    "tile": "south-tirol",
     "name": "South-Tirol",
-    "locations": "608,153",
-    "controller": "ITA",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "ITA"
   },
   "trentino": {
+    "tile": "trentino",
     "name": "Trentino",
-    "locations": "606,155",
-    "controller": "ITA",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "ITA"
   },
   "emilia-romagna": {
+    "tile": "emilia-romagna",
     "name": "Emilia-Romagna",
-    "locations": "606,163",
-    "controller": "ITA",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "ITA"
   },
   "tuscany": {
+    "tile": "tuscany",
     "name": "Tuscany",
-    "locations": "608,168",
-    "controller": "ITA",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "ITA"
   },
   "latium": {
+    "tile": "latium",
     "name": "Latium",
-    "locations": "613,172",
-    "controller": "ITA",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "ITA"
   },
   "marken-abruzzen": {
+    "tile": "marken-abruzzen",
     "name": "Marken-Abruzzen",
-    "locations": "615,168",
-    "controller": "ITA",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "ITA"
   },
   "campania": {
+    "tile": "campania",
     "name": "Campania",
-    "locations": "620,177",
-    "controller": "ITA",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "ITA"
   },
   "puglia": {
+    "tile": "puglia",
     "name": "Puglia",
-    "locations": "630,179",
-    "controller": "ITA",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "ITA"
   },
   "calabria": {
+    "tile": "calabria",
     "name": "Calabria",
-    "locations": "627,186",
-    "controller": "ITA",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "ITA"
   },
   "sicily": {
+    "tile": "sicily",
     "name": "Sicily",
-    "locations": "619,193",
-    "controller": "ITA",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "ITA"
   },
   "veneto": {
+    "tile": "veneto",
     "name": "Veneto",
-    "locations": "609,157",
-    "controller": "ITA",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "ITA"
   },
   "friuli-venezia": {
+    "tile": "friuli-venezia",
     "name": "Friuli-Venezia",
-    "locations": "613,155",
-    "controller": "ITA",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "ITA"
   },
   "upper-sardinia": {
+    "tile": "upper-sardinia",
     "name": "Upper-Sardinia",
-    "locations": "598,180",
-    "controller": "ITA",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "ITA"
   },
   "lower-sardinia": {
+    "tile": "lower-sardinia",
     "name": "Lower-Sardinia",
-    "locations": "598,184",
-    "controller": "ITA",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "ITA"
   },
   "crisana": {
+    "tile": "crisana",
     "name": "Crisana",
-    "locations": "651,150",
-    "controller": "ROM",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "ROM"
   },
   "bucovina": {
+    "tile": "bucovina",
     "name": "Bucovina",
-    "locations": "659,146",
-    "controller": "ROM",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "ROM"
   },
   "banat": {
+    "tile": "banat",
     "name": "Banat",
-    "locations": "647,156",
-    "controller": "ROM",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "ROM"
   },
   "oltenia": {
+    "tile": "oltenia",
     "name": "Oltenia",
-    "locations": "652,160",
-    "controller": "ROM",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "ROM"
   },
   "transilvania": {
+    "tile": "transilvania",
     "name": "Transilvania",
-    "locations": "658,154",
-    "controller": "ROM",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "ROM"
   },
   "muntenia": {
+    "tile": "muntenia",
     "name": "Muntenia",
-    "locations": "661,161",
-    "controller": "ROM",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "ROM"
   },
   "muntenia-2": {
+    "tile": "muntenia-2",
     "name": "Muntenia-2",
-    "locations": "667,158",
-    "controller": "ROM",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "ROM"
   },
   "moldova": {
+    "tile": "moldova",
     "name": "Moldova",
-    "locations": "665,151",
-    "controller": "ROM",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "ROM"
   },
   "dobrogea": {
+    "tile": "dobrogea",
     "name": "Dobrogea",
-    "locations": "672,161",
-    "controller": "ROM",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "ROM"
   },
   "dobrogea-2": {
+    "tile": "dobrogea-2",
     "name": "Dobrogea-2",
-    "locations": "670,164",
-    "controller": "ROM",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "ROM"
   },
   "slovenia-west": {
+    "tile": "slovenia-west",
     "name": "Slovenia-West",
-    "locations": "617,155",
-    "controller": "SLO",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "SLO"
   },
   "slovenia-east": {
+    "tile": "slovenia-east",
     "name": "Slovenia-East",
-    "locations": "622,154",
-    "controller": "SLO",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "SLO"
   },
   "istria": {
+    "tile": "istria",
     "name": "Istria",
-    "locations": "617,159",
-    "controller": "CRO",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "CRO"
   },
   "dalmatia": {
+    "tile": "dalmatia",
     "name": "Dalmatia",
-    "locations": "624,164",
-    "controller": "CRO",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "CRO"
   },
   "central-croatia": {
+    "tile": "central-croatia",
     "name": "Central-Croatia",
-    "locations": "625,156",
-    "controller": "CRO",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "CRO"
   },
   "danube-croatia": {
+    "tile": "danube-croatia",
     "name": "Danube-Croatia",
-    "locations": "633,158",
-    "controller": "CRO",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "CRO"
   },
   "herzegovina": {
+    "tile": "herzegovina",
     "name": "Herzegovina",
-    "locations": "635,166",
-    "controller": "BOS",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "BOS"
   },
   "herceg-bosna": {
+    "tile": "herceg-bosna",
     "name": "Herceg-Bosna",
-    "locations": "628,164",
-    "controller": "BOS",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "BOS"
   },
   "bosanska-krajina": {
+    "tile": "bosanska-krajina",
     "name": "Bosanska-Krajina",
-    "locations": "630,161",
-    "controller": "BOS",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "BOS"
   },
   "bosna": {
+    "tile": "bosna",
     "name": "Bosna",
-    "locations": "634,162",
-    "controller": "BOS",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "BOS"
   },
   "montenegro-west": {
+    "tile": "montenegro-west",
     "name": "Montenegro-West",
-    "locations": "636,171",
-    "controller": "MON",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "MON"
   },
   "montenegro-east": {
+    "tile": "montenegro-east",
     "name": "Montenegro-East",
-    "locations": "638,169",
-    "controller": "MON",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "MON"
   },
   "belgrade": {
+    "tile": "belgrade",
     "name": "Belgrade",
-    "locations": "641,159",
-    "controller": "SER",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "SER"
   },
   "backa": {
+    "tile": "backa",
     "name": "Backa",
-    "locations": "638,157",
-    "controller": "SER",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "SER"
   },
   "north-banat": {
+    "tile": "north-banat",
     "name": "North-Banat",
-    "locations": "642,156",
-    "controller": "SER",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "SER"
   },
   "sumadija": {
+    "tile": "sumadija",
     "name": "Sumadija",
-    "locations": "642,163",
-    "controller": "SER",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "SER"
   },
   "zlatibor": {
+    "tile": "zlatibor",
     "name": "Zlatibor",
-    "locations": "639,166",
-    "controller": "SER",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "SER"
   },
   "east-serbia": {
+    "tile": "east-serbia",
     "name": "East-Serbia",
-    "locations": "647,164",
-    "controller": "SER",
-    "population": 1,
-    "civ": 1,
-    "mil": 1
+    "owner": "SER"
   }
 }

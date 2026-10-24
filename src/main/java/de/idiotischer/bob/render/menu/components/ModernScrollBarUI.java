@@ -1,5 +1,7 @@
 package de.idiotischer.bob.render.menu.components;
 
+import de.idiotischer.bob.BOB;
+
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicScrollBarUI;
 import java.awt.*;
@@ -28,28 +30,25 @@ public class ModernScrollBarUI extends BasicScrollBarUI {
 
     @Override
     protected void paintTrack(Graphics g, JComponent c, Rectangle trackBounds) {
-        g.setColor(Color.GRAY);
+        Color dark = BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().scrollbar().bgColor();
+
+        g.setColor(dark);
         g.fillRoundRect(trackBounds.x, trackBounds.y, trackBounds.width, trackBounds.height, 12,12);
     }
 
     @Override
     protected void paintThumb(Graphics g, JComponent c, Rectangle thumbBounds) {
-        if (thumbBounds.isEmpty() || !scrollbar.isEnabled()) {
-            return;
-        }
+        if (thumbBounds.isEmpty() || !scrollbar.isEnabled()) return;
+        Color dark = BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().scrollbar().scrollerColor();
 
         Graphics2D g2 = (Graphics2D) g.create();
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g2.setColor(Color.DARK_GRAY.brighter());
+        g2.setColor(dark.darker());
 
         if (scrollbar.getOrientation() == JScrollBar.VERTICAL) {
-            g2.fillRoundRect(thumbBounds.x + 2, thumbBounds.y,
-                    thumbBounds.width - 4, thumbBounds.height,
-                    10, 10);
+            g2.fillRoundRect(thumbBounds.x + 2, thumbBounds.y, thumbBounds.width - 4, thumbBounds.height, 10, 10);
         } else {
-            g2.fillRoundRect(thumbBounds.x, thumbBounds.y + 2,
-                    thumbBounds.width, thumbBounds.height - 4,
-                    10, 10);
+            g2.fillRoundRect(thumbBounds.x, thumbBounds.y + 2, thumbBounds.width, thumbBounds.height - 4, 10, 10);
         }
 
         g2.dispose();

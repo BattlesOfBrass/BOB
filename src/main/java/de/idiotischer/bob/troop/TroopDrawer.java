@@ -20,7 +20,7 @@ public class TroopDrawer {
             if (troops.getOwner() == null) continue;
             if (!troops.isVisible()) continue;
 
-            List<Point> points = troops.getState().getPoints();
+            List<Point> points = troops.getTile().getPoints();
             if (points == null || points.isEmpty()) continue;
 
             Point p = points.getFirst();
@@ -34,8 +34,7 @@ public class TroopDrawer {
         }
     }
 
-    public static void drawBG(Graphics2D g2, TroopStack troopStack, Point p,
-                              int width, int height, double zoom) {
+    public static void drawBG(Graphics2D g2, TroopStack troopStack, Point p, int width, int height, double zoom) {
 
         Color c = troopStack.getController().countryColor();
 
@@ -43,7 +42,9 @@ public class TroopDrawer {
 
         Stroke oldStroke = g2.getStroke();
 
-        g2.setColor(Color.DARK_GRAY);
+        Color dark = BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().palette().darkColor();
+
+        g2.setColor(dark);
         g2.fillRect(p.x, p.y, width, height);
 
         g2.setColor(c == null ? Color.GREEN : c);
@@ -56,7 +57,7 @@ public class TroopDrawer {
     public static void drawContents(Graphics2D g2, TroopStack troopStack,
                                     Point p, int width, int height) {
 
-        String size = String.valueOf(troopStack.troops().size());
+        String size = String.valueOf(troopStack.getTroops().size());
 
         FontMetrics fm = g2.getFontMetrics();
 

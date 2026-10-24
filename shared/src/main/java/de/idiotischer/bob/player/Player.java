@@ -26,8 +26,6 @@ public interface Player {
 
     void country(Country country);
 
-    List<Troop> selectedTroops();
-
     default InetSocketAddress address() {
         return null;
     }
@@ -41,4 +39,6 @@ public interface Player {
     }
 
     default boolean authorize(Credentials credentials) {return true;}
+
+    boolean hasOP();
 }

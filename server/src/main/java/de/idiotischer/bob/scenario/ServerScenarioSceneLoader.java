@@ -1,6 +1,7 @@
 package de.idiotischer.bob.scenario;
 
 import de.idiotischer.bob.Server;
+import de.idiotischer.bob.game.GameState;
 import de.idiotischer.bob.networking.packet.impl.ScenarioSyncPacket;
 
 import javax.swing.*;
@@ -8,6 +9,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.file.Path;
+import java.rmi.ServerError;
 import java.util.List;
 
 //maybe handle currentselected scenario here even though it's more of a local thing for the menu?
@@ -42,9 +44,26 @@ public class ServerScenarioSceneLoader {
     public void loadNew(Scenario scenario) {
         currentScenario = scenario;
 
+        //this is intended
+        Server.getInstance().getGameManager().setState(GameState.LOBBY);
+
+        //this is the intended behaviour till i add a real Lobby overlay xD
+        //TODO: later only set it ingame when the game started and someone unpaused!
+        Server.getInstance().getGameManager().setState(GameState.INGAME);
+
+        Server.getInstance().getGameManager().reload();
+        Server.getInstance().getIdeologyManager().reload();
         Server.getInstance().getCountryManager().reload();
+        Server.getInstance().getTileManager().reload();
         Server.getInstance().getStateManager().reload();
+        Server.getInstance().getTroopManager().reload();
+        Server.getInstance().getWarManager().reload();
+        Server.getInstance().getCombatManager().reload();
 
         Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new ScenarioSyncPacket(scenario));
+    }
+
+    public List<Color> getBorderColors() {
+        return currentScenario.getBorderColors();
     }
 }

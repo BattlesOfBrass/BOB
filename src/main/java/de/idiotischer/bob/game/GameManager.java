@@ -9,8 +9,9 @@ import java.util.concurrent.CompletableFuture;
 public class GameManager {
 
     private CompletableFuture<GameState> future = null;
+    private GameState gameState = GameState.PAUSED;
 
-    public CompletableFuture<GameState> getGameState() {
+    public CompletableFuture<GameState> getGameStateSync() {
         future = new CompletableFuture<>();
 
         BOB.getInstance().getSendTool().send(BOB.getInstance().getClient().getChannel(), new RequestPacket(Type.GAMESTATE_SYNC));
@@ -20,9 +21,23 @@ public class GameManager {
 
     public void completeGameState(GameState gameState) {
         if(future != null && !future.isDone()) future.complete(gameState);
+
+        this.gameState = gameState;
     }
 
     public CompletableFuture<GameState> getFuture() {
         return future;
+    }
+
+    public void sendTogglePause() {
+
+    }
+
+    public void setGameState(GameState gameState) {
+        this.gameState = gameState;
+    }
+
+    public GameState getGameState() {
+        return gameState;
     }
 }
