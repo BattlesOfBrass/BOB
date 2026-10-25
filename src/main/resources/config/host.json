@@ -1,0 +1,11 @@
+{
+  "local": {
+    "localPort": 3995,
+    "multiplayerEnabled": true,
+    "useSpecifications": false
+  },
+  "remote": {
+    "remotePort": 2776,
+    "remoteHost": "localhost"
+  }
+}

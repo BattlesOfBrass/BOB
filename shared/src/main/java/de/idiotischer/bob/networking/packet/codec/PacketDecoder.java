@@ -1,0 +1,90 @@
+package de.idiotischer.bob.networking.packet.codec;
+
+import de.idiotischer.bob.networking.packet.Packet;
+import de.idiotischer.bob.networking.packet.PacketRegistry;
+import de.idiotischer.bob.networking.packet.codec.Coder;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.nio.ByteBuffer;
+import java.nio.channels.AsynchronousSocketChannel;
+import java.util.Objects;
+import java.util.zip.InflaterInputStream;
+
+//TODO: only decode if packet comes from server (for safety reasons)
+public class PacketDecoder implements Coder<Packet, ByteBuffer> {
+
+    private final PacketRegistry registry;
+
+    public PacketDecoder(PacketRegistry registry) {
+        this.registry = registry;
+    }
+
+    @Override
+    public Packet code(ByteBuffer buffer, AsynchronousSocketChannel channel) {
+        if (buffer.remaining() < 4) return null;
+
+        buffer.mark();
+
+        int length = buffer.getInt();
+
+        if (buffer.remaining() < length) {
+            buffer.reset();
+            return null;
+        }
+
+        int id = buffer.getInt();
+
+        if (!registry.isIdValid(id)) throw new IllegalArgumentException("No packet with id " + id + " found!");
+
+        Packet packet;
+        try {
+            packet = Objects.requireNonNull(registry.getPacketById(id)).getDeclaredConstructor().newInstance();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to create packet instance for id " + id, e);
+        }
+
+
+        byte compressedFlag = buffer.get();
+
+        int payloadLength = length - 5; //right? i changed it from 4 to 5 bc of compression flag
+
+        if(payloadLength < 0) throw new IllegalArgumentException("invalid packet length:" + length);
+
+        int oldLimit = buffer.limit();
+        buffer.limit(buffer.position() + payloadLength);
+
+        try {
+            byte[] payload = new byte[buffer.remaining()];
+            buffer.get(payload);
+
+            if(compressedFlag == 1) payload = inflate(payload);
+
+            ByteBuffer helper = ByteBuffer.wrap(payload);
+            packet.read(helper);
+        } finally {
+            buffer.limit(oldLimit);
+        }
+
+        PacketRegistry.PacketReceiveEvent event = new PacketRegistry.PacketReceiveEvent(packet, channel);
+
+        registry.getCore().getListenerRegistry().call(event);
+
+        if (event.isCancelled()) return packet;
+
+        return packet;
+    }
+
+    public byte[] inflate(byte[] data) {
+        try(InflaterInputStream is = new InflaterInputStream(new ByteArrayInputStream(data)); ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            byte[] part = new byte[4096];
+            int read;
+
+            while((read = is.read(part)) != -1) os.write(part,0, read);
+
+            return os.toByteArray();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to inflate packet!", e);
+        }
+    }
+}
