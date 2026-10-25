@@ -22,6 +22,7 @@ A game inspired by [Spirits of Steel](https://gavgrub.itch.io/sos), made in java
 - [x] Add peace treaties
 - [x] Add flags
 - [x] Add themes
+- [ ] Add factions
 - [ ] Expand theme capabilities
 - [ ] Add political power
 - [ ] Test Multiplayer
