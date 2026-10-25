@@ -43,3 +43,5 @@ A game inspired by [Spirits of Steel](https://gavgrub.itch.io/sos), made in java
 - [ ] Add political advisors
 - [ ] Add production
 - [ ] Add terrain and weather + day/night indicator
+- [ ] Change base theme
+- [ ] Add enemy ai
