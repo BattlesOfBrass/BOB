@@ -43,6 +43,7 @@ A game inspired by [Spirits of Steel](https://gavgrub.itch.io/sos), made in java
 - [ ] Add leaders and portraits
 - [ ] Add political advisors
 - [ ] Add production
+- [ ] Between scenario Syncs add loading animation and % bar and make ui unable to be interacted with in that time
 - [ ] Add terrain and weather + day/night indicator
 - [ ] Change base theme
 - [ ] Add enemy ai
