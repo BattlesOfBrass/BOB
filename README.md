@@ -36,8 +36,8 @@ A game inspired by [Spirits of Steel](https://gavgrub.itch.io/sos), made in java
 - [ ] Add votings
 - [ ] Add parties
 - [ ] Add troop training
-- [ ] Add navy
-- [ ] Add air force
+- [ ] (Add navy)
+- [ ] (Add Air Force)
 - [ ] Add building
 - [ ] Add leaders and portraits
 - [ ] Add political advisors
