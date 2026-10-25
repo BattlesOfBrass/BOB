@@ -45,3 +45,5 @@ A game inspired by [Spirits of Steel](https://gavgrub.itch.io/sos), made in java
 - [ ] Add terrain and weather + day/night indicator
 - [ ] Change base theme
 - [ ] Add enemy ai
+- [ ] Color border between two states of the same controller in the same color (make it configurable since it costs performance or let the server pre calculate it xD)
+
