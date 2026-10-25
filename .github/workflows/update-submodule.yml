@@ -1,0 +1,48 @@
+name: Update submodule
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo (with submodules)
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Update submodule to latest commit
+        run: |
+          git submodule update --init --recursive
+          git submodule update --remote --recursive
+
+      - name: Check for changes
+        id: changes
+        run: |
+          if git diff --quiet; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create/Update PR
+        if: steps.changes.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v5
+        with:
+          branch: auto/update-submodule
+          delete-branch: true
+          commit-message: Auto-update assets submodule
+          title: Auto-update assets submodule
+          body: |
+            Automated update of the assets submodule to latest commit.
+          author: github-actions <github-actions@github.com>
+          committer: github-actions <github-actions@github.com>
