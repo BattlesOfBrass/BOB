@@ -22,7 +22,9 @@ A game inspired by [Spirits of Steel](https://gavgrub.itch.io/sos), made in java
 - [x] Add peace treaties
 - [x] Add flags
 - [x] Add themes
-- [ ] Add factions
+- [x] Add factions
+- [ ] Display factions
+- [ ] render all maps in chunks, add multiple render modes (factions, terrain, etc.) which all use the basemap and recolor it instead of recoloring the current map, ofc depending on the situation
 - [ ] Expand theme capabilities
 - [x] Add political power
 - [ ] Test Multiplayer

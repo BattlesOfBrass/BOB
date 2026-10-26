@@ -420,7 +420,6 @@ public class Country /*implements Comparable<Country>*/{
 
     public void setPoliticalPower(double pp, Country c) {
         this.politicalPower = pp;
-        if(c.equals(this)) System.out.println("NEW PP FOR THIS PLAYER IS " + pp + " its state: " + c.getPoliticalPower());
     }
 
     //@Override
