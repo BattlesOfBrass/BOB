@@ -12,6 +12,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
+//TODO: make this redraw the image in chunks and multiple draw cycles yk (like 8 chunks or smth)
 public class ScenarioSelectMenu extends JPanel {
 
     private final int layoutScaleX = 850;

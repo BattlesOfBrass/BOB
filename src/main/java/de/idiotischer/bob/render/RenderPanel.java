@@ -28,6 +28,8 @@ import java.awt.image.VolatileImage;
 import java.util.*;
 import java.util.List;
 
+
+//TODO: make this redraw the image in chunks and multiple draw cycles yk (like 8 chunks or smth)
 public class RenderPanel extends JPanel implements Panel {
 
     private final MainRenderer renderer;

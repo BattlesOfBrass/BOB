@@ -44,6 +44,9 @@ public class ScenarioSyncPacket implements Packet {
     private byte[] ideologiesJson;
     private byte[] themeJson;
     private byte[] configJson;
+    private byte[] modifiersJson;
+    private byte[] factionsJson;
+    private byte[] factionRulesJson;
 
     private List<FlagEntry> flagEntries = new ArrayList<>();
 
@@ -68,6 +71,9 @@ public class ScenarioSyncPacket implements Packet {
         this.themeJson = scenario.isThemesDefault() ? null : FileUtil.readFile(scenario.getThemeConfig());
         this.ideologiesJson = scenario.isIdeologiesDefault() ? null : FileUtil.readFile(scenario.getIdeologiesConfig());
         this.configJson = scenario.isConfigDefault() ? null : FileUtil.readFile(scenario.getConfig());
+        this.modifiersJson = scenario.isModifiersConfigDefault() ? null : FileUtil.readFile(scenario.getModifierConfig());
+        this.factionRulesJson = scenario.isFactionRulesConfigDefault() ? null : FileUtil.readFile(scenario.getFactionRulesConfig());
+        this.factionsJson = scenario.isFactionsConfigDefault() ? null : FileUtil.readFile(scenario.getFactionConfig());
 
         this.theme = scenario.getTheme();
 
@@ -137,6 +143,9 @@ public class ScenarioSyncPacket implements Packet {
             writeBytes(buffer, warsJson);
             writeBytes(buffer, ideologiesJson);
             writeBytes(buffer, configJson);
+            writeBytes(buffer, modifiersJson);
+            writeBytes(buffer, factionRulesJson);
+            writeBytes(buffer, factionsJson);
 
             writeBytes(buffer, themeJson);
             writeString(buffer, theme == null ? "" : theme.serialize());
@@ -186,6 +195,9 @@ public class ScenarioSyncPacket implements Packet {
         this.warsJson = readBytes(buffer);
         this.ideologiesJson = readBytes(buffer);
         this.configJson = readBytes(buffer);
+        this.modifiersJson = readBytes(buffer);
+        this.factionRulesJson = readBytes(buffer);
+        this.factionsJson = readBytes(buffer);
 
         this.themeJson = readBytes(buffer);
         this.theme = Theme.deserialize(name + "-theme", readString(buffer));
@@ -234,6 +246,9 @@ public class ScenarioSyncPacket implements Packet {
             writeIfMissing(targetDir.resolve("theme.json"), themeJson);
             writeIfMissing(targetDir.resolve("ideologies.json"), ideologiesJson);
             writeIfMissing(targetDir.resolve("config.json"), configJson);
+            writeIfMissing(targetDir.resolve("modifiers.json"), modifiersJson);
+            writeIfMissing(targetDir.resolve("factionRules.json"), factionRulesJson);
+            writeIfMissing(targetDir.resolve("factions.json"), factionsJson);
 
             writeFlagFolder(targetDir);
 
@@ -280,6 +295,9 @@ public class ScenarioSyncPacket implements Packet {
             writeIfMissing(targetDir.resolve("theme.json"), themeJson);
             writeIfMissing(targetDir.resolve("ideologies.json"), ideologiesJson);
             writeIfMissing(targetDir.resolve("config.json"), configJson);
+            writeIfMissing(targetDir.resolve("modifiers.json"), modifiersJson);
+            writeIfMissing(targetDir.resolve("factionRules.json"), factionRulesJson);
+            writeIfMissing(targetDir.resolve("factions.json"), factionsJson);
 
             writeFlagFolder(targetDir);
 

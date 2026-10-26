@@ -6,16 +6,15 @@ import de.craftsblock.craftscore.event.ListenerAdapter;
 import de.idiotischer.bob.BOB;
 import de.idiotischer.bob.Server;
 import de.idiotischer.bob.conference.PeaceConference;
-import de.idiotischer.bob.conference.PeaceHelper;
-import de.idiotischer.bob.conference.TakeTileType;
 import de.idiotischer.bob.country.Country;
 import de.idiotischer.bob.country.CountryResolver;
+import de.idiotischer.bob.faction.Faction;
 import de.idiotischer.bob.game.GameState;
 import de.idiotischer.bob.ideology.Ideology;
+import de.idiotischer.bob.modifiers.Modifier;
 import de.idiotischer.bob.networking.packet.PacketRegistry;
 import de.idiotischer.bob.networking.packet.impl.*;
 import de.idiotischer.bob.networking.packet.impl.pp.ReplyPacket;
-import de.idiotischer.bob.networking.packet.impl.pp.Type;
 import de.idiotischer.bob.player.Player;
 import de.idiotischer.bob.scenario.Scenario;
 import de.idiotischer.bob.scenario.ScenarioManager;
@@ -140,6 +139,60 @@ public class PacketListener implements ListenerAdapter {
             BOB.getInstance().getTileManager().registerTile(tile);
         } else if(event.getPacket() instanceof ReplyPacket pack) {
             switch (pack.getReplyType()) {
+                case MODIFIER_UPDATE -> {
+                    String[] strings = pack.getMessage().split(";");
+
+                    String id = strings[0].replace("id=","");
+
+                    Modifier modifier = BOB.getInstance().getModifierManager().by(id);
+
+                    if(modifier == null) return;
+
+                    String s1 = strings[1];
+
+                    if(s1.startsWith("displayName")) {
+                        String displayName = s1.replace("displayName=","");
+
+                        modifier.setDisplayName(displayName);
+                    } else if (s1.startsWith("modifier")) {
+                        float modifierF = Float.parseFloat(s1.replace("modifier=",""));
+
+                        modifier.setModifier(modifierF);
+                    } else if(s1.startsWith("specificallyFor")) {
+                        String specificFor = s1.replace("specificallyFor=","");
+
+                        modifier.setSpecificallyFor(specificFor);
+                    } else if(s1.startsWith("type")) {
+                        String type = s1.replace("type=","");
+
+                        modifier.setType(type);
+                    }
+                }
+                case FACTION_UPDATE -> {
+                    String[] strings = pack.getMessage().split(";");
+
+                    String id = strings[0].replace("id=","");
+
+                    Faction faction = BOB.getInstance().getFactionManager().factionBy(id);
+
+                    if(faction == null) return;
+
+                    String s1 = strings[1];
+
+                    if(s1.startsWith("addMember")) {
+                        String country = s1.replace("addMember=","");
+
+                        faction.addMember(country);
+                    } else if (s1.startsWith("removeMember")) {
+                        String country = s1.replace("removeMember=","");
+
+                        faction.rmMember(country);
+                    } else if(s1.startsWith("changeName")) {
+                        String newName = s1.replace("changeName=","");
+
+                        faction.setName(newName);
+                    }
+                }
                 case PP_UPDATE -> {
                     String[] strings = pack.getMessage().split(";");
 
@@ -477,6 +530,42 @@ public class PacketListener implements ListenerAdapter {
             BOB.getInstance().getCombatManager().addStatus(pack.getPackets().stream().map(p -> p.getStatus(BOB.getInstance().getTroopManager())).toList());
         } else if (event.getPacket() instanceof TimeCheckAndCorrectPacket pack) {
             BOB.getInstance().getTimeManager().sync(pack.getStartDate(), pack.getTimeTicks(), pack.getSpeed());
+        } else if(event.getPacket() instanceof FactionSyncPacket pack) {
+            Faction faction = pack.getFaction(BOB.getInstance().getFactionManager());
+
+            BOB.getInstance().getFactionManager().addFaction(faction);
+        } else if(event.getPacket() instanceof FactionsSyncPacket packet) {
+            packet.getPackets().forEach(pack -> {
+                Faction faction = pack.getFaction(BOB.getInstance().getFactionManager());
+
+                BOB.getInstance().getFactionManager().addFaction(faction);
+            });
+
+            BOB.getInstance().getFactionManager().finishFactionsReload();
+        } else if(event.getPacket() instanceof FactionRuleSyncPacket pack) {
+            Faction.FactionRule faction = pack.getFactionRule(BOB.getInstance().getModifierManager());
+
+            BOB.getInstance().getFactionManager().addFactionRule(faction);
+        } else if(event.getPacket() instanceof FactionRulesSyncPacket packet) {
+            packet.getPackets().forEach(pack -> {
+                Faction.FactionRule faction = pack.getFactionRule(BOB.getInstance().getModifierManager());
+
+                BOB.getInstance().getFactionManager().addFactionRule(faction);
+            });
+
+            BOB.getInstance().getFactionManager().finishRulesReload();
+        }  else if(event.getPacket() instanceof ModifierSyncPacket pack) {
+            Modifier modifier = pack.getModifier();
+
+            BOB.getInstance().getModifierManager().addModifier(modifier);
+        } else if(event.getPacket() instanceof ModifiersSyncPacket packet) {
+            packet.getPackets().forEach(pack -> {
+                Modifier modifier = pack.getModifier();
+
+                BOB.getInstance().getModifierManager().addModifier(modifier);
+            });
+
+            BOB.getInstance().getModifierManager().finishReload();
         }
     }
 }

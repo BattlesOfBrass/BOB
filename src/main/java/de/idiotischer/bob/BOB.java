@@ -4,9 +4,12 @@ import de.idiotischer.bob.combat.CombatManager;
 import de.idiotischer.bob.conference.PeaceHelper;
 import de.idiotischer.bob.country.CountryManager;
 import de.idiotischer.bob.debug.Debugger;
+import de.idiotischer.bob.faction.FactionManager;
 import de.idiotischer.bob.game.GameManager;
 import de.idiotischer.bob.ideology.IdeologyManager;
 import de.idiotischer.bob.listener.PacketListener;
+import de.idiotischer.bob.modifier.ModifierManager;
+import de.idiotischer.bob.modifiers.ModifierResolver;
 import de.idiotischer.bob.networking.ClientSocket;
 import de.idiotischer.bob.networking.communication.SendTool;
 import de.idiotischer.bob.player.Player;
@@ -77,6 +80,8 @@ public class BOB {
 
     private IdeologyManager ideologyManager;
     private TimeManager timeManager;
+    private FactionManager factionManager;
+    private ModifierManager modifierManager;
 
     public static void main(String[] args) {
         new BOB();
@@ -133,6 +138,8 @@ public class BOB {
 
         this.client = new ClientSocket();
 
+        this.modifierManager = new ModifierManager();
+
         this.scenarioManager = new ScenarioManager();
 
         this.ideologyManager = new IdeologyManager();
@@ -142,6 +149,8 @@ public class BOB {
         this.tileManager = new TileManager();
 
         this.stateManager = new StateManager();
+
+        this.factionManager = new FactionManager();
 
         this.troopManager = new TroopManager();
 
@@ -295,5 +304,13 @@ public class BOB {
 
     public TimeManager getTimeManager() {
         return timeManager;
+    }
+
+    public FactionManager getFactionManager() {
+        return factionManager;
+    }
+
+    public ModifierManager getModifierManager() {
+        return modifierManager;
     }
 }

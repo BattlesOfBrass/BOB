@@ -20,6 +20,7 @@ import java.awt.event.KeyEvent;
 import java.net.InetSocketAddress;
 import java.util.function.Consumer;
 
+//TODO: make this redraw the image in chunks and multiple draw cycles yk (like 8 chunks or smth)
 public class MultiplayerMenu extends JPanel {
 
     private final int layoutScaleX = 850;

@@ -95,11 +95,8 @@ public class Tile {
     }
 
     public static TileChangedEvent.Type getChangeType(String s) {
-        if (s.startsWith("controller=")) {
-            return TileChangedEvent.Type.CONTROLLER;
-        } else if (s.startsWith("owner=")) {
-            return TileChangedEvent.Type.OWNER;
-        }
+        if (s.startsWith("controller=")) return TileChangedEvent.Type.CONTROLLER;
+        else if (s.startsWith("owner=")) return TileChangedEvent.Type.OWNER;
 
         return null;
     }
@@ -193,7 +190,6 @@ public class Tile {
 
             if (i < claims.size() - 1) claimsSb.append(",");
         }
-
 
         String connections = TileConnection.serialize(tileConnections);
 

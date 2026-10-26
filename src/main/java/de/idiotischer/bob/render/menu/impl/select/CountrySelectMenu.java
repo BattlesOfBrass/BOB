@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
 
+
+//TODO: make this redraw the image in chunks and multiple draw cycles yk (like 8 chunks or smth)
 public class CountrySelectMenu extends JPanel {
 
     private final Scenario scenario;

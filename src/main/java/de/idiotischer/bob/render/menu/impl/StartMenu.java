@@ -6,6 +6,8 @@ import de.idiotischer.bob.render.menu.components.button.BOBButton;
 import javax.swing.*;
 import java.awt.*;
 
+
+//TODO: make this redraw the image in chunks and multiple draw cycles yk (like 8 chunks or smth)
 public class StartMenu extends JPanel {
 
     //ButtonComp start = new ButtonComp("Select Start", Color.WHITE, Color.DARK_GRAY,true,0,100,150,50, 16,16, 15, Color.DARK_GRAY.brighter(), Color.BLACK, true,(b) -> {

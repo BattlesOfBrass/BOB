@@ -51,12 +51,17 @@ public class PacketRegistry {
         registerPacket(IdeologiesSyncPacket.class, 21);
         registerPacket(IdeologySyncPacket.class, 22);
         registerPacket(TimeCheckAndCorrectPacket.class, 23);
+        registerPacket(FactionRulesSyncPacket.class, 24);
+        registerPacket(FactionRuleSyncPacket.class, 25);
+        registerPacket(FactionSyncPacket.class, 26);
+        registerPacket(FactionsSyncPacket.class, 27);
+        registerPacket(ModifiersSyncPacket.class, 28);
+        registerPacket(ModifierSyncPacket.class, 29);
     }
 
     public void registerPacket(Class<? extends Packet> packet, int id) {
-        if(id < 0) {
-            throw new IllegalArgumentException("ID cannot be negative please reregister the packet: " + packet.getSimpleName());
-        }
+        if(id < 0) throw new IllegalArgumentException("ID cannot be negative please reregister the packet: " + packet.getSimpleName());
+
         packetIds.put(id, packet);
     }
 

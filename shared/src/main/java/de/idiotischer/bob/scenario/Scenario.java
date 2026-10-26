@@ -309,4 +309,47 @@ public class Scenario {
     public void setTheme(Theme t) {
         this.theme = t;
     }
+
+    public Path getFactionConfig() {
+        Path path = dir.resolve("factions.json");
+
+        if(Files.notExists(path)) path = FileUtil.getDefaultScenarioDir().resolve("factions.json");
+
+        return path;
+    }
+
+
+    public boolean isFactionsConfigDefault() {
+        Path path = dir.resolve("factions.json");
+
+        return Files.notExists(path);
+    }
+
+    public Path getFactionRulesConfig() {
+        Path path = dir.resolve("factionRules.json");
+
+        if(Files.notExists(path)) path = FileUtil.getDefaultScenarioDir().resolve("factionRules.json");
+
+        return path;
+    }
+
+    public boolean isFactionRulesConfigDefault() {
+        Path path = dir.resolve("factionRules.json");
+
+        return Files.notExists(path);
+    }
+
+    public Path getModifierConfig() {
+        Path path = dir.resolve("modifiers.json");
+
+        if(Files.notExists(path)) path = FileUtil.getDefaultScenarioDir().resolve("modifiers.json");
+
+        return path;
+    }
+
+    public boolean isModifiersConfigDefault() {
+        Path path = dir.resolve("modifiers.json");
+
+        return Files.notExists(path);
+    }
 }

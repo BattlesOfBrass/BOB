@@ -51,9 +51,11 @@ public class ServerScenarioSceneLoader {
         //TODO: later only set it ingame when the game started and someone unpaused!
         Server.getInstance().getGameManager().setState(GameState.INGAME);
 
+        Server.getInstance().getModifierManager().reload();
         Server.getInstance().getGameManager().reload();
         Server.getInstance().getIdeologyManager().reload();
         Server.getInstance().getCountryManager().reload();
+        Server.getInstance().getFactionManager().reload();
         Server.getInstance().getTileManager().reload();
         Server.getInstance().getStateManager().reload();
         Server.getInstance().getTroopManager().reload();

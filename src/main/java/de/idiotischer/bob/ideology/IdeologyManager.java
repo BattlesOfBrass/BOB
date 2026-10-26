@@ -24,7 +24,7 @@ public class IdeologyManager implements IdeologyResolver{
     }
 
     public void finishReload() {
-        BOB.getInstance().getCountryManager().reload();
+        BOB.getInstance().getModifierManager().reload();
 
         if(awaitingFuture == null || awaitingFuture.isDone()) return;
         awaitingFuture.complete(null);

@@ -1,5 +1,10 @@
 package de.idiotischer.bob.modifiers;
 
+import de.idiotischer.bob.networking.ChannelResolver;
+import de.idiotischer.bob.networking.communication.SendTool;
+import de.idiotischer.bob.networking.packet.impl.pp.ReplyPacket;
+import de.idiotischer.bob.networking.packet.impl.pp.Type;
+
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -9,9 +14,12 @@ import java.util.Set;
 public class Modifier {
 
     private final String id;
+    private final SendTool t;
+    private final ChannelResolver r;
+
     private String displayName;
     private String specificallyFor = "";
-    private float modifier = 0;
+    private float modifier;
     private String type;
 
     private static final Set<String> modifierTypes = new HashSet<>();
@@ -22,16 +30,38 @@ public class Modifier {
         modifierTypes.add("attack");
     }
 
+    public Modifier(ChannelResolver r, SendTool t, String id, String displayName, float modifier, String type) {
+        this(r,t,id,displayName,"",modifier,type);
+    }
+
     public Modifier(String id, String displayName, float modifier, String type) {
         this(id,displayName,"",modifier,type);
     }
 
     public Modifier(String id, String displayName, String specificallyFor, float modifier, String type) {
+        this(null,null,id,displayName,specificallyFor,modifier,type);
+    }
+
+    public Modifier(ChannelResolver r, SendTool t, String id, String displayName, String specificallyFor, float modifier, String type) {
+        this.t = t;
+        this.r = r;
         this.id = id;
         this.displayName = displayName;
         this.specificallyFor = specificallyFor;
         this.modifier = modifier;
         this.type = type;
+    }
+
+    public String toDataString() {
+        return id + ";" + displayName + ";" + specificallyFor + ";" + modifier + ";" + type;
+    }
+
+    public static Modifier fromDataString(String data) {
+        String[] strings = data.split(";");
+
+        if(strings.length != 5) return null;
+
+        return new Modifier(strings[0], strings[1], strings[2], Float.parseFloat(strings[3]), strings[4]);
     }
 
     public String getId() {
@@ -46,12 +76,21 @@ public class Modifier {
         this.displayName = displayName;
     }
 
+    public void setDisplayNameServer(String displayName) {
+        this.displayName = displayName;
+        t.broadcast(r.channels(), new ReplyPacket(Type.MODIFIER_UPDATE, "id=" + id + ";" + "displayName=" + displayName));
+    }
+
     public String getSpecificallyFor() {
         return specificallyFor;
     }
 
     public void setSpecificallyFor(String specificallyFor) {
         this.specificallyFor = specificallyFor;
+    }
+    public void setSpecificallyForServer(String specificallyFor) {
+        this.specificallyFor = specificallyFor;
+        t.broadcast(r.channels(), new ReplyPacket(Type.MODIFIER_UPDATE, "id=" + id + ";" + "specificallyFor=" + displayName));
     }
 
     public float getModifier() {
@@ -62,8 +101,19 @@ public class Modifier {
         this.modifier = modifier;
     }
 
+    public void setModifierServer(float modifier) {
+        this.modifier = modifier;
+        t.broadcast(r.channels(), new ReplyPacket(Type.MODIFIER_UPDATE, "id=" + id + ";" + "modifier=" + modifier));
+
+    }
+
     public String getType() {
         return type;
+    }
+
+    public void setTypeServer(String type) {
+        this.type = type;
+        t.broadcast(r.channels(), new ReplyPacket(Type.MODIFIER_UPDATE, "id=" + id + ";" + "type=" + type));
     }
 
     public void setType(String type) {

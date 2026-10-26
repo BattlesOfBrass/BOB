@@ -54,6 +54,21 @@ public class ServerPacketListener implements ListenerAdapter {
         } else if(event.getPacket() instanceof RequestPacket pack) {
             //so ping pong like
             switch (pack.getRequestType()) {
+                case MODIFIERS_SYNC -> {
+                    ModifiersSyncPacket packet = ModifiersSyncPacket.fromModifiers(Server.getInstance().getModifierManager().getModifiers());
+
+                    Server.getInstance().getSendTool().send(event.getChannel(), packet);
+                }
+                case FACTION_RULES_SYNC -> {
+                    FactionRulesSyncPacket packet = FactionRulesSyncPacket.fromFactionRules(Server.getInstance().getFactionManager().getFactionRules());
+
+                    Server.getInstance().getSendTool().send(event.getChannel(), packet);
+                }
+                case FACTIONS_SYNC -> {
+                    FactionsSyncPacket packet = FactionsSyncPacket.fromFactions(Server.getInstance().getFactionManager().getFactions());
+
+                    Server.getInstance().getSendTool().send(event.getChannel(), packet);
+                }
                 case GAMESTATE_SET -> {
                     try {
                         GameState state = GameState.valueOf(pack.getMessage());
