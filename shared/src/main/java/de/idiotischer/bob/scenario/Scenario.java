@@ -366,4 +366,20 @@ public class Scenario {
 
         return Files.notExists(path);
     }
+
+    public Path getGlobalFocuses() {
+        Path path = dir.resolve("focuses/global.json");
+
+        if(Files.notExists(path)) path = FileUtil.getDefaultScenarioDir().resolve("focuses/global.json");
+
+        return path;
+    }
+
+    public Path getFocusTree() {
+        Path path = dir.resolve("focuses/focustrees");
+
+        if(Files.notExists(path)) path = FileUtil.getDefaultScenarioDir().resolve("focuses/focustrees");
+
+        return path;
+    }
 }

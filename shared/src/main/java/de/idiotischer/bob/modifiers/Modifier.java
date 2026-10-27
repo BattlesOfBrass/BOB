@@ -14,6 +14,7 @@ import java.util.Set;
 // A modifier can be direct (since i'm lazy, so if the modifiers "lasts" is 0 than its directly applied 1x
 // made into a string to also act as country tag
 // add a removemodifier type so modifiers can be created for removing other modifiers (they are put into the add method, than discarded and the modifier that is in the modifier field is removed)
+// do the same as above fore a executeAs modifier where it adds a modifier to the country and than redirects that to the executor Country
 public class Modifier {
 
     private final String id;
