@@ -19,11 +19,17 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 //TODO: alle assets wie flaggen für das scenario etc syncen
 public class ScenarioSyncPacket implements Packet {
+
+    private Path focusesDir;
 
     private Theme theme;
     private String abbreviation;
@@ -49,6 +55,7 @@ public class ScenarioSyncPacket implements Packet {
     private byte[] factionRulesJson;
 
     private List<FlagEntry> flagEntries = new ArrayList<>();
+    private byte[] dirBytes;
 
     public ScenarioSyncPacket() {}
 
@@ -74,6 +81,7 @@ public class ScenarioSyncPacket implements Packet {
         this.modifiersJson = scenario.isModifiersConfigDefault() ? null : FileUtil.readFile(scenario.getModifierConfig());
         this.factionRulesJson = scenario.isFactionRulesConfigDefault() ? null : FileUtil.readFile(scenario.getFactionRulesConfig());
         this.factionsJson = scenario.isFactionsConfigDefault() ? null : FileUtil.readFile(scenario.getFactionConfig());
+        this.focusesDir = scenario.isFocusesConfigDefault() ? null : scenario.getFocusesDir();
 
         this.theme = scenario.getTheme();
 
@@ -113,6 +121,7 @@ public class ScenarioSyncPacket implements Packet {
 
     @Override
     public void write(ByteBuffer buffer) {
+        BufferUtil util = BufferUtil.of(buffer);
         try {
             writeString(buffer, abbreviation);
             writeString(buffer, name);
@@ -150,6 +159,8 @@ public class ScenarioSyncPacket implements Packet {
             writeBytes(buffer, themeJson);
             writeString(buffer, theme == null ? "" : theme.serialize());
 
+            if(Files.notExists(focusesDir)) return;
+            writeBytes(buffer,writeDir(focusesDir));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -201,6 +212,58 @@ public class ScenarioSyncPacket implements Packet {
 
         this.themeJson = readBytes(buffer);
         this.theme = Theme.deserialize(name + "-theme", readString(buffer));
+
+        this.dirBytes = readBytes(buffer);
+    }
+
+    public void readDir(byte[] zipDat, Path output) {
+        try {
+            Path root = output.toAbsolutePath().normalize();
+
+            Files.createDirectories(root);
+            try (ZipInputStream zip = new ZipInputStream(new ByteArrayInputStream(zipDat))) {
+                ZipEntry ent;
+
+                while ((ent = zip.getNextEntry()) != null) {
+                    Path target = root.resolve(ent.getName()).normalize();
+
+                    if (!target.startsWith(root)) throw new IllegalStateException("ZIP ENTRY INVALID " + ent.getName());
+
+                    if (ent.isDirectory()) Files.createDirectories(target);
+                    else {
+                        Files.createDirectories(target.getParent());
+                        Files.copy(zip, target, StandardCopyOption.REPLACE_EXISTING);
+                    }
+
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public byte[] writeDir(Path p) {
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+
+        try(ZipOutputStream zip = new ZipOutputStream(os)) {
+            try(var paths = Files.walk(p)) {
+                paths.filter(Files::isRegularFile).forEach(file -> {
+                    String name = p.relativize(file).toString().replace('\\','/');
+
+                    try {
+                        zip.putNextEntry(new ZipEntry(name));
+                        Files.copy(file,zip);
+                        zip.closeEntry();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                });
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return os.toByteArray();
     }
 
     private void writeFlagFolder(Path targetDir) throws IOException {
@@ -262,6 +325,8 @@ public class ScenarioSyncPacket implements Packet {
                 if (Files.notExists(mapPath)) ImageIO.write(backgroundImage, "png", mapPath.toFile());
             }
 
+            readDir(dirBytes,targetDir);
+
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -311,6 +376,7 @@ public class ScenarioSyncPacket implements Packet {
                 if (Files.notExists(mapPath)) ImageIO.write(backgroundImage, "png", mapPath.toFile());
             }
 
+            readDir(dirBytes,targetDir);
         } catch (IOException e) {
             e.printStackTrace();
         }

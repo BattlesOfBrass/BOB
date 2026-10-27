@@ -205,7 +205,7 @@ public class PeaceConference {
                 } else if(status.type() == TakeTileType.LIBERATE) {
                     tile.getOwner().setRulingIdeology(core,r,tile.getOwner().getStartIdeology());
                 } else if(status.type() == TakeTileType.PUPPET) {
-                    tile.getOwner().setOverlord(status.country());
+                    tile.getOwner().setOverlordServer(status.country().getAbbreviation(), core.getTool(), r);
                     tile.getOwner().setPuppetTile(PuppetState.PUPPET);
                     tile.getOwner().setRulingIdeology(core,r,status.country.getRulingIdeology());
                 }

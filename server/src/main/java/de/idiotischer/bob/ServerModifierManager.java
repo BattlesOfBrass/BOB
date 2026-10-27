@@ -37,13 +37,17 @@ public class ServerModifierManager implements ModifierResolver {
 
                         String name = getAsStringSafe(modifierElement, "name");
 
-                        float modifierF = 0;
-                        if(modifierElement.has("modifier")) modifierF = modifierElement.get("modifier").getAsFloat();
+                        String modifierF = "";
+                        if(modifierElement.has("modifier")) modifierF = modifierElement.get("modifier").getAsString();
+                        int lasts = -1;
+                        if(modifierElement.has("lasts")) lasts = modifierElement.get("lasts").getAsInt();
+                        boolean display = false;
+                        if(modifierElement.has("display")) display = modifierElement.get("display").getAsBoolean();
 
                         Modifier modifier;
 
-                        if(modifierElement.has("specificFor")) modifier = new Modifier(Server.getInstance().getServerSocket(), Server.getInstance().getSendTool(), abbr, name, modifierElement.get("specificFor").getAsString(), modifierF, type);
-                        else modifier = new Modifier(Server.getInstance().getServerSocket(), Server.getInstance().getSendTool(), abbr, name, modifierF, type);
+                        if(modifierElement.has("specificFor")) modifier = new Modifier(Server.getInstance().getServerSocket(), Server.getInstance().getSendTool(), abbr, name, display, lasts, modifierElement.get("specificFor").getAsString(), modifierF, type);
+                        else modifier = new Modifier(Server.getInstance().getServerSocket(), Server.getInstance().getSendTool(), abbr, name,display,lasts, modifierF, type);
 
                         modifiers.add(modifier);
                     });

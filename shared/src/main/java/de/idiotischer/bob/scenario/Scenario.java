@@ -352,4 +352,18 @@ public class Scenario {
 
         return Files.notExists(path);
     }
+
+    public Path getFocusesDir() {
+        Path path = dir.resolve("focuses");
+
+        if(Files.notExists(path)) path = FileUtil.getDefaultScenarioDir().resolve("focuses");
+
+        return path;
+    }
+
+    public boolean isFocusesConfigDefault() {
+        Path path = dir.resolve("focuses");
+
+        return Files.notExists(path);
+    }
 }

@@ -155,7 +155,15 @@ public class ServerFactionManager implements FactionResolver {
         return faction.getMembers().stream().map(m -> Server.getInstance().getCountryManager().byAbbreviation(m)).collect(Collectors.toSet());
     }
 
+    public Set<Country> getFactionMembersAll(Country c) {
+        return factions.stream().filter(c1 -> c1.getMembers().contains(c.getAbbreviation())).map(this::getFactionMembers).flatMap(Collection::stream).collect(Collectors.toSet());
+    }
+
     public Set<Faction> getFactionsFor(Country c) {
         return factions.stream().filter(fac -> fac.getMembers().contains(c.getAbbreviation())).collect(Collectors.toSet());
+    }
+
+    public boolean inFactionWith(Country a, Country b) {
+        return getFactionMembersAll(a).stream().anyMatch(c -> c.getAbbreviation().equals(b.getAbbreviation()));
     }
 }

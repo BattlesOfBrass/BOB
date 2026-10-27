@@ -139,6 +139,48 @@ public class PacketListener implements ListenerAdapter {
             BOB.getInstance().getTileManager().registerTile(tile);
         } else if(event.getPacket() instanceof ReplyPacket pack) {
             switch (pack.getReplyType()) {
+                case MODIFIERS_UPDATE -> {
+                    String[] strings = pack.getMessage().split(";");
+
+                    String id = strings[0].replace("id=","");
+
+                    Country c = BOB.getInstance().getCountryManager().byAbbreviation(id);
+
+                    if(c == null) return;
+
+                    String s1 = strings[1];
+
+                    if(s1.startsWith("add")) {
+                        String add = s1.replace("add=","");
+
+                        Modifier mod = BOB.getInstance().getModifierManager().by(add);
+
+                        c.addModifier(mod);
+                    } else if(s1.startsWith("remove")) {
+                        String remove = s1.replace("remove=","");
+
+                        Modifier mod = BOB.getInstance().getModifierManager().by(remove);
+
+                        c.removeModifier(mod);
+                    }
+                }
+                case COUNTRY_UPDATE -> {
+                    String[] strings = pack.getMessage().split(";");
+
+                    String id = strings[0].replace("id=","");
+
+                    Country c = BOB.getInstance().getCountryManager().byAbbreviation(id);
+
+                    if(c == null) return;
+
+                    String s1 = strings[1];
+
+                    if(s1.startsWith("overlord")) {
+                        String ov = s1.replace("overlord=","");
+
+                        c.setOverlord(ov);
+                    }
+                }
                 case MODIFIER_UPDATE -> {
                     String[] strings = pack.getMessage().split(";");
 
@@ -155,9 +197,9 @@ public class PacketListener implements ListenerAdapter {
 
                         modifier.setDisplayName(displayName);
                     } else if (s1.startsWith("modifier")) {
-                        float modifierF = Float.parseFloat(s1.replace("modifier=",""));
+                        String modifierS = s1.replace("modifier=","");
 
-                        modifier.setModifier(modifierF);
+                        modifier.setModifier(modifierS);
                     } else if(s1.startsWith("specificallyFor")) {
                         String specificFor = s1.replace("specificallyFor=","");
 

@@ -1,11 +1,14 @@
 package de.idiotischer.bob.country;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonReader;
 import de.idiotischer.bob.Server;
 import de.idiotischer.bob.SharedCore;
 import de.idiotischer.bob.ideology.Ideology;
+import de.idiotischer.bob.modifiers.Modifier;
+import de.idiotischer.bob.networking.packet.impl.CountrySyncPacket;
 import de.idiotischer.bob.tile.Tile;
 
 import java.awt.*;
@@ -45,15 +48,29 @@ public class ServerCountryManager implements CountryResolver {
                 Ideology rulingIdeology = null;
                 Set<Ideology> availableIdeologies = new HashSet<>();
 
+                Country overlord = null;
+
+                Set<Modifier> mods = new HashSet<>();
+
+                if(countryElement.has("modifiers") && !countryElement.get("modifiers").isJsonNull() && countryElement.get("modifiers").isJsonArray()) {
+                    JsonArray array = countryElement.getAsJsonArray("modifiers");
+
+                    array.forEach(el -> {
+                        mods.add(Server.getInstance().getModifierManager().by(el.getAsString()));
+                    });
+                }
+
                 if(countryElement.has("majorAtStart") && !countryElement.get("majorAtStart").isJsonNull())
                     majorAtStart = countryElement.get("majorAtStart").getAsBoolean();
 
                 if(countryElement.has("ideology") && !countryElement.get("ideology").isJsonNull())
                     rulingIdeology = Server.getInstance().getIdeologyManager().byAbbreviation(countryElement.get("ideology").getAsString().toUpperCase());
 
+                if(countryElement.has("overlord") && !countryElement.get("overlord").isJsonNull())
+                    overlord = Server.getInstance().getCountryManager().byAbbreviation(countryElement.get("overlord").getAsString().toUpperCase());
+
                 if(countryElement.has("availableIdeologies") && !countryElement.get("availableIdeologies").isJsonNull())
                     availableIdeologies = countryElement.get("availableIdeologies").getAsJsonArray().asList().stream().map(s -> Server.getInstance().getIdeologyManager().byAbbreviation(s.getAsString().toUpperCase())).collect(Collectors.toSet());
-
 
                 if(countryElement.has("selectScreen") && !countryElement.get("selectScreen").isJsonNull())
                     selectScreen = countryElement.get("selectScreen").getAsBoolean();
@@ -62,7 +79,7 @@ public class ServerCountryManager implements CountryResolver {
 
                 Color color = new Color(Integer.parseInt(colorStrings[0]), Integer.parseInt(colorStrings[1]), Integer.parseInt(colorStrings[2]));
 
-                Country country = new Country(countryAbbreviation.toUpperCase(), name, color, majorAtStart, selectScreen);
+                Country country = new Country(countryAbbreviation.toUpperCase(), name, color, majorAtStart, selectScreen,overlord == null ? "" : overlord.getAbbreviation(), mods);
 
                 country.setStartIdeologySimple(rulingIdeology);
                 country.setRulingIdeologySimple(rulingIdeology);
@@ -124,12 +141,32 @@ public class ServerCountryManager implements CountryResolver {
     //    return getCountrySet().stream().filter(Country::isSelectScreen).toList();
     //}
 
+    public void splitCountry(Country country) {
+        String newAbbr;
+        int turn = 0;
+
+        do {
+            newAbbr = country.getAbbreviation() + "-split-" + turn; //TODO: if civ war Return to the original country tag after civil war is over
+            turn++;
+        } while(abbreviationExists(newAbbr));
+
+        Country newC = country.uniqueCopy(newAbbr);
+
+        countrySet.add(newC);
+        CountrySyncPacket pack = new CountrySyncPacket(country);
+        Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().channels(), pack);
+    }
+
     public List<Country> getMajors() {
         return getCountries().stream().filter(Country::isMajor).sorted(Comparator.comparing(Country::getAbbreviation)).toList();
     }
 
     public boolean isAllied(Country a, Country b) {
-        return false;
+        return Server.getInstance().getFactionManager().inFactionWith(a,b);
+    }
+
+    public boolean abbreviationExists(String abbr) {
+        return countrySet.stream().anyMatch(c -> c.getAbbreviation().equals(abbr));
     }
 
     @Override
@@ -143,10 +180,6 @@ public class ServerCountryManager implements CountryResolver {
 
     public List<Country> getMinors() {
         return getCountries().stream().filter(c -> !c.isMajor()).sorted(Comparator.comparing(Country::getAbbreviation)).toList();
-    }
-
-    public void splitCountry(Country country) {
-        //halt um ddr, brd zu machen
     }
 
     public Country getRandom() {

@@ -5,6 +5,7 @@ import de.idiotischer.bob.SharedCore;
 import de.idiotischer.bob.ideology.Ideology;
 import de.idiotischer.bob.ideology.IdeologyResolver;
 import de.idiotischer.bob.modifiers.Modifier;
+import de.idiotischer.bob.modifiers.ModifierResolver;
 import de.idiotischer.bob.networking.ChannelResolver;
 import de.idiotischer.bob.networking.communication.SendTool;
 import de.idiotischer.bob.networking.packet.impl.pp.ReplyPacket;
@@ -40,23 +41,28 @@ public class Country /*implements Comparable<Country>*/{
     private int puppetProgress = 0; //in prozent (0-100) bzw maybe als float idk
     private Set<State> states = new HashSet<>();
     private boolean capitulated;
-    private Country overlord = null;
+    private String overlord;
     private Set<String> milAccess = new HashSet<>();
     private double politicalPower = 0;
 
-    private final Set<Modifier> modifiers = new HashSet<>();
+    private final Set<Modifier> modifiers;
+
+    public Map<String, Consumer<Modifier>> modifierAddListeners = new HashMap<>();
+    public Map<String, Consumer<Modifier>> modifierRemoveListeners = new HashMap<>();
 
     private Ideology rulingIdeology;
     private Ideology startIdeology;
     private Map<Ideology,Float> availableIdeologies = new HashMap<>(); //used for parties
 
-    public Country(String abbreviation, String name, Color color, boolean major, boolean selectScreen) {
+    public Country(String abbreviation, String name, Color color, boolean major, boolean selectScreen, String overlord, Set<Modifier> modifiers) {
         this.abbreviation = abbreviation;
         this.name = name;
         this.color = color;
         this.major = major;
         this.selectScreen = selectScreen;
         this.capitulated = false;
+        this.modifiers = modifiers;
+        this.overlord = overlord;
     }
 
     //später nicht die default sondern die current flag returnen
@@ -134,8 +140,14 @@ public class Country /*implements Comparable<Country>*/{
         this.player = player;
     }
 
-    public void setOverlord(Country country) {
+    public void setOverlord(String country) {
         this.overlord = country;
+    }
+
+    public void setOverlordServer(String country, SendTool t, ChannelResolver r) {
+        this.overlord = country;
+
+        t.broadcast(r.channels(), new ReplyPacket(Type.COUNTRY_UPDATE, "id=" + abbreviation + ";" + "overlord=" + overlord));
     }
 
     public void setPuppetTile(PuppetState tile) {
@@ -162,18 +174,21 @@ public class Country /*implements Comparable<Country>*/{
         if (getPlayer() == null || getPlayer().uuid() == null) util.putUuid(UUID.fromString("00000000-0000-0000-0000-000000000000"));
         else util.putUuid(getPlayer().uuid());
 
-
         util.putEnum(getPuppetState() == null ? PuppetState.NONE : getPuppetState());
         //buffer.put((byte) (getPuppetTile() == null ? -1 : getPuppetTile().ordinal()));
 
+        util.putUtf(overlord);
         buffer.putInt(getPuppetProgress());
+
+        buffer.putInt(modifiers.size());
+        for (Modifier mod : modifiers) util.putUtf(mod.getId());
+
         util.putBoolean(isCapitulated());
         util.putUtf(rulingIdeology == null ? "" : rulingIdeology.abbreviation());
         util.putUtf(startIdeology == null ? "" : startIdeology.abbreviation());
 
         buffer.putInt(milAccess.size());
         for (String country : milAccess) util.putUtf(country);
-
 
         buffer.putInt(availableIdeologies.size());
 
@@ -183,7 +198,7 @@ public class Country /*implements Comparable<Country>*/{
         }
     }
 
-    public static Country readCountry(IdeologyResolver r, ByteBuffer buffer) {
+    public static Country readCountry(ModifierResolver mr, IdeologyResolver r, ByteBuffer buffer) {
         BufferUtil util = BufferUtil.of(buffer);
 
         String name = util.getUtf();
@@ -197,13 +212,17 @@ public class Country /*implements Comparable<Country>*/{
         UUID uuid = util.getUuid();
         if (uuid != null && uuid.equals(new UUID(0L, 0L))) uuid = null;
 
-
         PuppetState puppetTile = util.getEnum(PuppetState.class);
         if (puppetTile == PuppetState.NONE) puppetTile = null;
 
+        String overlord = util.getUtf();
         int puppetProgress = buffer.getInt();
 
-        Country country = new Country(abbreviation, name, color, major, selectScreen);
+        Set<Modifier> mods = new HashSet<>();
+        int modsSize = buffer.getInt();
+        for (int i = 0; i < modsSize; i++) mods.add(mr.by(util.getUtf()));
+
+        Country country = new Country(abbreviation, name, color, major, selectScreen, overlord, mods);
 
         country.setPlayer(Player.of(uuid));
         country.setPuppetTile(puppetTile);
@@ -279,8 +298,8 @@ public class Country /*implements Comparable<Country>*/{
         consumer.accept(null);
     }
 
-    public Country getOverlord() {
-        return overlord;
+    public Country getOverlord(CountryResolver r) {
+        return r.byAbbreviation(overlord);
     }
 
     @Override
@@ -386,7 +405,14 @@ public class Country /*implements Comparable<Country>*/{
 
         double base = 1;
 
-        double modifier = ppMods.stream().flatMapToDouble(mod -> DoubleStream.of(mod.getModifier())).sum();
+        double modifier = ppMods.stream().flatMapToDouble(mod -> {
+            try {
+                double d = Double.parseDouble(mod.getModifier());
+                return DoubleStream.of(d);
+            } catch (Exception e) {
+                return DoubleStream.of(0D);
+            }
+        }).sum();
 
         return base * (1 + modifier);
     }
@@ -399,15 +425,70 @@ public class Country /*implements Comparable<Country>*/{
         removeModifier(modifier);
     }
 
-    public void removeModifier(Modifier modifier) {
-        modifiers.remove(modifier);
+    public Set<String> getCountryTags() {
+        return modifiers.stream().map(Modifier::getModifier).filter(this::isOnlyString).collect(Collectors.toSet());
+    }
 
-        //broadcast
+    public boolean isOnlyString(String s) {
+        if(s == null || s.isBlank()) return false;
+
+        String trim = s.trim();
+
+        if(trim.equalsIgnoreCase("true") || trim.equalsIgnoreCase("false")) return false;
+
+        try {
+            Double.parseDouble(s);
+            return false;
+        } catch (NumberFormatException ignored) {}
+
+        return true;
+    }
+
+
+    public void removeModifierServer(SendTool t, ChannelResolver r, String id) {
+        Modifier modifier = modifiers.stream().filter(mod -> mod.getId().equals(id)).findFirst().orElse(null);
+
+        if(modifier == null) return;
+
+        removeModifierServer(t,r,modifier);
+    }
+
+    public void removeModifier(Modifier modifier) {
+        this.modifiers.remove(modifier);
+
+        for (var entry : modifierRemoveListeners.entrySet()) entry.getValue().accept(modifier);
+    }
+
+    public void removeModifierServer(SendTool t, ChannelResolver r, Modifier modifier) {
+        this.modifiers.remove(modifier);
+
+        for(var entry : modifierRemoveListeners.entrySet()) entry.getValue().accept(modifier);
+
+        t.broadcast(r.channels(),new ReplyPacket(Type.MODIFIERS_UPDATE, "id=" + this.abbreviation + "remove=" + modifier.getId()));
     }
 
     public void addModifier(Modifier modifier) {
+        if(modifier.getType().equals(Modifier.Types.REMOVE_MODIFIER.getMapping())) {
+            removeModifier(modifier.getModifier());
+            return;
+        }
+
         this.modifiers.add(modifier);
-        //broadcast modifier updates to client
+
+        for(var entry : modifierAddListeners.entrySet()) entry.getValue().accept(modifier);
+    }
+
+    public void addModifierServer(SendTool t, ChannelResolver r, Modifier modifier) {
+        if(modifier.getType().equals(Modifier.Types.REMOVE_MODIFIER.getMapping())) {
+            removeModifierServer(t,r,modifier.getModifier());
+            return;
+        }
+
+        this.modifiers.add(modifier);
+
+        for(var entry : modifierAddListeners.entrySet()) entry.getValue().accept(modifier);
+
+        t.broadcast(r.channels(),new ReplyPacket(Type.MODIFIERS_UPDATE, "id=" + this.abbreviation + "add=" + modifier.getId()));
     }
 
     public Set<Modifier> getModifiers() {
@@ -420,6 +501,30 @@ public class Country /*implements Comparable<Country>*/{
 
     public void setPoliticalPower(double pp, Country c) {
         this.politicalPower = pp;
+    }
+
+    public Country(Country c, String abbr) {
+        this.politicalPower = c.politicalPower;
+        this.modifiers = c.modifiers;
+        this.abbreviation = abbr;
+        this.availableIdeologies = c.availableIdeologies;
+        this.capitulated = c.capitulated; //False
+        this.color = c.color;
+        this.major = c.major;
+        this.selectScreen = false; //FALSE FR
+        this.milAccess = c.milAccess;
+        this.name = c.name;
+        this.overlord = c.overlord; //maybe remove him for both?
+        this.player = c.player;
+        this.puppetProgress = c.puppetProgress;
+        this.puppetState = c.puppetState;
+        this.rulingIdeology = c.rulingIdeology;
+        this.startIdeology = c.startIdeology; //in civil wars start Ideology gets set to whatever start IDeology they have
+        this.states = c.states;
+    }
+
+    public Country uniqueCopy(String abbreviation) {
+        return new Country(this,abbreviation);
     }
 
     //@Override
