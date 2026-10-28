@@ -54,6 +54,11 @@ public class ServerPacketListener implements ListenerAdapter {
         } else if(event.getPacket() instanceof RequestPacket pack) {
             //so ping pong like
             switch (pack.getRequestType()) {
+                case FOCUSES_SYNC -> {
+                    FocusTreesSyncPacket packet = FocusTreesSyncPacket.fromFocuses(Server.getInstance().getFocusManager().getTrees());
+
+                    Server.getInstance().getSendTool().send(event.getChannel(), packet);
+                }
                 case MODIFIERS_SYNC -> {
                     ModifiersSyncPacket packet = ModifiersSyncPacket.fromModifiers(Server.getInstance().getModifierManager().getModifiers());
 

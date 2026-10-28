@@ -57,6 +57,8 @@ public class PacketRegistry {
         registerPacket(FactionsSyncPacket.class, 27);
         registerPacket(ModifiersSyncPacket.class, 28);
         registerPacket(ModifierSyncPacket.class, 29);
+        registerPacket(FocusTreeSyncPacket.class, 30);
+        registerPacket(FocusTreesSyncPacket.class, 31);
     }
 
     public void registerPacket(Class<? extends Packet> packet, int id) {

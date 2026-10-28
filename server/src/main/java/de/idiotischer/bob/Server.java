@@ -4,6 +4,7 @@ import de.idiotischer.bob.combat.ServerCombatManager;
 import de.idiotischer.bob.conference.ServerConferenceManager;
 import de.idiotischer.bob.country.ServerCountryManager;
 import de.idiotischer.bob.faction.ServerFactionManager;
+import de.idiotischer.bob.focus.ServerFocusManager;
 import de.idiotischer.bob.game.ServerGameManager;
 import de.idiotischer.bob.ideology.ServerIdeologyManager;
 import de.idiotischer.bob.listener.ServerPacketListener;
@@ -41,6 +42,7 @@ public class Server {
     private ServerGameManager gameManager;
     private ServerModifierManager modifierManager;
     private ServerFactionManager factionManager;
+    private ServerFocusManager focusManager;
 
     public static void main(String[] args) {
         new Server(false);
@@ -79,6 +81,8 @@ public class Server {
         this.playerManager = new ServerPlayerManager();
 
         this.scenarioManager = new ServerScenarioManager();
+
+        this.focusManager = new ServerFocusManager();
 
         this.scenarioManager.reload();
 
@@ -188,5 +192,9 @@ public class Server {
 
     public ServerFactionManager getFactionManager() {
         return factionManager;
+    }
+
+    public ServerFocusManager getFocusManager() {
+        return focusManager;
     }
 }

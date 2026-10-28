@@ -54,6 +54,7 @@ public class ServerScenarioSceneLoader {
         Server.getInstance().getModifierManager().reload();
         Server.getInstance().getGameManager().reload();
         Server.getInstance().getIdeologyManager().reload();
+        Server.getInstance().getFocusManager().reload();
         Server.getInstance().getCountryManager().reload();
         Server.getInstance().getFactionManager().reload();
         Server.getInstance().getTileManager().reload();

@@ -9,6 +9,7 @@ import de.idiotischer.bob.conference.PeaceConference;
 import de.idiotischer.bob.country.Country;
 import de.idiotischer.bob.country.CountryResolver;
 import de.idiotischer.bob.faction.Faction;
+import de.idiotischer.bob.focus.FocusTree;
 import de.idiotischer.bob.game.GameState;
 import de.idiotischer.bob.ideology.Ideology;
 import de.idiotischer.bob.modifiers.Modifier;
@@ -139,6 +140,7 @@ public class PacketListener implements ListenerAdapter {
             BOB.getInstance().getTileManager().registerTile(tile);
         } else if(event.getPacket() instanceof ReplyPacket pack) {
             switch (pack.getReplyType()) {
+                case FOCUSTREE_REMOVE -> BOB.getInstance().getFocusManager().remove(pack.getMessage());
                 case MODIFIERS_UPDATE -> {
                     String[] strings = pack.getMessage().split(";");
 
@@ -596,7 +598,7 @@ public class PacketListener implements ListenerAdapter {
             });
 
             BOB.getInstance().getFactionManager().finishRulesReload();
-        }  else if(event.getPacket() instanceof ModifierSyncPacket pack) {
+        } else if(event.getPacket() instanceof ModifierSyncPacket pack) {
             Modifier modifier = pack.getModifier();
 
             BOB.getInstance().getModifierManager().addModifier(modifier);
@@ -608,6 +610,18 @@ public class PacketListener implements ListenerAdapter {
             });
 
             BOB.getInstance().getModifierManager().finishReload();
+        } else if(event.getPacket() instanceof FocusTreeSyncPacket pack) {
+            FocusTree tree = pack.getTree(BOB.getInstance().getModifierManager());
+
+            BOB.getInstance().getFocusManager().add(tree);
+        } else if(event.getPacket() instanceof FocusTreesSyncPacket packet) {
+            packet.getPackets().forEach(pack -> {
+                FocusTree tree = pack.getTree(BOB.getInstance().getModifierManager());
+
+                BOB.getInstance().getFocusManager().add(tree);
+            });
+
+            BOB.getInstance().getFocusManager().finishReload();
         }
     }
 }

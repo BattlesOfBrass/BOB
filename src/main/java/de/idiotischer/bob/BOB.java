@@ -5,6 +5,7 @@ import de.idiotischer.bob.conference.PeaceHelper;
 import de.idiotischer.bob.country.CountryManager;
 import de.idiotischer.bob.debug.Debugger;
 import de.idiotischer.bob.faction.FactionManager;
+import de.idiotischer.bob.focus.FocusManager;
 import de.idiotischer.bob.game.GameManager;
 import de.idiotischer.bob.ideology.IdeologyManager;
 import de.idiotischer.bob.listener.PacketListener;
@@ -82,6 +83,7 @@ public class BOB {
     private TimeManager timeManager;
     private FactionManager factionManager;
     private ModifierManager modifierManager;
+    private FocusManager focusManager;
 
     public static void main(String[] args) {
         new BOB();
@@ -151,6 +153,8 @@ public class BOB {
         this.stateManager = new StateManager();
 
         this.factionManager = new FactionManager();
+
+        this.focusManager = new FocusManager();
 
         this.troopManager = new TroopManager();
 
@@ -312,5 +316,9 @@ public class BOB {
 
     public ModifierManager getModifierManager() {
         return modifierManager;
+    }
+
+    public FocusManager getFocusManager() {
+        return focusManager;
     }
 }

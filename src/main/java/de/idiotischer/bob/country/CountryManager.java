@@ -36,7 +36,7 @@ public class CountryManager implements CountryResolver{
     }
 
     public void finishReload() {
-        BOB.getInstance().getFactionManager().reloadRules();
+        BOB.getInstance().getFocusManager().reload();
 
         if(awaitingFuture == null || awaitingFuture.isDone()) return;
         awaitingFuture.complete(null);
