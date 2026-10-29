@@ -8,7 +8,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
-//TODO: fix color now completely wrong for some stupid reason
 public class TroopVisualButton extends JToggleButton {
 
     private TroopStack stack;

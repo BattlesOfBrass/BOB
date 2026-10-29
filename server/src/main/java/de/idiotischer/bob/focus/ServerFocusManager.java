@@ -233,7 +233,8 @@ public class ServerFocusManager implements FocusResolver {
 
     @Override
     public FocusTree getFocusTree(Country c) {
-        return getTrees().stream().filter(tr -> tr.hasTree(c)).findFirst().orElse(null);
+        //sorted may throw
+        return trees.stream().filter(tr -> tr.hasTree(c)).sorted().findFirst().orElse(null);
     }
 
     @Override

@@ -1,17 +1,23 @@
 package de.idiotischer.bob.focus;
 
 import de.idiotischer.bob.BOB;
+import de.idiotischer.bob.Server;
 import de.idiotischer.bob.country.Country;
 import de.idiotischer.bob.networking.packet.impl.pp.RequestPacket;
 import de.idiotischer.bob.networking.packet.impl.pp.Type;
+import it.unimi.dsi.fastutil.Pair;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 public class FocusManager implements FocusResolver{
 
     private final Set<FocusTree> focusTrees = new HashSet<>();
+    private Map<String, Pair<String,String>> activeFocuses = new HashMap<>();
 
     private CompletableFuture<Void> awaitingFuture = new CompletableFuture<>();
 
@@ -34,17 +40,18 @@ public class FocusManager implements FocusResolver{
 
     @Override
     public FocusTree getFocusTree(Country c) {
-        return null;
+        //sorted may throw
+        return focusTrees.stream().filter(tr -> tr.hasTree(c)).sorted().findFirst().orElse(null);
     }
 
     @Override
     public Set<Country> getWithFocusTree(FocusTree f) {
-        return Set.of();
+        return Server.getInstance().getCountryManager().getCountries().stream().filter(f::hasTree).collect(Collectors.toSet());
     }
 
     @Override
-    public Focus focusBy(String treeId, String id) {
-        return null;
+    public Focus focusBy(String focusTree, String id) {
+        return treeBy(focusTree).focuses().stream().filter(f -> f.getId().equals(id)).findFirst().orElse(null);
     }
 
     @Override
@@ -54,12 +61,13 @@ public class FocusManager implements FocusResolver{
 
     @Override
     public Set<Focus> getFor(FocusTree tree) {
-        return Set.of();
+        return tree.focuses();
     }
 
     @Override
     public Focus getActiveFocus(Country c) {
-        return null;
+        var pair = activeFocuses.get(c.getAbbreviation());
+        return focusBy(pair.key(),pair.value());
     }
 
     public void add(FocusTree tree) {
@@ -76,14 +84,20 @@ public class FocusManager implements FocusResolver{
 
     public void startFocus(String country, String id, String treeId) {
         focusBy(treeId,id).startFocus(country);
+
+        activeFocuses.put(country, Pair.of(id,treeId));
     }
 
     public void cancelFocus(String country, String id, String treeId) {
         focusBy(treeId,id).cancelFocus(country);
+
+        activeFocuses.remove(country);
     }
 
     public void endFocus(String country, String id, String treeId) {
         focusBy(treeId,id).endFocus(country);
-        //focus finished, blabla fisplay it as popup bla bla
+
+        activeFocuses.remove(country);
+        //focus finished, blabla display it as popup bla bla
     }
 }
