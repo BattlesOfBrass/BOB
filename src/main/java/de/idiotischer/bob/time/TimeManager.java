@@ -12,8 +12,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
-public class TimeManager {
+public class TimeManager implements TimeResolver {
     private final ScheduledExecutorService timeService = Executors.newSingleThreadScheduledExecutor();
 
     private int speed = 1;
@@ -95,5 +96,15 @@ public class TimeManager {
 
     public void shutdown() {
         timeService.shutdownNow();
+    }
+
+    @Override
+    public void addTimeHook(String id, long days, Consumer<Long> callback) {
+
+    }
+
+    @Override
+    public void removeTimeHook(String s) {
+
     }
 }

@@ -3,6 +3,7 @@ package de.idiotischer.bob.networking.packet.impl;
 import de.idiotischer.bob.country.Country;
 import de.idiotischer.bob.ideology.Ideology;
 import de.idiotischer.bob.ideology.IdeologyResolver;
+import de.idiotischer.bob.modifiers.ModifierResolver;
 import de.idiotischer.bob.networking.packet.Packet;
 
 import java.nio.ByteBuffer;
@@ -29,7 +30,7 @@ public class CountrySyncPacket implements Packet {
         this.buffer = buffer;
     }
 
-    public Country getCountry(IdeologyResolver r) {
-        return Country.readCountry(r,buffer);
+    public Country getCountry(ModifierResolver mr, IdeologyResolver r) {
+        return Country.readCountry(mr,r,buffer);
     }
 }

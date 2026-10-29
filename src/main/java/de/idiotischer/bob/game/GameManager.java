@@ -3,8 +3,10 @@ package de.idiotischer.bob.game;
 import de.idiotischer.bob.BOB;
 import de.idiotischer.bob.networking.packet.impl.pp.RequestPacket;
 import de.idiotischer.bob.networking.packet.impl.pp.Type;
+import de.idiotischer.bob.time.TimeResolver;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
 public class GameManager {
 
@@ -40,4 +42,5 @@ public class GameManager {
     public GameState getGameState() {
         return gameState;
     }
+
 }

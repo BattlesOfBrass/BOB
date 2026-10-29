@@ -46,5 +46,6 @@ public enum Type {
     MODIFIERS_UPDATE,
     FOCUSES_SYNC,
     FACTION_REMOVE,
+    FOCUS_UPDATE,
     FOCUSTREE_REMOVE
 }

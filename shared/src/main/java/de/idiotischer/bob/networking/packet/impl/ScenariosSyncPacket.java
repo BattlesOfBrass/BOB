@@ -53,9 +53,8 @@ public class ScenariosSyncPacket implements de.idiotischer.bob.networking.packet
     public void write(ByteBuffer buffer) {
         buffer.putInt(scenarios.size());
 
-        for (ScenarioSyncPacket scenarioPacket : scenarios) {
-            scenarioPacket.write(buffer);
-        }
+        for (ScenarioSyncPacket scenarioPacket : scenarios) scenarioPacket.write(buffer);
+
     }
 
     @Override

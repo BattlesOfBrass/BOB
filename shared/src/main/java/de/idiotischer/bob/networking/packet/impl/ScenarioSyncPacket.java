@@ -159,7 +159,10 @@ public class ScenarioSyncPacket implements Packet {
             writeBytes(buffer, themeJson);
             writeString(buffer, theme == null ? "" : theme.serialize());
 
-            if(Files.notExists(focusesDir)) return;
+            if (focusesDir == null || Files.notExists(focusesDir)) {
+                writeBytes(buffer,null);
+                return;
+            }
             writeBytes(buffer,writeDir(focusesDir));
         } catch (IOException e) {
             e.printStackTrace();

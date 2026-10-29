@@ -14,7 +14,13 @@ public record FocusTree(String requiredTag, Set<String> countries, Set<Focus> fo
     }
 
     public boolean hasTree(Country c) {
-        return c.getModifiers().stream().anyMatch(mod -> mod.getModifier().equals(requiredTag)) && countries.contains(c.getAbbreviation());
+        boolean tagMatches = requiredTag.isEmpty() || c.getModifiers().stream().anyMatch(mod -> mod.getModifier().equals(requiredTag));
+
+        boolean countryMatches = countries.isEmpty() || countries.contains(c.getAbbreviation());
+
+        if (requiredTag.isEmpty() && countries.isEmpty()) return false;
+
+        return tagMatches && countryMatches;
     }
 
     public boolean isDefault() {

@@ -7,15 +7,20 @@ import de.idiotischer.bob.networking.packet.impl.TimeCheckAndCorrectPacket;
 import de.idiotischer.bob.networking.packet.impl.pp.ReplyPacket;
 import de.idiotischer.bob.networking.packet.impl.pp.Type;
 import de.idiotischer.bob.player.Player;
+import de.idiotischer.bob.time.TimeResolver;
+import it.unimi.dsi.fastutil.Pair;
 
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
-public class ServerGameManager {
+public class ServerGameManager implements TimeResolver {
 
     private final ScheduledExecutorService timeService = Executors.newSingleThreadScheduledExecutor();
 
@@ -31,6 +36,8 @@ public class ServerGameManager {
 
     private long lastChangedTime;
     private Player whoChanged;
+
+    private final Map<String, Pair<Long, Consumer<Long>>> timeHook = new HashMap<>();
 
     public void begin() {
         clear();
@@ -116,6 +123,10 @@ public class ServerGameManager {
 
         timeTicks++;
 
+        timeHook.forEach((key, keyValue) -> {
+            if (timeTicks >= keyValue.key()) keyValue.value().accept(timeTicks);
+        });
+
         if (timeTicks % (60 * 24) == 0) {
             Server.getInstance().getCountryManager().getCountries().forEach(c -> c.newDay(Server.getInstance().getServerSocket(), Server.getInstance().getSendTool()));
         /*if (timeTicks % (60 * 12) == 0)*/
@@ -158,5 +169,23 @@ public class ServerGameManager {
         clear();
         rescheduleNextTick();
         broadcastTimeSync();
+    }
+
+    @Override
+    public void addTimeHook(String id, long days, Consumer<Long> callback) {
+        long now = timeTicks;
+
+        long goal = now + TimeUnit.DAYS.toMinutes(days); //convert to minutes
+
+        timeHook.put(id, Pair.of(goal, callback));
+    }
+
+    @Override
+    public void removeTimeHook(String s) {
+        timeHook.remove(s);
+    }
+
+    public Map<String, Pair<Long, Consumer<Long>>> getTimeHook() {
+        return timeHook;
     }
 }

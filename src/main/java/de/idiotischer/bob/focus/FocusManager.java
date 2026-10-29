@@ -8,11 +8,10 @@ import de.idiotischer.bob.networking.packet.impl.pp.Type;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 public class FocusManager implements FocusResolver{
 
-    Set<FocusTree> focusTrees = new HashSet<>();
+    private final Set<FocusTree> focusTrees = new HashSet<>();
 
     private CompletableFuture<Void> awaitingFuture = new CompletableFuture<>();
 
@@ -73,5 +72,18 @@ public class FocusManager implements FocusResolver{
 
     public void remove(String id) {
         this.remove(treeBy(id));
+    }
+
+    public void startFocus(String country, String id, String treeId) {
+        focusBy(treeId,id).startFocus(country);
+    }
+
+    public void cancelFocus(String country, String id, String treeId) {
+        focusBy(treeId,id).cancelFocus(country);
+    }
+
+    public void endFocus(String country, String id, String treeId) {
+        focusBy(treeId,id).endFocus(country);
+        //focus finished, blabla fisplay it as popup bla bla
     }
 }

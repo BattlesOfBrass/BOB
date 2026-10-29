@@ -4,11 +4,11 @@ import de.craftsblock.craftscore.event.EventHandler;
 import de.craftsblock.craftscore.event.EventPriority;
 import de.craftsblock.craftscore.event.ListenerAdapter;
 import de.idiotischer.bob.BOB;
-import de.idiotischer.bob.Server;
 import de.idiotischer.bob.conference.PeaceConference;
 import de.idiotischer.bob.country.Country;
 import de.idiotischer.bob.country.CountryResolver;
 import de.idiotischer.bob.faction.Faction;
+import de.idiotischer.bob.focus.Focus;
 import de.idiotischer.bob.focus.FocusTree;
 import de.idiotischer.bob.game.GameState;
 import de.idiotischer.bob.ideology.Ideology;
@@ -81,7 +81,7 @@ public class PacketListener implements ListenerAdapter {
 
             BOB.getInstance().getScenarioSceneLoader().load(scenario, false);
         } else if(event.getPacket() instanceof CountriesSyncPacket packet) {
-            Set<Country> countries = packet.getPackets().stream().map(csp -> csp.getCountry(Server.getInstance().getIdeologyManager())).collect(Collectors.toSet());
+            Set<Country> countries = packet.getPackets().stream().map(csp -> csp.getCountry(BOB.getInstance().getModifierManager(), BOB.getInstance().getIdeologyManager())).collect(Collectors.toSet());
 
             countries.forEach(c -> BOB.getInstance().getCountryManager().registerCountry(c));
 
@@ -126,7 +126,7 @@ public class PacketListener implements ListenerAdapter {
 
             BOB.getInstance().getStateManager().finishReload(true);
         } else if(event.getPacket() instanceof CountrySyncPacket packet) {
-            Country country = packet.getCountry(BOB.getInstance().getIdeologyManager());
+            Country country = packet.getCountry(BOB.getInstance().getModifierManager(), BOB.getInstance().getIdeologyManager());
 
             if(BOB.getInstance().getCountryManager().has(country)) return;
 
@@ -157,13 +157,39 @@ public class PacketListener implements ListenerAdapter {
 
                         Modifier mod = BOB.getInstance().getModifierManager().by(add);
 
-                        c.addModifier(mod);
+                        c.addModifier(mod,BOB.getInstance().getTimeManager());
                     } else if(s1.startsWith("remove")) {
                         String remove = s1.replace("remove=","");
 
                         Modifier mod = BOB.getInstance().getModifierManager().by(remove);
 
                         c.removeModifier(mod);
+                    }
+                }
+                case FOCUS_UPDATE -> {
+                    String[] strings = pack.getMessage().split(";");
+
+                    String id = strings[0].replace("id=","");
+                    String treeId = strings[1];
+
+                    Focus c = BOB.getInstance().getFocusManager().focusBy(id, treeId);
+
+                    if(c == null) return;
+
+                    String s1 = strings[2];
+
+                    if(s1.startsWith("start")) {
+                        String start = s1.replace("start=","");
+
+                        BOB.getInstance().getFocusManager().startFocus(start,id,treeId);
+                    } else if(s1.startsWith("end")) {
+                        String end = s1.replace("end=","");
+
+                        BOB.getInstance().getFocusManager().endFocus(end,id,treeId);
+                    } else if(s1.startsWith("cancel")) {
+                        String cancel = s1.replace("cancel=","");
+
+                        BOB.getInstance().getFocusManager().cancelFocus(cancel,id,treeId);
                     }
                 }
                 case COUNTRY_UPDATE -> {

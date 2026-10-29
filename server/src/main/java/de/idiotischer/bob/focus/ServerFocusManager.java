@@ -7,10 +7,11 @@ import com.google.gson.stream.JsonReader;
 import de.idiotischer.bob.Server;
 import de.idiotischer.bob.SharedCore;
 import de.idiotischer.bob.country.Country;
-import de.idiotischer.bob.faction.Faction;
 import de.idiotischer.bob.modifiers.Modifier;
 import de.idiotischer.bob.networking.packet.impl.pp.ReplyPacket;
 import de.idiotischer.bob.networking.packet.impl.pp.Type;
+import it.unimi.dsi.fastutil.Pair;
+import org.graalvm.collections.EconomicMap;
 
 import java.awt.*;
 import java.io.IOException;
@@ -20,10 +21,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class ServerFocusManager implements FocusResolver {
 
     private final Set<FocusTree> trees = new HashSet<>();
+    private Map<String,Pair<String,String>> activeFocuses = new HashMap<>();
 
     public void reload() {
         Path focusTrees = Server.getInstance().getScenarioSceneLoader().getCurrentScenario().getFocusesDir();
@@ -71,12 +74,32 @@ public class ServerFocusManager implements FocusResolver {
                         array.forEach(modifier -> countries.add(modifier.getAsString()));
                     }
 
+                    Map<String, Set<String>> alreadyDone = new HashMap<>();
+
+                    JsonElement alreadyDoneElement = element.get("alreadyDone");
+
+                    if(alreadyDoneElement != null) {
+                        alreadyDoneElement.getAsJsonObject().entrySet().forEach(ent -> {
+                            String focus = ent.getKey();
+
+                            Set<String> countriesS = new HashSet<>();
+
+                            if(ent.getValue() != null && ent.getValue().isJsonArray()) {
+                                JsonArray array = ent.getValue().getAsJsonArray();
+
+                                array.forEach(el -> countriesS.add(el.getAsString()));
+                            }
+
+                            alreadyDone.put(focus,countriesS);
+                        });
+                    }
+
                     Set<Focus> focuses = new HashSet<>();
 
                     JsonElement focusesElement = element.get("focuses");
 
                     if(element.has("focuses") && !element.get("focuses").isJsonNull()) {
-                        focuses = loadFocuses(focusesElement);
+                        focuses = loadFocuses(focusesElement,alreadyDone);
                     }
 
                     FocusTree tree = new FocusTree(requiredTag,countries,focuses,id);
@@ -93,7 +116,7 @@ public class ServerFocusManager implements FocusResolver {
 
     }
 
-    private Set<Focus> loadFocuses(JsonElement jsonElement) {
+    private Set<Focus> loadFocuses(JsonElement jsonElement, Map<String, Set<String>> alreadyDone) {
         Set<Focus> focuses = new HashSet<>();
         jsonElement.getAsJsonObject().entrySet().forEach(el -> {
             String id = el.getKey();
@@ -167,7 +190,9 @@ public class ServerFocusManager implements FocusResolver {
                 });
             }
 
-            Focus focus = new Focus(id,name,effectsFor,visibleWhen,time,ppDebuff, new Point(x,y), prerequisite,mods,description);
+            Set<String> countries = alreadyDone.get(id);
+
+            Focus focus = new Focus(id,name,countries,effectsFor,visibleWhen,time,ppDebuff, new Point(x,y), prerequisite,mods,description);
 
             focuses.add(focus);
         });
@@ -175,6 +200,13 @@ public class ServerFocusManager implements FocusResolver {
         return focuses;
     }
 
+    public boolean takeFocus(Country c, String id) {
+        FocusTree tree = getFocusTree(c);
+
+        Focus focus = focusBy(tree.id(),id);
+
+        return true;
+    }
 
     private String getAsStringSafe(JsonObject obj, String key) {
         JsonElement el = obj.get(key);
@@ -201,17 +233,17 @@ public class ServerFocusManager implements FocusResolver {
 
     @Override
     public FocusTree getFocusTree(Country c) {
-        return null;
+        return getTrees().stream().filter(tr -> tr.hasTree(c)).findFirst().orElse(null);
     }
 
     @Override
     public Set<Country> getWithFocusTree(FocusTree f) {
-        return Set.of();
+        return Server.getInstance().getCountryManager().getCountries().stream().filter(f::hasTree).collect(Collectors.toSet());
     }
 
     @Override
     public Focus focusBy(String focusTree, String id) {
-        return null;
+        return treeBy(focusTree).focuses().stream().filter(f -> f.getId().equals(id)).findFirst().orElse(null);
     }
 
     @Override
@@ -221,17 +253,44 @@ public class ServerFocusManager implements FocusResolver {
 
     @Override
     public Set<Focus> getFor(FocusTree tree) {
-        return Set.of();
+        return tree.focuses();
     }
 
     @Override
     public Focus getActiveFocus(Country c) {
-        return null;
+        var pair = activeFocuses.get(c.getAbbreviation());
+        return focusBy(pair.key(),pair.value());
     }
 
     public void remove(FocusTree tree) {
         this.trees.remove(tree);
 
         Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().channels(), new ReplyPacket(Type.FOCUSTREE_REMOVE, tree.id()));
+    }
+
+    public void startFocus(String country, String id, String treeId) {
+        Focus foc = focusBy(treeId,id);
+        foc.startFocusServer(Server.getInstance().getServerSocket(), Server.getInstance().getSendTool(),treeId,country);
+
+        activeFocuses.put(country, Pair.of(id,treeId));
+
+        Server.getInstance().getGameManager().addTimeHook(treeId + "-" + id + "-" + country, foc.getTime(), (i) -> {
+            endFocus(country, id, treeId);
+        });
+    }
+
+    public void cancelFocus(String country, String id, String treeId) {
+        Focus foc = focusBy(treeId,id);
+        foc.cancelFocusServer(Server.getInstance().getServerSocket(), Server.getInstance().getSendTool(),treeId,country);
+
+        activeFocuses.remove(country);
+
+        Server.getInstance().getGameManager().removeTimeHook(treeId + "-" + id + "-" + country);
+    }
+
+    public void endFocus(String country, String id, String treeId) {
+        focusBy(treeId,id).endFocusServer(Server.getInstance().getCountryManager(), Server.getInstance().getServerSocket(), Server.getInstance().getSendTool(),treeId,country, Server.getInstance().getGameManager());
+
+        activeFocuses.remove(country);
     }
 }

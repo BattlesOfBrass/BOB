@@ -114,6 +114,7 @@ public class ServerCombatManager {
         return activeCombats.stream().filter(c -> !c.isFinished() && !c.getAttackers().isEmpty() && new ArrayList<>(c.getAttackers()).getFirst().getTile().equals(tile)).findFirst().orElse(null);
     }
 
+    //TODO: add time integration!
     private void tickCombat(CombatStatus combat) {
         if (combat.isFinished() || !activeCombats.contains(combat)) {
             cleanupCombat(combat);

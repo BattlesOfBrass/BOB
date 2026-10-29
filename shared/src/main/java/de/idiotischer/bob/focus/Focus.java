@@ -1,10 +1,18 @@
 package de.idiotischer.bob.focus;
 
 import de.idiotischer.bob.country.Country;
+import de.idiotischer.bob.country.CountryResolver;
 import de.idiotischer.bob.modifiers.Modifier;
 import de.idiotischer.bob.modifiers.ModifierResolver;
+import de.idiotischer.bob.networking.ChannelResolver;
+import de.idiotischer.bob.networking.communication.SendTool;
+import de.idiotischer.bob.networking.packet.impl.pp.ReplyPacket;
+import de.idiotischer.bob.networking.packet.impl.pp.Type;
+import de.idiotischer.bob.time.TimeResolver;
 
 import java.awt.*;
+import java.nio.channels.AsynchronousChannel;
+import java.nio.channels.AsynchronousSocketChannel;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -21,9 +29,9 @@ public class Focus {
     private final Set<Modifier> visibleWhen;
     private final Map<String, Set<Modifier>> modifiersForOthers;
     private final String name;
-    //add map of focuses that are done in this tree Map<String, Set<String>> and sync at the start + read from config too
+    private final Set<String> countryDone;
 
-    public Focus(String id, String name, Map<String, Set<Modifier>> modifiersForOthers, Set<Modifier> visibleWhen, int time, float ppDebuff, Point point, String prerequisite, Set<Modifier> modifiers, String description) {
+    public Focus(String id, String name, Set<String> doneFocuses, Map<String, Set<Modifier>> modifiersForOthers, Set<Modifier> visibleWhen, int time, float ppDebuff, Point point, String prerequisite, Set<Modifier> modifiers, String description) {
         this.id = id;
         this.name = name;
         this.point = point;
@@ -34,6 +42,55 @@ public class Focus {
         this.modifiersForOthers = modifiersForOthers; //apply to others when focus taken
         this.description = description;
         this.visibleWhen = visibleWhen;
+        this.countryDone = doneFocuses;
+    }
+
+    public void startFocus(String c) {
+
+    }
+
+    public void cancelFocus(String c) {
+
+    }
+
+    public void endFocus(String c) {
+        countryDone.add(c);
+    }
+
+    public void startFocusServer(ChannelResolver r, SendTool t, String tree, String c) {
+        startFocus(c);
+
+        //idk why i broadcast this but for specs its cool ig)
+        t.broadcast(r.channels(), new ReplyPacket(Type.FOCUS_UPDATE, "id=" + this.id + ";" + "treeId=" + tree + ";" + "start=" + c));
+    }
+
+    public void cancelFocusServer(ChannelResolver r, SendTool t, String tree, String c) {
+        cancelFocus(c);
+
+        //idk why i broadcast this but for specs its cool ig)
+        t.broadcast(r.channels(), new ReplyPacket(Type.FOCUS_UPDATE, "id=" + this.id + ";" + "treeId=" + tree + ";" + "cancel=" + c));
+    }
+
+    public void endFocusServer(CountryResolver cr, ChannelResolver r, SendTool t, String tree, String c, TimeResolver tr) {
+        endFocus(c);
+
+        this.modifiers.forEach(modifier -> cr.byAbbreviation(c).addModifierServer(t,r,modifier,tr));
+        this.modifiersForOthers.forEach((key, value) -> value.forEach(modifier -> cr.byAbbreviation(key).addModifierServer(t,r,modifier,tr)));
+
+        //idk why i broadcast this but for specs its cool ig)
+        t.broadcast(r.channels(), new ReplyPacket(Type.FOCUS_UPDATE, "id=" + this.id + ";" + "treeId=" + tree + ";" + "end=" + c));
+    }
+
+    public void startFocusClient(AsynchronousSocketChannel r, SendTool t, String tree, String c) {
+        t.send(r, new ReplyPacket(Type.FOCUS_UPDATE, "id=" + this.id + ";" + "treeId=" + tree + ";" + "start=" + c));
+    }
+
+    public void cancelFocusClient(AsynchronousSocketChannel r, SendTool t, String tree, String c) {
+        t.send(r, new ReplyPacket(Type.FOCUS_UPDATE, "id=" + this.id + ";" + "treeId=" + tree + ";" + "cancel=" + c));
+    }
+
+    public void endFocusClient(AsynchronousSocketChannel r, SendTool t, String tree, String c) {
+        t.send(r, new ReplyPacket(Type.FOCUS_UPDATE, "id=" + this.id + ";" + "treeId=" + tree + ";" + "end=" + c));
     }
 
     public String getId() {
@@ -64,6 +121,10 @@ public class Focus {
         return visibleWhen;
     }
 
+    public Set<String> getCountryDone() {
+        return countryDone;
+    }
+
     public boolean isVisibleFor(Country c) {
         return c.getModifiers().containsAll(visibleWhen);
     }
@@ -85,6 +146,7 @@ public class Focus {
         StringBuilder modifiersSB = new StringBuilder();
         StringBuilder visibleWhenSB = new StringBuilder();
         StringBuilder mapSB = new StringBuilder();
+        StringBuilder mapSB2 = new StringBuilder();
 
         var array = new ArrayList<>(modifiers);
 
@@ -113,13 +175,23 @@ public class Focus {
             mapSB.append(String.join("|",entry.getValue().stream().map(Modifier::getId).collect(Collectors.toSet())));
         }
 
-        return id + ";" + name + ";" + prerequisite + ";" + point.getX() + "," + point.getY() + ";" + time + ";" + ppDebuff + ";" + modifiersSB + ";" + visibleWhenSB + ";" + mapSB + ";" + description;
+        var array3 = new ArrayList<>(countryDone);
+
+        for (int i = 0; i < array3.size(); i++) {
+            String p = array3.get(i);
+            mapSB2.append(p);
+
+            if (i < array3.size() - 1) mapSB2.append("|");
+        }
+
+
+        return id + ";" + name + ";" + prerequisite + ";" + point.getX() + "," + point.getY() + ";" + time + ";" + ppDebuff + ";" + modifiersSB + ";" + visibleWhenSB + ";" + mapSB + ";" + description + mapSB2;
     }
 
     public static Focus fromDataString(String data, ModifierResolver r) {
         String[] strings = data.split(";");
 
-        if(strings.length != 10) return null;
+        if(strings.length != 11) return null;
 
         String id = strings[0];
         String name = strings[1];
@@ -153,7 +225,10 @@ public class Focus {
             modifierMap.put(key,modifs);
         }
 
-        return new Focus(id,name,modifierMap,visibleWhen,time,ppDebuff,p,prerequisite,modifiers,desc);
+
+        Set<String> countriesDone = new HashSet<>(Arrays.asList(visibleWhenString.split("\\|")));
+
+        return new Focus(id,name,countriesDone,modifierMap,visibleWhen,time,ppDebuff,p,prerequisite,modifiers,desc);
     }
 
     @Override

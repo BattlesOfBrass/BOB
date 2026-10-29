@@ -14,6 +14,7 @@ import de.idiotischer.bob.player.Player;
 import de.idiotischer.bob.player.ServerPlayer;
 import de.idiotischer.bob.scenario.Scenario;
 import de.idiotischer.bob.state.State;
+import de.idiotischer.bob.time.TimeResolver;
 import de.idiotischer.bob.util.FileUtil;
 import it.unimi.dsi.fastutil.Pair;
 import org.jspecify.annotations.NonNull;
@@ -467,22 +468,28 @@ public class Country /*implements Comparable<Country>*/{
         t.broadcast(r.channels(),new ReplyPacket(Type.MODIFIERS_UPDATE, "id=" + this.abbreviation + "remove=" + modifier.getId()));
     }
 
-    public void addModifier(Modifier modifier) {
+    public void addModifier(Modifier modifier, TimeResolver r) {
         if(modifier.getType().equals(Modifier.Types.REMOVE_MODIFIER.getMapping())) {
             removeModifier(modifier.getModifier());
             return;
         }
+
+        r.addTimeHook("modifier-" + UUID.randomUUID(), modifier.getLasts(), integer -> {
+            removeModifier(modifier);
+        });
 
         this.modifiers.add(modifier);
 
         for(var entry : modifierAddListeners.entrySet()) entry.getValue().accept(modifier);
     }
 
-    public void addModifierServer(SendTool t, ChannelResolver r, Modifier modifier) {
+    public void addModifierServer(SendTool t, ChannelResolver r, Modifier modifier, TimeResolver res) {
         if(modifier.getType().equals(Modifier.Types.REMOVE_MODIFIER.getMapping())) {
             removeModifierServer(t,r,modifier.getModifier());
             return;
         }
+
+        res.addTimeHook("modifier-" + UUID.randomUUID(), modifier.getLasts(), integer -> removeModifier(modifier));
 
         this.modifiers.add(modifier);
 

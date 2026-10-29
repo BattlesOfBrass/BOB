@@ -5,6 +5,7 @@ import de.craftsblock.craftscore.event.ListenerAdapter;
 import de.idiotischer.bob.Server;
 import de.idiotischer.bob.conference.PeaceConference;
 import de.idiotischer.bob.country.Country;
+import de.idiotischer.bob.focus.Focus;
 import de.idiotischer.bob.game.GameState;
 import de.idiotischer.bob.networking.packet.PacketRegistry;
 import de.idiotischer.bob.networking.packet.impl.*;
@@ -54,6 +55,34 @@ public class ServerPacketListener implements ListenerAdapter {
         } else if(event.getPacket() instanceof RequestPacket pack) {
             //so ping pong like
             switch (pack.getRequestType()) {
+                case FOCUS_UPDATE -> {
+                    String[] strings = pack.getMessage().split(";");
+
+                    String id = strings[0].replace("id=","");
+                    String treeId = strings[1];
+
+                    Focus c = Server.getInstance().getFocusManager().focusBy(id, treeId);
+
+                    if(c == null) return;
+
+                    String s1 = strings[2];
+
+                    if(s1.startsWith("start")) {
+                        String start = s1.replace("start=","");
+
+                        Server.getInstance().getFocusManager().startFocus(start,id,treeId);
+                    }
+                    //else if(s1.startsWith("end")) {
+                    //    String end = s1.replace("end=","");
+                    //
+                    //    Server.getInstance().getFocusManager().endFocus(end,id,treeId);
+                    //}
+                    else if(s1.startsWith("cancel")) {
+                        String cancel = s1.replace("cancel=","");
+
+                        Server.getInstance().getFocusManager().cancelFocus(cancel,id,treeId);
+                    }
+                }
                 case FOCUSES_SYNC -> {
                     FocusTreesSyncPacket packet = FocusTreesSyncPacket.fromFocuses(Server.getInstance().getFocusManager().getTrees());
 

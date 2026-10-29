@@ -22,6 +22,7 @@ public class HUD extends JPanel {
     private boolean isVisible = false;
     private Tile currentTile = null;
     private final HUDTopBar topBar;
+    private final FocusesUI focusesUI;
 
     private final JPanel sidePanel;
     private final JTabbedPane tabbedPane;
@@ -44,6 +45,9 @@ public class HUD extends JPanel {
 
         topBar = new HUDTopBar();
         topPanel.add(topBar);
+
+        focusesUI = new FocusesUI();
+        focusesUI.setVisible(false); //for now just set to false forever
 
         Color dark = BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().palette().darkColor();
 
@@ -103,6 +107,7 @@ public class HUD extends JPanel {
 
         add(topPanel, BorderLayout.NORTH);
         add(sidePanel, BorderLayout.WEST);
+        add(focusesUI, BorderLayout.CENTER);
     }
 
     public void updateHUD() {

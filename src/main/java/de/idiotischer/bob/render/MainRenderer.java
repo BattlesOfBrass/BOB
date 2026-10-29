@@ -56,6 +56,8 @@ public class MainRenderer extends Thread {
 
     private boolean canMoveRegardless = true;
 
+    private boolean canMove = true;
+
     public MainRenderer() {
         super("Battles of Brass");
     }
@@ -153,7 +155,7 @@ public class MainRenderer extends Thread {
             }
 
             if (!inMenu) {
-                if (!renderPanel.isPaused() || canMoveRegardless) handleMovement(deltaTime);
+                if ((!renderPanel.isPaused() || canMoveRegardless) && canMove) handleMovement(deltaTime);
 
                 if(isMapDirty()) renderPanel.repaint();
             } else {
@@ -610,5 +612,14 @@ public class MainRenderer extends Thread {
 
     public boolean canMoveRegardless() {
         return canMoveRegardless;
+    }
+
+    public boolean isCanMove() {
+        return canMove;
+    }
+
+    //for focus ui
+    public void setCanMove(boolean canMove) {
+        this.canMove = canMove;
     }
 }
