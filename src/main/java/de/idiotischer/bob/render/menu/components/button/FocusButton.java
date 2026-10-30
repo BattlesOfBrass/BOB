@@ -10,12 +10,14 @@ import java.awt.image.BufferedImage;
 
 public class FocusButton extends JToggleButton {
 
-    private Point p;
-    private Focus focus;
+    private final String treeId;
+    private final Point p;
+    private final Focus focus;
 
-    public FocusButton(Focus focus, Point p) {
+    public FocusButton(String id, Focus focus, Point point) {
         this.focus = focus;
-        this.p = p;
+        this.p = point;
+        this.treeId = id;
 
         setContentAreaFilled(false);
         setBorderPainted(false);
@@ -34,6 +36,10 @@ public class FocusButton extends JToggleButton {
 
         g2.setColor(dark);
 
+        g2.fillRect(0, 0, getWidth(), getHeight());
+
+        g2.setColor(Color.WHITE);
+
         FontMetrics fm = g2.getFontMetrics();
 
         int x = 0;
@@ -41,6 +47,15 @@ public class FocusButton extends JToggleButton {
         g2.drawString(focus.getName(), x, y);
 
         g2.dispose();
+    }
+
+    @Override
+    public Dimension getPreferredSize() {
+        return new Dimension(60, 20);
+    }
+
+    public String getTreeId() {
+        return treeId;
     }
 
     public Focus getFocus() {

@@ -253,7 +253,7 @@ public class MainRenderer extends Thread {
                         } else {
                             if (renderPanel.isEscMenu()) return;
                             double factor = Math.pow(1.1, -e.getWheelRotation());
-                            camera.zoom(factor, e.getX(), e.getY());
+                            if(canMove) camera.zoom(factor, e.getX(), e.getY());
 
                             int x = camera.screenToWorldX(e.getX());
                             int y = camera.screenToWorldY(e.getY());

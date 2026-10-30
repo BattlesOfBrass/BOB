@@ -12,7 +12,6 @@ import de.idiotischer.bob.modifiers.Modifier;
 import de.idiotischer.bob.networking.packet.impl.pp.ReplyPacket;
 import de.idiotischer.bob.networking.packet.impl.pp.Type;
 import it.unimi.dsi.fastutil.Pair;
-import org.graalvm.collections.EconomicMap;
 
 import java.awt.*;
 import java.io.IOException;

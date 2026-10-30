@@ -24,6 +24,7 @@ public class FocusesUI extends JPanel {
     private boolean countryChanged = true;
     private boolean treeChanged = true;
     private Set<FocusButton> buttons = new HashSet<>();
+    private String treeId = "";
 
     public FocusesUI() {
         setOpaque(false);
@@ -54,6 +55,14 @@ public class FocusesUI extends JPanel {
 
         if(c == null) return;
 
+        FocusTree tree = BOB.getInstance().getFocusManager().getFocusTree(c);
+
+        if(tree != null)
+            if(!Objects.equals(treeId, tree.id())) {
+                treeId = tree.id();
+                treeChanged = true;
+            }
+
         FontMetrics fm = g2.getFontMetrics();
 
         int x = getWidth() / 2;
@@ -81,7 +90,7 @@ public class FocusesUI extends JPanel {
             int x = p.x;
             int y = p.y;
 
-            FocusButton button = new FocusButton(focus,new Point(x,y));
+            FocusButton button = new FocusButton(tree.id(),focus,new Point(x,y));
 
             buttons.add(button);
             this.add(button);
@@ -91,7 +100,13 @@ public class FocusesUI extends JPanel {
         countryChanged = false;
     }
 
-    private Point getAbsolute(String treeId,Focus focus, Map<Focus, Point> absolutePs, Set<Focus> vists) {
+    @Override
+    public void setVisible(boolean aFlag) {
+        BOB.getInstance().getMainRenderer().setCanMove(!aFlag);
+        super.setVisible(aFlag);
+    }
+
+    private Point getAbsolute(String treeId, Focus focus, Map<Focus, Point> absolutePs, Set<Focus> vists) {
         if(absolutePs.containsKey(focus))
             return absolutePs.get(focus);
 
@@ -119,6 +134,7 @@ public class FocusesUI extends JPanel {
     }
 
     public void setCountryToView(String country) {
+        if(!Objects.equals(country, this.country)) countryChanged = true;
         this.country = country;
     }
 
