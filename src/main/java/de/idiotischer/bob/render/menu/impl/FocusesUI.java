@@ -4,10 +4,12 @@ package de.idiotischer.bob.render.menu.impl;
 import de.idiotischer.bob.BOB;
 import de.idiotischer.bob.country.Country;
 import de.idiotischer.bob.focus.Focus;
+import de.idiotischer.bob.focus.FocusManager;
 import de.idiotischer.bob.focus.FocusTree;
 import de.idiotischer.bob.game.GameState;
 import de.idiotischer.bob.networking.packet.impl.pp.RequestPacket;
 import de.idiotischer.bob.networking.packet.impl.pp.Type;
+import de.idiotischer.bob.render.menu.components.button.FocusButton;
 
 import javax.swing.*;
 import java.awt.*;
@@ -21,6 +23,7 @@ public class FocusesUI extends JPanel {
     private String country;
     private boolean countryChanged = true;
     private boolean treeChanged = true;
+    private Set<FocusButton> buttons = new HashSet<>();
 
     public FocusesUI() {
         setOpaque(false);
@@ -54,16 +57,18 @@ public class FocusesUI extends JPanel {
         FontMetrics fm = g2.getFontMetrics();
 
         int x = getWidth() / 2;
-        int y = (getHeight() - fm.getHeight()) / 2 + fm.getAscent();
+        int y = (getHeight() - fm.getHeight()) + fm.getAscent();
         g2.drawString(c.countryName() + "'s focustree", x, y);
 
-        drawFocuses(c);
+        calcFocuses(c);
 
         g2.dispose();
     }
 
-    public void drawFocuses(Country c) {
+    public void calcFocuses(Country c) {
         if(!countryChanged && !treeChanged) return;
+        buttons.forEach(this::remove);
+        buttons.clear();
 
         FocusTree tree = BOB.getInstance().getFocusManager().getFocusTree(c);
         Set<Focus> focuses = tree.focuses();
@@ -76,7 +81,10 @@ public class FocusesUI extends JPanel {
             int x = p.x;
             int y = p.y;
 
-            //Add FocusButton (focusbutton should detect itself if a focus is done or not and change than)
+            FocusButton button = new FocusButton(focus,new Point(x,y));
+
+            buttons.add(button);
+            this.add(button);
         }
 
         treeChanged = false;

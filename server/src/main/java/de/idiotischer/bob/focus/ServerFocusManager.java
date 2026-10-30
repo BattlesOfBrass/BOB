@@ -7,6 +7,7 @@ import com.google.gson.stream.JsonReader;
 import de.idiotischer.bob.Server;
 import de.idiotischer.bob.SharedCore;
 import de.idiotischer.bob.country.Country;
+import de.idiotischer.bob.effect.Effect;
 import de.idiotischer.bob.modifiers.Modifier;
 import de.idiotischer.bob.networking.packet.impl.pp.ReplyPacket;
 import de.idiotischer.bob.networking.packet.impl.pp.Type;
@@ -150,16 +151,6 @@ public class ServerFocusManager implements FocusResolver {
                 y = Integer.parseInt(strings[1]);
             }
 
-            Set<Modifier> mods = new HashSet<>();
-
-            JsonElement modsElement = element.get("effects");
-
-            if(modsElement != null && modsElement.isJsonArray()) {
-                JsonArray array = modsElement.getAsJsonArray();
-
-                array.forEach(modifier -> mods.add(Server.getInstance().getModifierManager().by(modifier.getAsString())));
-            }
-
             Set<Modifier> visibleWhen = new HashSet<>();
 
             JsonElement visibleWhenElement = element.get("visibleWhen");
@@ -170,29 +161,18 @@ public class ServerFocusManager implements FocusResolver {
                 array.forEach(modifier -> visibleWhen.add(Server.getInstance().getModifierManager().by(modifier.getAsString())));
             }
 
-            Map<String, Set<Modifier>> effectsFor = new HashMap<>();
+            JsonElement effectsForElement = element.get("effect");
 
-            JsonElement effectsForElement = element.get("effectsFor");
+            Effect effect = null;
 
             if(effectsForElement != null) {
-                effectsForElement.getAsJsonObject().entrySet().forEach(ent -> {
-                    String country = ent.getKey();
-
-                    Set<Modifier> countryMods = new HashSet<>();
-
-                    if(ent.getValue() != null && ent.getValue().isJsonArray()) {
-                        JsonArray array = ent.getValue().getAsJsonArray();
-
-                        array.forEach(modifier -> countryMods.add(Server.getInstance().getModifierManager().by(modifier.getAsString())));
-                    }
-
-                    effectsFor.put(country,countryMods);
-                });
+                JsonObject obj = effectsForElement.getAsJsonObject();
+                if(obj != null) effect = Effect.fromJson(obj);
             }
 
             Set<String> countries = alreadyDone.get(id);
 
-            Focus focus = new Focus(id,name,countries,effectsFor,visibleWhen,time,ppDebuff, new Point(x,y), prerequisite,mods,description);
+            Focus focus = new Focus(id,name,countries,visibleWhen,time,ppDebuff, new Point(x,y), prerequisite,effect,description);
 
             focuses.add(focus);
         });
@@ -290,7 +270,7 @@ public class ServerFocusManager implements FocusResolver {
     }
 
     public void endFocus(String country, String id, String treeId) {
-        focusBy(treeId,id).endFocusServer(Server.getInstance().getCountryManager(), Server.getInstance().getServerSocket(), Server.getInstance().getSendTool(),treeId,country, Server.getInstance().getGameManager());
+        focusBy(treeId,id).endFocusServer(Server.getInstance().getStateManager(), Server.getInstance().getTileManager(), Server.getInstance().getModifierManager(), Server.getInstance().getCountryManager(), Server.getInstance().getServerSocket(), Server.getInstance().getSendTool(),treeId,country, Server.getInstance().getGameManager());
 
         activeFocuses.remove(country);
     }

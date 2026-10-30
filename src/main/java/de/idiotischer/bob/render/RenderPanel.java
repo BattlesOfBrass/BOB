@@ -323,7 +323,6 @@ public class RenderPanel extends JPanel implements Panel {
 
             if (atkButton == null || defButton == null) continue;
 
-
             CombatVisualButton combatButton = combatButtons.computeIfAbsent(combat.getUuid(), uuid -> {
                 CombatVisualButton b = new CombatVisualButton(uuid);
                 troopLayer.add(b);
