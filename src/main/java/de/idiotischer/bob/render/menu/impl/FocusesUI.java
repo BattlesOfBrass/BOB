@@ -25,12 +25,30 @@ public class FocusesUI extends JPanel {
     private boolean treeChanged = true;
     private Set<FocusButton> buttons = new HashSet<>();
     private String treeId = "";
+    private final JButton backButton;
+    private final Map<Focus,Point> absolutePs = new HashMap<>();
 
     public FocusesUI() {
         setOpaque(false);
         setLayout(new BorderLayout());
         setRequestFocusEnabled(false);
         setFocusable(false);
+
+        backButton = new JButton("←");
+        backButton.setPreferredSize(new Dimension(backButton.getPreferredSize().width + 10, backButton.getPreferredSize().height + 10));
+        backButton.setFocusable(false);
+        backButton.setForeground(Color.WHITE);
+        backButton.setBackground(BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().bgColor());
+        backButton.setBorder(BorderFactory.createLineBorder(BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().borderColor(),4));
+        backButton.setFocusPainted(false);
+
+        backButton.addActionListener(e -> setVisible(false));
+
+        JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 15));
+        topPanel.setOpaque(false);
+        topPanel.add(backButton);
+
+        add(topPanel, BorderLayout.NORTH);
     }
 
     @Override
@@ -71,6 +89,8 @@ public class FocusesUI extends JPanel {
 
         calcFocuses(c);
 
+        if(tree != null) drawConnections(g2,tree,absolutePs);
+
         g2.dispose();
     }
 
@@ -78,19 +98,26 @@ public class FocusesUI extends JPanel {
         if(!countryChanged && !treeChanged) return;
         buttons.forEach(this::remove);
         buttons.clear();
+        absolutePs.clear();
 
         FocusTree tree = BOB.getInstance().getFocusManager().getFocusTree(c);
+
+        if (tree == null) {
+            buttons.forEach(this::remove);
+            buttons.clear();
+            return;
+        }
+
         Set<Focus> focuses = tree.focuses();
-        Map<Focus,Point> absolutePs = new HashMap<>();
 
         for(Focus focus : focuses) getAbsolute(tree.id(),focus,absolutePs, new HashSet<>());
         for(Focus focus : focuses) {
             Point p = absolutePs.get(focus);
 
-            int x = p.x;
-            int y = p.y;
+            int x = p.x + 20; //for now + 20, maybe do * 2 or higher than 20 imo
+            int y = p.y + 20; //for now + 20, maybe do * 2 or higher than 20 imo
 
-            FocusButton button = new FocusButton(tree.id(),focus,new Point(x,y));
+            FocusButton button = new FocusButton(tree.id(),c.getAbbreviation(), focus,new Point(x,y));
 
             buttons.add(button);
             this.add(button);
@@ -98,6 +125,28 @@ public class FocusesUI extends JPanel {
 
         treeChanged = false;
         countryChanged = false;
+    }
+
+    private void drawConnections(Graphics2D g2, FocusTree tree, Map<Focus, Point> absolutePs) {
+        g2.setStroke(new BasicStroke(3f));
+        g2.setColor(Color.WHITE);
+
+        for (Focus focus : tree.focuses()) {
+            String prerequisite = focus.getPrerequisite();
+
+            if (prerequisite == null || prerequisite.isEmpty()) continue;
+
+            Focus parent = BOB.getInstance().getFocusManager().focusBy(tree.id(), prerequisite);
+
+            if (parent == null) continue;
+
+            Point from = absolutePs.get(parent);
+            Point to = absolutePs.get(focus);
+
+            if (from == null || to == null) continue;
+
+            g2.drawLine(from.x + 30, from.y + 10, to.x + 30, to.y + 10);
+        }
     }
 
     @Override

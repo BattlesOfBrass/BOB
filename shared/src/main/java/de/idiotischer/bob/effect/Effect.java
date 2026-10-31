@@ -37,12 +37,12 @@ public record Effect(Map<String, Integer> popMap, Map<String, Set<String>> tiles
             if(el != null) {
                 if(el.has("add")) {
                     JsonObject addObj = el.getAsJsonObject("add");
-                    if(addObj != null) addModsMap = SharedCore.GSON.fromJson(el,mapStringSetType);
+                    if(addObj != null) addModsMap = SharedCore.GSON.fromJson(addObj,mapStringSetType);
                 }
 
                 if(el.has("remove")) {
-                    JsonObject addObj = el.getAsJsonObject("remove");
-                    if(addObj != null) rmModsMap = SharedCore.GSON.fromJson(el,mapStringSetType);
+                    JsonObject rmObj = el.getAsJsonObject("remove");
+                    if(rmObj != null) rmModsMap = SharedCore.GSON.fromJson(rmObj,mapStringSetType);
                 }
             }
         }

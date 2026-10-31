@@ -165,8 +165,7 @@ public class ServerSocket implements ChannelResolver {
                     try {
                         while (buffer.hasRemaining()) {
                             buffer.mark();
-                            Object packet = Server.getInstance().getSharedCore().getRegistry()
-                                    .getDecoder().code(buffer, clientChannel);
+                            Object packet = Server.getInstance().getSharedCore().getRegistry().getDecoder().code(buffer, clientChannel);
 
                             if (packet == null) {
                                 buffer.reset();

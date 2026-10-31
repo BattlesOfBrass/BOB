@@ -22,11 +22,12 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ServerFocusManager implements FocusResolver {
 
     private final Set<FocusTree> trees = new HashSet<>();
-    private Map<String,Pair<String,String>> activeFocuses = new HashMap<>();
+    private final Map<String,Pair<String,String>> activeFocuses = new HashMap<>();
 
     public void reload() {
         Path focusTrees = Server.getInstance().getScenarioSceneLoader().getCurrentScenario().getFocusesDir();
@@ -36,17 +37,12 @@ public class ServerFocusManager implements FocusResolver {
         if(Files.exists(focusTrees)) {
             Set<Path> focusJsons = new HashSet<>();
 
-            try {
-                Files.walk(focusTrees).forEach(path -> {
-                    if(!Files.isRegularFile(path)) return;
-
-                    if(path.endsWith(".json")) focusJsons.add(path);
-                });
+            try (Stream<Path> paths = Files.walk(focusTrees)) {
+                paths.filter(Files::isRegularFile).filter(path -> path.getFileName().toString().endsWith(".json")).forEach(focusJsons::add);
             } catch (IOException e) {
                 e.printStackTrace();
             }
 
-            loadFocuses(focusJsons);
             loadTrees(focusJsons);
         }
     }
@@ -55,7 +51,7 @@ public class ServerFocusManager implements FocusResolver {
         focusJsons.forEach(path -> {
             if(Files.notExists(path)) return;
 
-            try (JsonReader reader = new JsonReader(Files.newBufferedReader(Server.getInstance().getScenarioSceneLoader().getCurrentScenario().getCountryConfig()))) {
+            try (JsonReader reader = new JsonReader(Files.newBufferedReader(path))) {
                 JsonElement root = SharedCore.GSON.fromJson(reader, JsonElement.class);
 
                 root.getAsJsonObject().entrySet().forEach(entry -> {
@@ -98,9 +94,7 @@ public class ServerFocusManager implements FocusResolver {
 
                     JsonElement focusesElement = element.get("focuses");
 
-                    if(element.has("focuses") && !element.get("focuses").isJsonNull()) {
-                        focuses = loadFocuses(focusesElement,alreadyDone);
-                    }
+                    if(element.has("focuses") && !element.get("focuses").isJsonNull()) focuses = loadFocuses(focusesElement,alreadyDone);
 
                     FocusTree tree = new FocusTree(requiredTag,countries,focuses,id);
 
@@ -160,6 +154,15 @@ public class ServerFocusManager implements FocusResolver {
                 array.forEach(modifier -> visibleWhen.add(Server.getInstance().getModifierManager().by(modifier.getAsString())));
             }
 
+            Set<String> exclusiveWith = new HashSet<>();
+            JsonElement exclusiveEl = element.get("exclusiveWith");
+
+            if(exclusiveEl != null && exclusiveEl.isJsonArray()) {
+                JsonArray array = exclusiveEl.getAsJsonArray();
+
+                array.forEach(el1 -> exclusiveWith.add(el1.getAsString()));
+            }
+
             JsonElement effectsForElement = element.get("effect");
 
             Effect effect = null;
@@ -169,9 +172,9 @@ public class ServerFocusManager implements FocusResolver {
                 if(obj != null) effect = Effect.fromJson(obj);
             }
 
-            Set<String> countries = alreadyDone.get(id);
+            Set<String> countries = alreadyDone.getOrDefault(id, new HashSet<>());
 
-            Focus focus = new Focus(id,name,countries,visibleWhen,time,ppDebuff, new Point(x,y), prerequisite,effect,description);
+            Focus focus = new Focus(id,name,countries,exclusiveWith,visibleWhen,time,ppDebuff, new Point(x,y), prerequisite,effect,description);
 
             focuses.add(focus);
         });
@@ -249,7 +252,19 @@ public class ServerFocusManager implements FocusResolver {
     }
 
     public void startFocus(String country, String id, String treeId) {
+        if(activeFocuses.containsKey(country)) return;
+
+        FocusTree tree = treeBy(treeId);
         Focus foc = focusBy(treeId,id);
+
+        if(foc == null) return;
+
+        if(tree == null) return;
+
+        if(foc.getCountryDone().contains(country)) return;
+
+        if(tree.focuses().stream().filter(f -> f.getCountryDone().contains(country)).anyMatch(f -> f.getExclusiveWith().contains(foc.getId()) || foc.getExclusiveWith().contains(f.getId()))) return;
+
         foc.startFocusServer(Server.getInstance().getServerSocket(), Server.getInstance().getSendTool(),treeId,country);
 
         activeFocuses.put(country, Pair.of(id,treeId));

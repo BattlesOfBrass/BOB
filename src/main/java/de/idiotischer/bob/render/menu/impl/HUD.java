@@ -47,7 +47,7 @@ public class HUD extends JPanel {
         topPanel.add(topBar);
 
         focusesUI = new FocusesUI();
-        focusesUI.setVisible(false); //for now just set to false forever
+        focusesUI.setVisible(false);
 
         Color dark = BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().palette().darkColor();
 
@@ -202,6 +202,9 @@ public class HUD extends JPanel {
         panel.add(namePanel);
         panel.add(Box.createVerticalStrut(8));
         panel.add(ideology);
+        panel.add(Box.createVerticalStrut(15));
+        panel.add(createFocusButton());
+
 
         JPanel horizontalLine = new JPanel();
         horizontalLine.setBackground(BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().palette().darkColor().darker());
@@ -540,6 +543,31 @@ public class HUD extends JPanel {
         return panel;
     }
 
+    private JButton createFocusButton() {
+        JButton focusButton = new BOBButton("National Focus: 0 days", BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().textColor(), BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().bgColor(), BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().borderColor(), BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().borderColorHover(), 16, 5);
+
+        focusButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        focusButton.setFocusable(false);
+
+        focusButton.addActionListener(e -> {
+            String abbr = "";
+            if (currentTile == null || currentTile.getController() == null)
+                if(BOB.getInstance().getPlayer().country() != null)
+                    abbr = BOB.getInstance().getPlayer().country().countryName();
+            else abbr = currentTile.getController().getAbbreviation();
+
+            focusesUI.setCountryToView(abbr);
+            focusesUI.setVisible(true);
+
+            sidePanel.setVisible(false);
+
+            revalidate();
+            repaint();
+        });
+
+        return focusButton;
+    }
+
     private JPanel createIndustryPanel() {
         JPanel panel = new JPanel();
         panel.setFocusable(false);
@@ -557,11 +585,10 @@ public class HUD extends JPanel {
     }
 
     public void visible(boolean visible) {
+        if(focusesUI.isVisible()) return;
         this.isVisible = visible;
 
-        if (!visible) {
-            setTile(null);
-        }
+        if (!visible) setTile(null);
 
         sidePanel.setVisible(visible);
 

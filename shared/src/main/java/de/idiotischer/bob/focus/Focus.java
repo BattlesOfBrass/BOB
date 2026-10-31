@@ -34,8 +34,9 @@ public class Focus {
     private final String name;
     private final Effect effect;
     private final Set<String> countryDone;
+    private final Set<String> exclusiveWith;
 
-    public Focus(String id, String name, Set<String> doneFocuses, Set<Modifier> visibleWhen, int time, float ppDebuff, Point point, String prerequisite, Effect effect, String description) {
+    public Focus(String id, String name, Set<String> doneFocuses, Set<String> exclusiveWith, Set<Modifier> visibleWhen, int time, float ppDebuff, Point point, String prerequisite, Effect effect, String description) {
         this.id = id;
         this.name = name;
         this.point = point;
@@ -46,6 +47,7 @@ public class Focus {
         this.description = description;
         this.visibleWhen = visibleWhen;
         this.countryDone = doneFocuses;
+        this.exclusiveWith = exclusiveWith;
     }
 
     public void startFocus(String c) {
@@ -163,6 +165,10 @@ public class Focus {
         return name;
     }
 
+    public Set<String> getExclusiveWith() {
+        return exclusiveWith;
+    }
+
     //relative to prerequisite
     public Point getPoint() {
         return point;
@@ -172,6 +178,8 @@ public class Focus {
         StringBuilder visibleWhenSB = new StringBuilder();
         StringBuilder mapSB2 = new StringBuilder();
 
+        StringBuilder sb3 = new StringBuilder();
+
         var array2 = new ArrayList<>(visibleWhen);
 
         for (int i = 0; i < array2.size(); i++) {
@@ -180,6 +188,7 @@ public class Focus {
 
             if (i < array2.size() - 1) visibleWhenSB.append("|");
         }
+
         var array3 = new ArrayList<>(countryDone);
 
         for (int i = 0; i < array3.size(); i++) {
@@ -189,14 +198,23 @@ public class Focus {
             if (i < array3.size() - 1) mapSB2.append("|");
         }
 
+        var array4 = new ArrayList<>(exclusiveWith);
 
-        return id + ";" + name + ";" + prerequisite + ";" + point.getX() + "," + point.getY() + ";" + time + ";" + ppDebuff + ";" + visibleWhenSB + ";" + description + ";" + mapSB2 + ";" + effect.toDataString();
+        for (int i = 0; i < array4.size(); i++) {
+            String p = array4.get(i);
+            sb3.append(p);
+
+            if (i < array4.size() - 1) sb3.append("|");
+        }
+
+
+        return id + ";" + name + ";" + prerequisite + ";" + point.getX() + "," + point.getY() + ";" + time + ";" + ppDebuff + ";" + visibleWhenSB + ";" + description + ";" + mapSB2 + ";" + sb3 + ";" + effect.toDataString();
     }
 
     public static Focus fromDataString(String data, ModifierResolver r) {
         String[] strings = data.split(";");
 
-        if(strings.length != 10) return null;
+        if(strings.length != 11) return null;
 
         String id = strings[0];
         String name = strings[1];
@@ -207,11 +225,14 @@ public class Focus {
         String visibleWhenString = strings[6];
         String desc = strings[7];
         String countriesDoneString = strings[8];
-        String effectString = strings[9];
+        String exclusive = strings[9];
+        String effectString = strings[10];
 
         Point p = new Point(Integer.parseInt(xy[0]),Integer.parseInt(xy[1]));
 
         Set<Modifier> visibleWhen = new HashSet<>();
+
+        Set<String> exclusiveWith = new HashSet<>(Arrays.asList(exclusive.split("\\|")));
 
         Arrays.stream(visibleWhenString.split("\\|")).forEach(s -> visibleWhen.add(r.by(s)));
 
@@ -219,7 +240,7 @@ public class Focus {
 
         Set<String> countriesDone = new HashSet<>(Arrays.asList(countriesDoneString.split("\\|")));
 
-        return new Focus(id,name,countriesDone,visibleWhen,time,ppDebuff,p,prerequisite,effect,desc);
+        return new Focus(id,name,countriesDone,exclusiveWith,visibleWhen,time,ppDebuff,p,prerequisite,effect,desc);
     }
 
     @Override
