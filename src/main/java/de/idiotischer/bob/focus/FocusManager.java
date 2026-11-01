@@ -34,8 +34,6 @@ public class FocusManager implements FocusResolver{
     public void finishReload() {
         BOB.getInstance().getFactionManager().reloadRules();
 
-        focusTrees.forEach(tree -> System.out.println(tree.id()));
-
         if(awaitingFuture == null || awaitingFuture.isDone()) return;
         awaitingFuture.complete(null);
     }
@@ -68,13 +66,15 @@ public class FocusManager implements FocusResolver{
 
     @Override
     public Focus getActiveFocus(Country c) {
-        var pair = activeFocuses.get(c.getAbbreviation());
-        return focusBy(pair.key(),pair.value());
+        return getActiveFocus(c.getAbbreviation());
     }
 
-    public Focus getActiveFocus(String c) {
-        var pair = activeFocuses.get(c);
-        return focusBy(pair.key(),pair.value());
+    public Focus getActiveFocus(String country) {
+        Pair<String, String> pair = activeFocuses.get(country);
+
+        if (pair == null) return null;
+
+        return focusBy(treeBy(pair.key()).id(),pair.value());
     }
 
     public Map<String, Pair<String, String>> getActiveFocuses() {

@@ -233,6 +233,7 @@ public class HUD extends JPanel {
         repaint();
     }
 
+
     private void updateTabs() {
         TabMode newMode;
 
@@ -551,14 +552,14 @@ public class HUD extends JPanel {
 
         focusButton.addActionListener(e -> {
             String abbr = "";
-            if (currentTile == null || currentTile.getController() == null)
-                if(BOB.getInstance().getPlayer().country() != null)
-                    abbr = BOB.getInstance().getPlayer().country().countryName();
-            else abbr = currentTile.getController().getAbbreviation();
+            if (currentTile == null || currentTile.getController() == null) {
+                if(BOB.getInstance().getPlayer().country() != null) {
+                    abbr = BOB.getInstance().getPlayer().country().getAbbreviation();
+                }
+            } else abbr = currentTile.getController().getAbbreviation();
 
             focusesUI.setCountryToView(abbr);
             focusesUI.setVisible(true);
-
             sidePanel.setVisible(false);
 
             revalidate();
@@ -614,6 +615,10 @@ public class HUD extends JPanel {
 
     public HUDTopBar getTopBar() {
         return topBar;
+    }
+
+    public FocusesUI getFocusUI() {
+        return focusesUI;
     }
 
     private enum TabMode {

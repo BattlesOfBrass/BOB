@@ -156,6 +156,7 @@ public class MainRenderer extends Thread {
 
             if (!inMenu) {
                 if ((!renderPanel.isPaused() || canMoveRegardless) && canMove) handleMovement(deltaTime);
+                else renderPanel.getHud().getFocusUI().handleMovement(deltaTime);
 
                 if(isMapDirty()) renderPanel.repaint();
             } else {

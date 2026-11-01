@@ -56,111 +56,95 @@ public record Effect(Map<String, Integer> popMap, Map<String, Set<String>> tiles
         StringBuilder modsAddBuilder = new StringBuilder();
         StringBuilder modsRemoveBuilder = new StringBuilder();
 
-        for(var entry : this.popMap.entrySet()) {
-            if(!popBuilder.isEmpty()) popBuilder.append(",");
-
-            //"...;key1:value11|value12,key2:value21|value22
-
-            popBuilder.append(entry.getKey()).append(":");
-            popBuilder.append(entry.getValue());
+        for (var entry : popMap.entrySet()) {
+            if (!popBuilder.isEmpty()) popBuilder.append(",");
+            popBuilder.append(entry.getKey()).append(":").append(entry.getValue());
         }
 
-
-        for(var entry : this.tilesTransferMap.entrySet()) {
-            if(!tilesBuilder.isEmpty()) tilesBuilder.append(",");
-
-            //"...;key1:value11|value12,key2:value21|value22
-
-            tilesBuilder.append(entry.getKey()).append(":");
-            tilesBuilder.append(String.join("|", entry.getValue()));
+        for (var entry : tilesTransferMap.entrySet()) {
+            if (!tilesBuilder.isEmpty()) tilesBuilder.append(",");
+            tilesBuilder.append(entry.getKey()).append(":").append(String.join("|", entry.getValue()));
         }
 
-
-        for(var entry : this.modsAdd.entrySet()) {
-            if(!modsAddBuilder.isEmpty()) modsAddBuilder.append(",");
-
-            //"...;key1:value11|value12,key2:value21|value22
-
-            modsAddBuilder.append(entry.getKey()).append(":");
-            modsAddBuilder.append(String.join("|", entry.getValue()));
+        for (var entry : modsAdd.entrySet()) {
+            if (!modsAddBuilder.isEmpty()) modsAddBuilder.append(",");
+            modsAddBuilder.append(entry.getKey()).append(":").append(String.join("|", entry.getValue()));
         }
 
-
-        for(var entry : this.modsRemove.entrySet()) {
-            if(!modsRemoveBuilder.isEmpty()) modsRemoveBuilder.append(",");
-
-            //"...;key1:value11|value12,key2:value21|value22
-
-            modsRemoveBuilder.append(entry.getKey()).append(":");
-            modsRemoveBuilder.append(String.join("|", entry.getValue()));
+        for (var entry : modsRemove.entrySet()) {
+            if (!modsRemoveBuilder.isEmpty()) modsRemoveBuilder.append(",");
+            modsRemoveBuilder.append(entry.getKey()).append(":").append(String.join("|", entry.getValue()));
         }
 
-        return  popBuilder + ";" + tilesBuilder + ";" + modsAddBuilder + ";" + modsRemoveBuilder;
+        return popBuilder + "#" + tilesBuilder + "#" +
+                modsAddBuilder + "#" + modsRemoveBuilder;
     }
 
     public static Effect fromDataString(String data) {
-        String[] strings = data.split(";");
+        String[] strings = data.split("#", -1);
 
-        if(strings.length != 4) return null;
+        if (strings.length != 4) return null;
 
         String popString = strings[0];
         String tilesString = strings[1];
         String modsAddString = strings[2];
         String modsRmString = strings[3];
 
-        Map<String, Set<String>> modifierAddMap = new HashMap<>();
+        Map<String, Integer> popAddMap = new HashMap<>();
 
-        for(String entry : modsAddString.split(",")) {
-            String[] keyV = entry.split(":",2);
+        for (String entry : popString.split(",")) {
+            String[] keyV = entry.split(":", 2);
 
-            if(keyV.length != 2) continue;
-
-            String key = keyV[0];
-
-            Set<String> modifs = Arrays.stream(keyV[1].split("\\|")).collect(Collectors.toSet());
-            modifierAddMap.put(key,modifs);
-        }
-
-        Map<String, Set<String>> modifierRmMap = new HashMap<>();
-
-        for(String entry : modsRmString.split(",")) {
-            String[] keyV = entry.split(":",2);
-
-            if(keyV.length != 2) continue;
+            if (keyV.length != 2) continue;
 
             String key = keyV[0];
+            int value = Integer.parseInt(keyV[1]);
 
-            Set<String> modifs = Arrays.stream(keyV[1].split("\\|")).collect(Collectors.toSet());
-            modifierRmMap.put(key,modifs);
+            popAddMap.put(key, value);
         }
 
         Map<String, Set<String>> tilesTransferMap = new HashMap<>();
 
-        for(String entry : tilesString.split(",")) {
-            String[] keyV = entry.split(":",2);
+        for (String entry : tilesString.split(",")) {
+            String[] keyV = entry.split(":", 2);
 
-            if(keyV.length != 2) continue;
+            if (keyV.length != 2) continue;
 
             String key = keyV[0];
 
             Set<String> tiles = Arrays.stream(keyV[1].split("\\|")).collect(Collectors.toSet());
-            tilesTransferMap.put(key,tiles);
+
+            tilesTransferMap.put(key, tiles);
         }
 
+        Map<String, Set<String>> modifierAddMap = new HashMap<>();
 
-        Map<String, Integer> popAddMap = new HashMap<>();
+        for (String entry : modsAddString.split(",")) {
+            String[] keyV = entry.split(":", 2);
 
-        for(String entry : tilesString.split(",")) {
-            String[] keyV = entry.split(":",2);
-
-            if(keyV.length != 2) continue;
+            if (keyV.length != 2) continue;
 
             String key = keyV[0];
 
-            int i = Integer.parseInt(keyV[1]);
-            popAddMap.put(key,i);
+            Set<String> modifiers = Arrays.stream(keyV[1].split("\\|")).collect(Collectors.toSet());
+
+            modifierAddMap.put(key, modifiers);
         }
 
-        return new Effect(popAddMap,tilesTransferMap,modifierAddMap, modifierRmMap);
+        Map<String, Set<String>> modifierRmMap = new HashMap<>();
+
+        for (String entry : modsRmString.split(",")) {
+            String[] keyV = entry.split(":", 2);
+
+            if (keyV.length != 2) continue;
+
+            String key = keyV[0];
+
+            Set<String> modifiers = Arrays.stream(keyV[1].split("\\|")).collect(Collectors.toSet());
+
+            modifierRmMap.put(key, modifiers);
+        }
+
+        return new Effect(popAddMap, tilesTransferMap, modifierAddMap, modifierRmMap);
     }
 }

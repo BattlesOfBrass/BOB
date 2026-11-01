@@ -17,10 +17,7 @@ import java.awt.*;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -95,6 +92,8 @@ public class ServerFocusManager implements FocusResolver {
                     JsonElement focusesElement = element.get("focuses");
 
                     if(element.has("focuses") && !element.get("focuses").isJsonNull()) focuses = loadFocuses(focusesElement,alreadyDone);
+
+                    focuses.removeIf(Objects::isNull);
 
                     FocusTree tree = new FocusTree(requiredTag,countries,focuses,id);
 

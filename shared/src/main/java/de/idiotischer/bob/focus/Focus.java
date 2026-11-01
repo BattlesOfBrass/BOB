@@ -207,14 +207,21 @@ public class Focus {
             if (i < array4.size() - 1) sb3.append("|");
         }
 
-
         return id + ";" + name + ";" + prerequisite + ";" + point.getX() + "," + point.getY() + ";" + time + ";" + ppDebuff + ";" + visibleWhenSB + ";" + description + ";" + mapSB2 + ";" + sb3 + ";" + effect.toDataString();
     }
 
     public static Focus fromDataString(String data, ModifierResolver r) {
-        String[] strings = data.split(";");
+        String[] strings = data.split(";", -1);
 
-        if(strings.length != 11) return null;
+        if (strings.length != 11) {
+            System.err.println("INVALID FOCUS: " + data);
+            System.err.println("EXPECTED: 11 fields");
+            System.err.println("GOT: " + strings.length);
+
+            for (int i = 0; i < strings.length; i++) System.err.println(i + ": " + strings[i]);
+
+            return null;
+        }
 
         String id = strings[0];
         String name = strings[1];
@@ -228,13 +235,13 @@ public class Focus {
         String exclusive = strings[9];
         String effectString = strings[10];
 
-        Point p = new Point(Integer.parseInt(xy[0]),Integer.parseInt(xy[1]));
+        Point p = new Point((int) Double.parseDouble(xy[0]), (int) Double.parseDouble(xy[1]));
 
         Set<Modifier> visibleWhen = new HashSet<>();
 
         Set<String> exclusiveWith = new HashSet<>(Arrays.asList(exclusive.split("\\|")));
 
-        Arrays.stream(visibleWhenString.split("\\|")).forEach(s -> visibleWhen.add(r.by(s)));
+        if (!visibleWhenString.isEmpty()) Arrays.stream(visibleWhenString.split("\\|")).map(r::by).filter(Objects::nonNull).forEach(visibleWhen::add);
 
         Effect effect = Effect.fromDataString(effectString);
 
