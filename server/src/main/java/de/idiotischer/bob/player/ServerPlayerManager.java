@@ -4,9 +4,11 @@ import de.idiotischer.bob.Server;
 import de.idiotischer.bob.auth.Credentials;
 import de.idiotischer.bob.country.Country;
 import de.idiotischer.bob.country.CountryResolver;
+import de.idiotischer.bob.networking.packet.impl.PlayerAuthUpdatePacket;
 import de.idiotischer.bob.networking.packet.impl.PlayerChangedCountryPacket;
 import de.idiotischer.bob.networking.packet.impl.PlayerJoinPacket;
 import de.idiotischer.bob.networking.packet.impl.PlayerQuitPacket;
+import de.idiotischer.bob.networking.packet.impl.pp.ReplyPacket;
 import de.idiotischer.bob.util.UUIDUtil;
 import it.unimi.dsi.fastutil.Pair;
 import org.jetbrains.annotations.NotNull;
@@ -30,7 +32,7 @@ public class ServerPlayerManager implements PlayerResolver {
                 .map(Player::uuid)
                 .collect(Collectors.toSet());
 
-        return new ServerPlayer(address,null, UUIDUtil.getUnused(used), channel);
+        return new ServerPlayer(address,null, UUIDUtil.getUnused(used), Server.getInstance().getCountryManager(), channel);
     }
 
     public Player createPlayer(AsynchronousSocketChannel channel, UUID uuid, InetSocketAddress address) {
@@ -38,7 +40,7 @@ public class ServerPlayerManager implements PlayerResolver {
 
         if(addresses.contains(address)) return resolve(address);
 
-        return new ServerPlayer(address,null, uuid, channel);
+        return new ServerPlayer(address,null, uuid, Server.getInstance().getCountryManager(), channel);
     }
 
     public void changeCountry(UUID uuid, Country country) {
@@ -56,7 +58,7 @@ public class ServerPlayerManager implements PlayerResolver {
     public void changeCountry(Player player, Country country) {
         if(player == null) return;
 
-        if(!hasPlayer(country) || Server.getInstance().getServerSocket().getHostUtil().isCoop()) player.country(country);
+        if(!hasPlayer(country) || Server.getInstance().getServerSocket().getHostUtil().isCoop()) player.country(country.getAbbreviation());
 
         Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new PlayerChangedCountryPacket(player.uuid(),country.getAbbreviation()));
     }
@@ -72,11 +74,13 @@ public class ServerPlayerManager implements PlayerResolver {
     }
 
     public void authPlayer(Player player, Credentials creds) {
-        player.authorize(creds);
+        boolean authed = player.authorize(creds); //so that the clients contain the authed one too!
+        Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new PlayerAuthUpdatePacket(player.address(), player.uuid(), authed));
     }
 
     public void removePlayer(Player player) {
         players.remove(player);
+        player.country(null);
 
         Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new PlayerQuitPacket(player.uuid()));
     }
@@ -106,6 +110,14 @@ public class ServerPlayerManager implements PlayerResolver {
         return Pair.of(this.resolve(uuid), c);
     }
 
+    public Player getPlayer(InetSocketAddress address) {
+        return players.stream().filter(p -> p.address() != null && p.address().equals(address)).findFirst().orElse(null);
+    }
+
+    public Player getPlayer(UUID uuid) {
+        return players.stream().filter(p -> p.uuid() != null && p.uuid().equals(uuid)).findFirst().orElse(null);
+    }
+
     public boolean hasPlayer(Country c) {
         return players.stream().anyMatch(p -> p.country() != null && p.country().equals(c));
     }
@@ -118,6 +130,11 @@ public class ServerPlayerManager implements PlayerResolver {
     @Override
     public Player resolve(@NotNull InetSocketAddress address) {
         return players.stream().filter(p -> address.equals(p.address())).findFirst().orElse(null);
+    }
+
+    @Override
+    public List<Player> resolve(Country country) {
+        return players.stream().filter(p -> p.country().getAbbreviation().equals(country.getAbbreviation())).toList();
     }
 
     public Set<Player> getPlayers() {

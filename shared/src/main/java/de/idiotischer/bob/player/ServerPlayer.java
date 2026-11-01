@@ -3,7 +3,9 @@ package de.idiotischer.bob.player;
 import de.idiotischer.bob.SharedCore;
 import de.idiotischer.bob.auth.Credentials;
 import de.idiotischer.bob.country.Country;
+import de.idiotischer.bob.country.CountryResolver;
 import de.idiotischer.bob.troop.Troop;
+import org.jetbrains.annotations.Nullable;
 
 import java.net.InetSocketAddress;
 import java.nio.channels.AsynchronousSocketChannel;
@@ -14,19 +16,21 @@ import java.util.UUID;
 public class ServerPlayer implements Player {
 
     private final InetSocketAddress address;
+    private final CountryResolver r;
     private boolean authorized;
     private UUID uuid;
-    private Country country;
+    private String country;
     private final AsynchronousSocketChannel clientChannel;
     private String name;
 
-    public ServerPlayer(InetSocketAddress address, Country country, UUID uuid, AsynchronousSocketChannel clientChannel) {
+    public ServerPlayer(InetSocketAddress address, String country, UUID uuid, CountryResolver r, AsynchronousSocketChannel clientChannel) {
         this.name = "";
         this.country = country;
         this.address = address;
         this.authorized = false;
         this.uuid = uuid;
         this.clientChannel = clientChannel;
+        this.r = r;
     }
 
     @Override
@@ -50,18 +54,17 @@ public class ServerPlayer implements Player {
     }
 
     @Override
+    @Nullable
     public Country country() {
-        return country;
+        return r.byAbbreviation(country);
     }
 
     @Override
-    public void country(Country country) {
+    public void country(String country) {
         this.country = country;
-    }
 
-    @Override
-    public List<Troop> selectedTroops() {
-        return List.of();
+        Country c = country();
+        if(c != null) c.setPlayer(this);
     }
 
     @Override
@@ -95,6 +98,11 @@ public class ServerPlayer implements Player {
         this.name(name);
         this.authorized = true;
 
-        return authorized();
+        return true;
+    }
+
+    @Override
+    public boolean hasOP() {
+        return true;
     }
 }

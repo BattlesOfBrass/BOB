@@ -22,6 +22,10 @@ public class StatesSyncPacket implements Packet {
         return new StatesSyncPacket(states.stream().map(StateSyncPacket::new).toList());
     }
 
+    public static StatesSyncPacket fromStates(List<State> states) {
+        return new StatesSyncPacket(states.stream().map(StateSyncPacket::new).toList());
+    }
+
     @Override
     public void write(ByteBuffer buffer) {
         buffer.putInt(packets.size());

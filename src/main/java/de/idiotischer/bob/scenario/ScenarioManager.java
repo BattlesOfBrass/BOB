@@ -28,24 +28,20 @@ public class ScenarioManager {
     public CompletableFuture<Void> reload() {
         loadFuture = new CompletableFuture<>();
 
-        BOB.getInstance().getSendTool().send(
-                BOB.getInstance().getClient().getChannel(),
-                new RequestPacket(Type.SCENARIOS,"")
-        );
+        BOB.getInstance().getSendTool().send(BOB.getInstance().getClient().getChannel(), new RequestPacket(Type.SCENARIOS,""));
 
         return loadFuture;
     }
 
     public void refreshAddNew(Scenario scenario) {
         scenarios.add(scenario);
-        scenarios.forEach(this::registerScenario);
+        registerScenario(scenario);
 
         if (loadFuture != null && !loadFuture.isDone()) {
             loadFuture.complete(null);
         }
-
-        //BOB.getInstance().getAwaitingReload().complete(null);
     }
+
 
     public void refresh(List<Scenario> scenarios) {
         this.scenarios.clear();

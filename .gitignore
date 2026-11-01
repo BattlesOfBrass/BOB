@@ -5,15 +5,6 @@ build/
 !**/src/test/**/build/
 .kotlindd
 
-<<<<<<< HEAD
-#compiled jar started stuff
-./config/
-./icons/
-./mapBase/
-./scenario/
-
-=======
->>>>>>> b570dab ([+] added player stuff)
 temp/
 
 .idea

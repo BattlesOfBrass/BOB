@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-public class ScenariosSyncPacket implements Packet, de.idiotischer.bob.networking.packet.Packet {
+public class ScenariosSyncPacket implements de.idiotischer.bob.networking.packet.Packet {
 
     private final List<ScenarioSyncPacket> scenarios = new ArrayList<>();
 
@@ -50,21 +50,11 @@ public class ScenariosSyncPacket implements Packet, de.idiotischer.bob.networkin
     //}
 
     @Override
-    public void write(BufferUtil buffer) {
-        buffer.getRaw().putInt(scenarios.size());
-
-        for (ScenarioSyncPacket scenarioPacket : scenarios) {
-            scenarioPacket.write(buffer);
-        }
-    }
-
-    @Override
     public void write(ByteBuffer buffer) {
         buffer.putInt(scenarios.size());
 
-        for (ScenarioSyncPacket scenarioPacket : scenarios) {
-            scenarioPacket.write(buffer);
-        }
+        for (ScenarioSyncPacket scenarioPacket : scenarios) scenarioPacket.write(buffer);
+
     }
 
     @Override
@@ -77,10 +67,5 @@ public class ScenariosSyncPacket implements Packet, de.idiotischer.bob.networkin
             packet.read(buffer);
             scenarios.add(packet);
         }
-    }
-
-    @Override
-    public void handle(Networker networker) {
-
     }
 }

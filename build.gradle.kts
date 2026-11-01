@@ -23,16 +23,28 @@ java {
 repositories {
     mavenCentral()
     maven {
+        name = "cbr"
+        url = uri("https://repo.craftsblock.de/releases")
+    }
+
+    maven {
         name = "cbe"
         url = uri("https://repo.craftsblock.de/experimental")
     }
+
+    //maven {
+    //    url = uri("https://releases.aspose.com/java/repo/")
+    //}
 }
 
 dependencies {
-    implementation(platform("de.craftsblock.craftscore:bom:3.8.13-pre9"))
+    implementation(platform("de.craftsblock.craftscore:bom:3.8.17"))
     implementation("de.craftsblock.craftscore:buffer")
     implementation("de.craftsblock.craftsnet.modules.websocketpackets:common:1.1.2-pre5")
     implementation("de.craftsblock.craftscore:event")
+
+    implementation("at.yawk.lz4:lz4-java:1.11.0")
+    implementation("com.github.gotson:webp-imageio:0.2.2")
 
     implementation("com.google.code.gson:gson:2.13.2")
 
@@ -46,6 +58,8 @@ dependencies {
     implementation("com.google.guava:guava:33.5.0-jre")
     // Source: https://mvnrepository.com/artifact/it.unimi.dsi/fastutil
     implementation("it.unimi.dsi:fastutil:8.5.18")
+    // Source: https://mvnrepository.com/artifact/com.aspose/aspose-psd
+    //implementation("com.aspose:aspose-psd:26.5:jdk16") we dont use it currently so yeah
 }
 
 tasks.build {
@@ -89,6 +103,15 @@ tasks.register("buildPreRun") {
         Files.copy(jarFile.toPath(), destFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
     }
 }
+val args = listOf(
+    "--enable-native-access=ALL-UNNAMED",
+    "--add-opens=java.desktop/sun.awt.X11=ALL-UNNAMED"
+)
+
+
+tasks.withType<JavaExec>().configureEach {
+    jvmArgs(args)
+}
 
 tasks.register<Exec>("jpackageMain") {
     group = "distribution"
@@ -100,7 +123,7 @@ tasks.register<Exec>("jpackageMain") {
     else
         "${System.getProperty("java.home")}/bin/jpackage"
 
-    val inputDir  = layout.buildDirectory.dir("libs").get().asFile
+    val inputDir = layout.buildDirectory.dir("libs").get().asFile
     val outputDir = layout.buildDirectory.dir("jpackage").get().asFile
 
     val iconFile = if (isWindows)
@@ -111,6 +134,7 @@ tasks.register<Exec>("jpackageMain") {
     doFirst {
         outputDir.deleteRecursively()
         outputDir.mkdirs()
+
         require(iconFile.exists()) {
             "Icon not found at ${iconFile.absolutePath}. " +
                     "On Windows, run the 'Convert icon to ICO' workflow step first."
@@ -119,15 +143,18 @@ tasks.register<Exec>("jpackageMain") {
 
     commandLine(
         jpackageBin,
-        "--type",        "app-image",
-        "--name",        "BOB",
+        "--type", "app-image",
+        "--name", "BOB",
         "--app-version", jpackageVersion,
-        "--input",       inputDir.absolutePath,
-        "--main-jar",    "BOB-main.jar",
-        "--icon",        iconFile.absolutePath,
-        "--dest",        outputDir.absolutePath
+        "--input", inputDir.absolutePath,
+        "--main-jar", "BOB-main.jar",
+        "--icon", iconFile.absolutePath,
+        "--dest", outputDir.absolutePath,
+
+        *args.flatMap { listOf("--java-options", it) }.toTypedArray()
     )
 }
+
 
 tasks.register<Exec>("appimageMain") {
     group = "distribution"
@@ -159,6 +186,7 @@ tasks.register<Exec>("appimageMain") {
         appRun.writeText(
             "#!/bin/bash\n" +
                     "APPDIR=\"\$(dirname \"\$(readlink -f \"\$0\")\")\"\n" +
+                    "export JAVA_TOOL_OPTIONS=\"--enable-native-access=ALL-UNNAMED\"\n" +
                     "exec \"\$APPDIR/bin/BOB\" \"\$@\"\n"
         )
         appRun.setExecutable(true)
@@ -177,6 +205,23 @@ java {
     }
 }
 
+tasks.register<JavaExec>("runApp") {
+    dependsOn("buildPreRun")
+
+    group = "run"
+
+    val runDir = runOutputDir.get().asFile
+    val jarFile = runDir.resolve(tasks.shadowJar.get().archiveFileName.get())
+
+    workingDir = runDir
+    classpath = files(jarFile)
+    mainClass.set("de.idiotischer.bob.BOB")
+
+    jvmArgs(
+        "--enable-native-access=ALL-UNNAMED",
+        "--add-opens=java.desktop/sun.awt.X11=ALL-UNNAMED"
+    )
+}
 tasks.jar {
     enabled = false
 }
