@@ -36,8 +36,10 @@ public class Focus {
     private final Effect effect;
     private final Set<String> countryDone;
     private final Set<String> exclusiveWith;
+    private final int weight;
+    private final Set<String> tags;
 
-    public Focus(String id, String name, Set<String> doneFocuses, Set<String> exclusiveWith, Set<Modifier> visibleWhen, int time, float ppDebuff, Point point, String prerequisite, Effect effect, String description) {
+    public Focus(String id, String name, int weight, Set<String> tags, Set<String> doneFocuses, Set<String> exclusiveWith, Set<Modifier> visibleWhen, int time, float ppDebuff, Point point, String prerequisite, Effect effect, String description) {
         this.id = id;
         this.name = name;
         this.point = point;
@@ -49,6 +51,8 @@ public class Focus {
         this.visibleWhen = visibleWhen;
         this.countryDone = doneFocuses;
         this.exclusiveWith = exclusiveWith;
+        this.weight = weight;
+        this.tags = tags;
     }
 
     public void startFocus(String c) {
@@ -82,13 +86,13 @@ public class Focus {
 
         if(effect != null) {
             this.effect.modsAdd().forEach((abbr, value) -> {
-                Set<Modifier> mods = value.stream().map(r2::by).collect(Collectors.toSet());
+                Set<Modifier> mods = value.stream().map(r2::by).filter(Objects::nonNull).collect(Collectors.toSet());
 
                 if (abbr.equals("SELF")) abbr = c;
                 for (Modifier mod : mods) cr.byAbbreviation(abbr).addModifierServer(t, r, mod, tr);
             });
             this.effect.modsRemove().forEach((abbr, value) -> {
-                Set<Modifier> mods = value.stream().map(r2::by).collect(Collectors.toSet());
+                Set<Modifier> mods = value.stream().map(r2::by).filter(Objects::nonNull).collect(Collectors.toSet());
 
                 if (abbr.equals("SELF")) abbr = c;
                 for (Modifier mod : mods) cr.byAbbreviation(abbr).removeModifierServer(t, r, mod.getId());
@@ -97,8 +101,10 @@ public class Focus {
                 Country country = cr.byAbbreviation(key);
                 if(country != null) value.forEach(s -> {
                     Tile tile = tir.byAbbreviation(s);
-                    tile.setControllerForAll(r.channels(), country);
-                    tile.setOwnerForAll(r.channels(), country);
+                    if(tile != null) {
+                        tile.setControllerForAll(r.channels(), country);
+                        tile.setOwnerForAll(r.channels(), country);
+                    }
                 });
             });
             this.effect.popMap().forEach((key,value) -> {
@@ -170,6 +176,14 @@ public class Focus {
         return exclusiveWith;
     }
 
+    public boolean isHistorical() {
+        return tags.stream().anyMatch(tag -> tag.equalsIgnoreCase("historical"));
+    }
+
+    public int getWeight() {
+        return weight;
+    }
+
     //relative to prerequisite
     public Point getPoint() {
         return point;
@@ -180,6 +194,7 @@ public class Focus {
         StringBuilder mapSB2 = new StringBuilder();
 
         StringBuilder sb3 = new StringBuilder();
+        StringBuilder sb4 = new StringBuilder();
 
         var array2 = new ArrayList<>(visibleWhen);
 
@@ -208,17 +223,23 @@ public class Focus {
             if (i < array4.size() - 1) sb3.append("|");
         }
 
-        return id + ";" + name + ";" + prerequisite + ";" + point.getX() + "," + point.getY() + ";" + time + ";" + ppDebuff + ";" + visibleWhenSB + ";" + description + ";" + mapSB2 + ";" + sb3 + ";" + effect.toDataString();
+
+        var array5 = new ArrayList<>(tags);
+
+        for (int i = 0; i < array5.size(); i++) {
+            String p = array5.get(i);
+            sb4.append(p);
+
+            if (i < array5.size() - 1) sb4.append("|");
+        }
+
+        return id + ";" + name + ";" + prerequisite + ";" + point.getX() + "," + point.getY() + ";" + time + ";" + ppDebuff + ";" + visibleWhenSB + ";" + description + ";" + mapSB2 + ";" + sb3 + ";" + sb4 + ";" + weight+ ";" + effect.toDataString();
     }
 
     public static Focus fromDataString(String data, ModifierResolver r) {
         String[] strings = data.split(";", -1);
 
-        if (strings.length != 11) {
-            System.err.println("INVALID FOCUS: " + data);
-            System.err.println("EXPECTED: 11 fields");
-            System.err.println("GOT: " + strings.length);
-
+        if (strings.length != 13) {
             for (int i = 0; i < strings.length; i++) System.err.println(i + ": " + strings[i]);
 
             return null;
@@ -234,7 +255,13 @@ public class Focus {
         String desc = strings[7];
         String countriesDoneString = strings[8];
         String exclusive = strings[9];
-        String effectString = strings[10];
+        String tagString = strings[10];
+        int weight = 0;
+        String effectString = strings[12];
+
+        try {
+            weight = Integer.parseInt(strings[11]);
+        } catch (NumberFormatException ignored) {}
 
         Point p = new Point((int) Double.parseDouble(xy[0]), (int) Double.parseDouble(xy[1]));
 
@@ -244,11 +271,13 @@ public class Focus {
 
         if (!visibleWhenString.isEmpty()) Arrays.stream(visibleWhenString.split("\\|")).map(r::by).filter(Objects::nonNull).forEach(visibleWhen::add);
 
+        Set<String> tags = new HashSet<>(Arrays.asList(tagString.split("\\|")));
+
         Effect effect = Effect.fromDataString(effectString);
 
         Set<String> countriesDone = new HashSet<>(Arrays.asList(countriesDoneString.split("\\|")));
 
-        return new Focus(id,name,countriesDone,exclusiveWith,visibleWhen,time,ppDebuff,p,prerequisite,effect,desc);
+        return new Focus(id,name, weight, tags,countriesDone,exclusiveWith,visibleWhen,time,ppDebuff,p,prerequisite,effect,desc);
     }
 
     @Override

@@ -569,6 +569,11 @@ public class HUD extends JPanel {
         return focusButton;
     }
 
+    @Override
+    public void setVisible(boolean visible) {
+        if(!visible) focusesUI.setVisible(false);
+    }
+
     private JPanel createIndustryPanel() {
         JPanel panel = new JPanel();
         panel.setFocusable(false);

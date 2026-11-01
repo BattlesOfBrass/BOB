@@ -114,6 +114,7 @@ public class ServerGameManager implements TimeResolver {
         speed = 1;
         timeTicks = 0;
         lastUpdate = System.nanoTime();
+        timeHook.clear();
     }
 
     public void tickTime() {
@@ -127,7 +128,8 @@ public class ServerGameManager implements TimeResolver {
         new ArrayList<>(timeHook.entrySet()).forEach(e -> {
             if (timeTicks >= e.getValue().key()) {
                 timeHook.remove(e.getKey());
-                e.getValue().value().accept(timeTicks);
+                try { e.getValue().value().accept(timeTicks); }
+                catch (Exception ex) { ex.printStackTrace(); }
             }
         });
 

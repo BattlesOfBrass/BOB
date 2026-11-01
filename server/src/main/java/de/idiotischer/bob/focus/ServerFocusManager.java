@@ -123,6 +123,13 @@ public class ServerFocusManager implements FocusResolver {
 
             int x = 0;
             int y = 0;
+            int weight = 0;
+
+            if(element.has("weight")) {
+                String s = element.get("weight").getAsString();
+
+                weight = Integer.parseInt(s);
+            }
 
             if(element.has("x")) {
                 String s = element.get("x").getAsString();
@@ -162,6 +169,15 @@ public class ServerFocusManager implements FocusResolver {
                 array.forEach(el1 -> exclusiveWith.add(el1.getAsString()));
             }
 
+            Set<String> tags = new HashSet<>();
+            JsonElement tagsEl = element.get("tags");
+
+            if(tagsEl != null && tagsEl.isJsonArray()) {
+                JsonArray array = tagsEl.getAsJsonArray();
+
+                array.forEach(el1 -> tags.add(el1.getAsString()));
+            }
+
             JsonElement effectsForElement = element.get("effect");
 
             Effect effect = null;
@@ -173,7 +189,7 @@ public class ServerFocusManager implements FocusResolver {
 
             Set<String> countries = alreadyDone.getOrDefault(id, new HashSet<>());
 
-            Focus focus = new Focus(id,name,countries,exclusiveWith,visibleWhen,time,ppDebuff, new Point(x,y), prerequisite,effect,description);
+            Focus focus = new Focus(id,name,weight,tags,countries,exclusiveWith,visibleWhen,time,ppDebuff,new Point(x,y),prerequisite,effect,description);
 
             focuses.add(focus);
         });

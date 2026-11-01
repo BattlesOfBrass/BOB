@@ -44,13 +44,15 @@ public class FocusButton extends JToggleButton {
             Focus active = BOB.getInstance().getFocusManager().getActiveFocus(country);
             boolean running = active != null && active.getId().equals(focus.getId());
 
-            Color bg = done ? new Color(14, 142, 79) : running ? new Color(115, 55, 7) : BOB.getInstance().getSettingsTheme().button().bgColor();
-            Color border = BOB.getInstance().getSettingsTheme().button().borderColor().darker();
+            //TODO:add theming support
+            Color bg = done ? new Color(34, 220, 14) : running ? new Color(244, 114, 6) : BOB.getInstance().getSettingsTheme().button().bgColor();
+            Color border = done ? new Color(22, 131, 10) : running ? new Color(161, 75, 3) : BOB.getInstance().getSettingsTheme().button().borderColor();
 
             g2.setColor(bg);
             g2.fillRect(0, 0, getWidth(), getHeight());
 
             g2.setColor(border);
+            g2.setStroke(new BasicStroke(6));
             g2.drawRect(0, 0, getWidth() - 1, getHeight() - 1);
 
             float fontSize = (float) (12 * getWidth() / 120.0);

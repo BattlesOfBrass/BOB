@@ -416,9 +416,7 @@ public class FocusesUI extends JPanel {
 
         if (absolutePs.containsKey(focus)) return absolutePs.get(focus);
 
-
         if (!visits.add(focus)) throw new RuntimeException("Circular focus!");
-
 
         Point relative = focus.getPoint();
 
@@ -500,15 +498,29 @@ public class FocusesUI extends JPanel {
         actionButton.setOpaque(true);
         actionButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
+        //TODO: theme this (add theming support)
         boolean completed = focus.getCountryDone().contains(country);
+
+        Focus prerequisite = null;
+
+        if(!focus.getPrerequisite().isEmpty()) {
+            prerequisite = BOB.getInstance().getFocusManager().focusBy(treeId,focus.getPrerequisite());
+        }
+
+        boolean prerequisiteMissing = prerequisite != null && !prerequisite.getCountryDone().contains(country);
 
         Focus active = BOB.getInstance().getFocusManager().getActiveFocus(BOB.getInstance().getCountryManager().byAbbreviation(country));
 
         boolean activeFocus = active != null && active.getId().equals(focus.getId());
         boolean anotherFocusActive = active != null && !activeFocus;
 
-        //TODO: theme this (add theming support)
-        if (completed) {
+        if (prerequisiteMissing) {
+            actionButton.setText("Prerequisite missing");
+            actionButton.setBackground(new Color(65, 65, 65));
+            actionButton.setBorder(BorderFactory.createLineBorder(new Color(100, 100, 100), 2));
+            actionButton.setForeground(Color.GRAY);
+            actionButton.setEnabled(false);
+        } else if (completed) {
             actionButton.setText("Completed");
             actionButton.setBackground(new Color(14, 142, 79));
             actionButton.setBorder(BorderFactory.createLineBorder(new Color(94, 216, 27), 2));
