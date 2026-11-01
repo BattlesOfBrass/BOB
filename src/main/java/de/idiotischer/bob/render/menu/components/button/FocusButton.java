@@ -13,6 +13,7 @@ public class FocusButton extends JToggleButton {
     private final Point p;
     private final Focus focus;
     private final String country;
+    private final String displayName;
 
     public FocusButton(String id, String country, Focus focus, Point point, Consumer<FocusButton> onCLick) {
         this.focus = focus;
@@ -26,6 +27,16 @@ public class FocusButton extends JToggleButton {
         setOpaque(false);
         setFocusable(false);
 
+        Font font = new Font(Font.SANS_SERIF, Font.PLAIN, 12);
+        FontMetrics fm = getFontMetrics(font);
+
+        String original = focus.getName();
+        String suffix = "...";
+
+        int maxWidth = 120 - 12;
+        int end = original.length();
+        while (end > 0 && fm.stringWidth(original.substring(0, end) + suffix) > maxWidth) end--;
+        this.displayName = fm.stringWidth(original) > maxWidth ? original.substring(0, end) + suffix : original;
 
         addActionListener(e -> onCLick.accept(this));
         //addActionListener(e -> {
@@ -55,26 +66,17 @@ public class FocusButton extends JToggleButton {
             g2.setStroke(new BasicStroke(6));
             g2.drawRect(0, 0, getWidth() - 1, getHeight() - 1);
 
-            float fontSize = (float) (12 * getWidth() / 120.0);
-            g2.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, Math.max(1, Math.round(fontSize))));
-            FontMetrics fm = g2.getFontMetrics();
-
-            String name = focus.getName();
-            int maxWidth = getWidth() - 12;
-
-            String suffix = "...";
-
-            if (fm.stringWidth(name) > maxWidth) {
-                while (!name.isEmpty() && fm.stringWidth(name + suffix) > maxWidth) name = name.substring(0, name.length() - 1);
-                name += suffix;
-            }
-
             g2.setColor(Color.WHITE);
 
-            int x = (getWidth() - fm.stringWidth(name)) / 2;
+            float fontSize = (float) (12 * getWidth() / 120.0);
+            g2.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, Math.max(1, Math.round(fontSize))));
+
+            FontMetrics fm = g2.getFontMetrics();
+
+            int x = (getWidth() - fm.stringWidth(displayName)) / 2;
             int y = (getHeight() - fm.getHeight()) / 2 + fm.getAscent();
 
-            g2.drawString(name, x, y);
+            g2.drawString(displayName, x, y);
 
         } finally {
             g2.dispose();
