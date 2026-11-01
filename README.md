@@ -33,7 +33,7 @@ A game inspired by [Spirits of Steel](https://gavgrub.itch.io/sos), made in java
 - [ ] Add saving
 - [x] Add time
 - [x] Add pausing
-- [ ] Add focuses
+- [x] Add focuses
 - [ ] Add decisions
 - [x] Add ideologies
 - [ ] Add votings
@@ -49,4 +49,5 @@ A game inspired by [Spirits of Steel](https://gavgrub.itch.io/sos), made in java
 - [ ] Change base theme
 - [ ] Add enemy ai
 - [ ] Color border between two states of the same controller in the same color (make it configurable since it costs performance or let the server pre calculate it xD)
+- [ ] Add world tention for AI etc
 
