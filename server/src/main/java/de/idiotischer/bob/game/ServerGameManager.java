@@ -11,6 +11,7 @@ import de.idiotischer.bob.time.TimeResolver;
 import it.unimi.dsi.fastutil.Pair;
 
 import java.nio.channels.AsynchronousSocketChannel;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -123,8 +124,11 @@ public class ServerGameManager implements TimeResolver {
 
         timeTicks++;
 
-        timeHook.forEach((key, keyValue) -> {
-            if (timeTicks >= keyValue.key()) keyValue.value().accept(timeTicks);
+        new ArrayList<>(timeHook.entrySet()).forEach(e -> {
+            if (timeTicks >= e.getValue().key()) {
+                timeHook.remove(e.getKey());
+                e.getValue().value().accept(timeTicks);
+            }
         });
 
         if (timeTicks % (60 * 24) == 0) {

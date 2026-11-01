@@ -40,7 +40,11 @@ public class FocusButton extends JToggleButton {
         try {
             g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
-            Color bg = BOB.getInstance().getSettingsTheme().button().bgColor();
+            boolean done = focus.getCountryDone().contains(country);
+            Focus active = BOB.getInstance().getFocusManager().getActiveFocus(country);
+            boolean running = active != null && active.getId().equals(focus.getId());
+
+            Color bg = done ? new Color(14, 142, 79) : running ? new Color(115, 55, 7) : BOB.getInstance().getSettingsTheme().button().bgColor();
             Color border = BOB.getInstance().getSettingsTheme().button().borderColor().darker();
 
             g2.setColor(bg);

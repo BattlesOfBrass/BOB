@@ -4,6 +4,7 @@ import de.craftsblock.craftscore.event.EventHandler;
 import de.craftsblock.craftscore.event.EventPriority;
 import de.craftsblock.craftscore.event.ListenerAdapter;
 import de.idiotischer.bob.BOB;
+import de.idiotischer.bob.Server;
 import de.idiotischer.bob.conference.PeaceConference;
 import de.idiotischer.bob.country.Country;
 import de.idiotischer.bob.country.CountryResolver;
@@ -169,10 +170,10 @@ public class PacketListener implements ListenerAdapter {
                 case FOCUS_UPDATE -> {
                     String[] strings = pack.getMessage().split(";");
 
-                    String id = strings[0].replace("id=","");
-                    String treeId = strings[1];
+                    String id = strings[0].replace("id=", "");
+                    String treeId = strings[1].replace("treeId=", "");
 
-                    Focus c = BOB.getInstance().getFocusManager().focusBy(id, treeId);
+                    Focus c = Server.getInstance().getFocusManager().focusBy(treeId, id);
 
                     if(c == null) return;
 

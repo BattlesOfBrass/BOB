@@ -394,6 +394,10 @@ public class FocusesUI extends JPanel {
         g2.drawLine(x2, midY, x2, y2);
     }
 
+    public void refresh() {
+        SwingUtilities.invokeLater(() -> { closeFocusPopup(); canvasPanel.repaint(); });
+    }
+
     @Override
     public void setVisible(boolean aFlag) {
         BOB.getInstance().getMainRenderer().setCanMove(!aFlag);
@@ -514,7 +518,7 @@ public class FocusesUI extends JPanel {
             actionButton.setBackground(new Color(115, 55, 7));
             actionButton.setBorder(BorderFactory.createLineBorder(new Color(228, 107, 13), 2));
             actionButton.addActionListener(e -> {
-                BOB.getInstance().getFocusManager().cancelFocus(country, focus.getId(), button.getTreeId());
+                BOB.getInstance().getFocusManager().cancelFocusReq(country, focus.getId(), button.getTreeId());
                 closeFocusPopup();
                 canvasPanel.repaint();
             });
@@ -528,7 +532,7 @@ public class FocusesUI extends JPanel {
             actionButton.setBackground(new Color(16, 96, 5));
             actionButton.setBorder(BorderFactory.createLineBorder(new Color(30, 182, 10), 2));
             actionButton.addActionListener(e -> {
-                BOB.getInstance().getFocusManager().startFocus(country, focus.getId(), button.getTreeId());
+                BOB.getInstance().getFocusManager().startFocusReq(country, focus.getId(), button.getTreeId());
                 closeFocusPopup();
                 canvasPanel.repaint();
             });

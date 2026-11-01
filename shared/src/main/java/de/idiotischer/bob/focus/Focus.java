@@ -8,6 +8,7 @@ import de.idiotischer.bob.modifiers.ModifierResolver;
 import de.idiotischer.bob.networking.ChannelResolver;
 import de.idiotischer.bob.networking.communication.SendTool;
 import de.idiotischer.bob.networking.packet.impl.pp.ReplyPacket;
+import de.idiotischer.bob.networking.packet.impl.pp.RequestPacket;
 import de.idiotischer.bob.networking.packet.impl.pp.Type;
 import de.idiotischer.bob.state.State;
 import de.idiotischer.bob.state.StateResolver;
@@ -114,15 +115,15 @@ public class Focus {
     }
 
     public void startFocusClient(AsynchronousSocketChannel r, SendTool t, String tree, String c) {
-        t.send(r, new ReplyPacket(Type.FOCUS_UPDATE, "id=" + this.id + ";" + "treeId=" + tree + ";" + "start=" + c));
+        t.send(r, new RequestPacket(Type.FOCUS_UPDATE, "id=" + this.id + ";" + "treeId=" + tree + ";" + "start=" + c));
     }
 
     public void cancelFocusClient(AsynchronousSocketChannel r, SendTool t, String tree, String c) {
-        t.send(r, new ReplyPacket(Type.FOCUS_UPDATE, "id=" + this.id + ";" + "treeId=" + tree + ";" + "cancel=" + c));
+        t.send(r, new RequestPacket(Type.FOCUS_UPDATE, "id=" + this.id + ";" + "treeId=" + tree + ";" + "cancel=" + c));
     }
 
     public void endFocusClient(AsynchronousSocketChannel r, SendTool t, String tree, String c) {
-        t.send(r, new ReplyPacket(Type.FOCUS_UPDATE, "id=" + this.id + ";" + "treeId=" + tree + ";" + "end=" + c));
+        t.send(r, new RequestPacket(Type.FOCUS_UPDATE, "id=" + this.id + ";" + "treeId=" + tree + ";" + "end=" + c));
     }
 
     public String getId() {

@@ -225,7 +225,9 @@ public class ServerFocusManager implements FocusResolver {
 
     @Override
     public Focus focusBy(String focusTree, String id) {
-        return treeBy(focusTree).focuses().stream().filter(f -> f.getId().equals(id)).findFirst().orElse(null);
+        FocusTree tree = treeBy(focusTree);
+        if (tree == null) return null;
+        return tree.focuses().stream().filter(f -> f.getId().equals(id)).findFirst().orElse(null);
     }
 
     @Override
@@ -264,11 +266,14 @@ public class ServerFocusManager implements FocusResolver {
 
         if(tree.focuses().stream().filter(f -> f.getCountryDone().contains(country)).anyMatch(f -> f.getExclusiveWith().contains(foc.getId()) || foc.getExclusiveWith().contains(f.getId()))) return;
 
+        if(!foc.getPrerequisite().isEmpty() && !focusBy(treeId, foc.getPrerequisite()).getCountryDone().contains(country)) return;
+
         foc.startFocusServer(Server.getInstance().getServerSocket(), Server.getInstance().getSendTool(),treeId,country);
 
         activeFocuses.put(country, Pair.of(id,treeId));
 
         Server.getInstance().getGameManager().addTimeHook(treeId + "-" + id + "-" + country, foc.getTime(), (i) -> {
+            //System.out.println("Time hook called"); got called last time i checked
             endFocus(country, id, treeId);
         });
     }

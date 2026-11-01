@@ -51,7 +51,9 @@ public class FocusManager implements FocusResolver{
 
     @Override
     public Focus focusBy(String focusTree, String id) {
-        return treeBy(focusTree).focuses().stream().filter(f -> f.getId().equals(id)).findFirst().orElse(null);
+        FocusTree tree = treeBy(focusTree);
+        if (tree == null) return null;
+        return tree.focuses().stream().filter(f -> f.getId().equals(id)).findFirst().orElse(null);
     }
 
     @Override
@@ -74,7 +76,7 @@ public class FocusManager implements FocusResolver{
 
         if (pair == null) return null;
 
-        return focusBy(treeBy(pair.key()).id(),pair.value());
+        return focusBy(pair.value(), pair.key());
     }
 
     public Map<String, Pair<String, String>> getActiveFocuses() {
@@ -93,22 +95,34 @@ public class FocusManager implements FocusResolver{
         this.remove(treeBy(id));
     }
 
+    public void startFocusReq(String country, String id, String treeId) {
+        focusBy(treeId,id).startFocusClient(BOB.getInstance().getClient().getChannel(), BOB.getInstance().getSendTool(), treeId, country);
+    }
+
+    public void cancelFocusReq(String country, String id, String treeId) {
+        focusBy(treeId,id).cancelFocusClient(BOB.getInstance().getClient().getChannel(), BOB.getInstance().getSendTool(), treeId, country);
+
+    }
+
     public void startFocus(String country, String id, String treeId) {
         focusBy(treeId,id).startFocus(country);
 
         activeFocuses.put(country, Pair.of(id,treeId));
+        BOB.getInstance().getMainRenderer().getGamePanel().getHud().getFocusUI().refresh();
     }
 
     public void cancelFocus(String country, String id, String treeId) {
         focusBy(treeId,id).cancelFocus(country);
 
         activeFocuses.remove(country);
+        BOB.getInstance().getMainRenderer().getGamePanel().getHud().getFocusUI().refresh();
     }
 
     public void endFocus(String country, String id, String treeId) {
         focusBy(treeId,id).endFocus(country);
 
         activeFocuses.remove(country);
+        BOB.getInstance().getMainRenderer().getGamePanel().getHud().getFocusUI().refresh();
         //focus finished, blabla display it as popup bla bla
     }
 }
