@@ -122,7 +122,7 @@ public class ServerTroopManager implements TroopResolver{
         Server.getInstance().getGameManager().addTimeHook("troopId=" + uuid, troop.getTrainDays(), (i) -> {
             //TODO: dont depoloy directly but make the client need to deploy
             //jfyi this is dumb since ofc in hoi4 it also autodeploys but you have the option not to specify a region
-            addTroopStack(troop, uuid)
+            addTroopStack(troop, uuid);
         });
     }
 
