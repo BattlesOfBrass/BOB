@@ -21,7 +21,7 @@ public enum Type {
     COMBAT_OVER,
     CLEAR_COMBATS,
     WARS_SYNC,
-    SPAWN_TROOP, /*test thing, will be removed*/
+    TRAIN_TROOP, /*test thing, will be removed*/
     CONFERENCE_STARTED,
     END_CONFERENCE, //this is 1. used when a client quits and 2. when the server finished the conference
     ROUND_ENDED,
@@ -47,5 +47,7 @@ public enum Type {
     FOCUSES_SYNC,
     FACTION_REMOVE,
     FOCUS_UPDATE,
+    TROOP_TRAIN_START,
+    TROOP_TRAIN_END,
     FOCUSTREE_REMOVE
 }

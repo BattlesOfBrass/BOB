@@ -62,23 +62,7 @@ public class TroopStack extends Troop {
     }
 
     public String serialize(UUID troopId) {
-        return "uuid=" + troopId.toString() +
-                ";name=" + getName() +
-                ";count=" + troops.size() +
-                ";owner=" + getOwner().getAbbreviation() +
-                ";controller=" + getController().getAbbreviation() +
-                ";tile=" + tile.getAbbreviation() +
-                ";template=" + template +
-                ";baseHp=" + baseHp +
-                ";baseAttack=" + baseAttack +
-                ";baseDefense=" + baseDefense +
-                ";baseOrg=" + baseOrg +
-                ";hp=" + hp +
-                ";attack=" + attack +
-                ";defense=" + defense +
-                ";org=" + org +
-                ";alive=" + alive +
-                ";speed=" + speed;
+        return "uuid=" + troopId.toString() + ";name=" + getName() + ";count=" + troops.size() + ";owner=" + getOwner().getAbbreviation() + ";controller=" + getController().getAbbreviation() + ";tile=" + tile.getAbbreviation() + ";template=" + template + ";baseHp=" + baseHp + ";baseAttack=" + baseAttack + ";baseDefense=" + baseDefense + ";baseOrg=" + baseOrg + ";hp=" + hp + ";attack=" + attack + ";defense=" + defense + ";org=" + org + ";alive=" + alive + ";speed=" + speed;
     }
 
     public static Pair<UUID, TroopStack> deserialize(String data, CountryResolver countryResolver, TileResolver tileResolver) {
@@ -126,9 +110,13 @@ public class TroopStack extends Troop {
         int size = troops.size();
         this.hp = size == 0 ? 0 : totalHp / size;
 
-        if(hp <= 0) {
-            hp = 0;
-        }
+        if(hp <= 0) hp = 0;
+    }
+
+    public int getTrainDays() {
+        //later get the slowest training division in template and use that training speed
+
+        return 90;
     }
 
     public int getAttack() {

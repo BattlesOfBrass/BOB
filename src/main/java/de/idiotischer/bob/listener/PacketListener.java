@@ -25,6 +25,7 @@ import de.idiotischer.bob.tile.Tile;
 import de.idiotischer.bob.tile.TileManager;
 import de.idiotischer.bob.tile.event.TileChangedEvent;
 import de.idiotischer.bob.troop.MoveStatus;
+import de.idiotischer.bob.troop.TrainEntry;
 import de.idiotischer.bob.util.AddressUtil;
 import de.idiotischer.bob.war.WarStatus;
 import it.unimi.dsi.fastutil.Pair;
@@ -141,6 +142,25 @@ public class PacketListener implements ListenerAdapter {
             BOB.getInstance().getTileManager().registerTile(tile);
         } else if(event.getPacket() instanceof ReplyPacket pack) {
             switch (pack.getReplyType()) {
+                case TROOP_TRAIN_START -> {
+                    //uuid + ";" + troop.getName() + ";" + troop.getTemplate() + ";" + troop.getTrainDays()
+                    String[] strings = pack.getMessage().split(";");
+                    UUID uuid = UUID.fromString(strings[0]);
+                    String troopName = strings[1];
+                    String troopTemplate = strings[2];
+                    int troopTrainDays = Integer.parseInt(strings[3]);
+
+                    BOB.getInstance().getTroopManager().addTrainEntry(new TrainEntry(0,uuid,troopName,troopTemplate,troopTrainDays));
+                }
+                case TROOP_TRAIN_END -> {
+                    String[] strings = pack.getMessage().split(";");
+
+                    UUID uuid = UUID.fromString(strings[0]);
+                    String troopName = strings[1];
+                    String troopTemplate = strings[2];
+
+                    BOB.getInstance().getTroopManager().removeTrainEntry(uuid,troopName,troopTemplate);
+                }
                 case FOCUSTREE_REMOVE -> BOB.getInstance().getFocusManager().remove(pack.getMessage());
                 case MODIFIERS_UPDATE -> {
                     String[] strings = pack.getMessage().split(";");

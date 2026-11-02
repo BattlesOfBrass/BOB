@@ -369,6 +369,7 @@ public class ServerFocusManager implements FocusResolver {
         });
     }
 
+
     public void cancelFocus(String country, String id, String treeId) {
         Focus foc = focusBy(treeId,id);
         foc.cancelFocusServer(Server.getInstance().getServerSocket(), Server.getInstance().getSendTool(),treeId,country);

@@ -1,8 +1,6 @@
 package de.idiotischer.bob.render.menu.impl;
 
 import de.idiotischer.bob.BOB;
-import de.idiotischer.bob.Server;
-import de.idiotischer.bob.country.Country;
 import de.idiotischer.bob.networking.packet.impl.pp.RequestPacket;
 import de.idiotischer.bob.networking.packet.impl.pp.Type;
 import de.idiotischer.bob.render.menu.components.*;
@@ -341,7 +339,7 @@ public class HUD extends JPanel {
 
             int divisions = (Integer) divisionSpinner.getValue();
 
-            RequestPacket packet = new RequestPacket(Type.SPAWN_TROOP, selectedTile + ";" + BOB.getInstance().getPlayer().country().getAbbreviation() + ";" + divisions);
+            RequestPacket packet = new RequestPacket(Type.TRAIN_TROOP, selectedTile + ";" + BOB.getInstance().getPlayer().country().getAbbreviation() + ";" + divisions);
             BOB.getInstance().getSendTool().send(BOB.getInstance().getClient().getChannel(), packet);
         });
 

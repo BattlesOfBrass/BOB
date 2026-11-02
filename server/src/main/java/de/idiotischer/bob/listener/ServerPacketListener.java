@@ -141,7 +141,7 @@ public class ServerPacketListener implements ListenerAdapter {
 
                     Server.getInstance().getConferenceManager().getBy(id).addEnded(c);
                 }
-                case SPAWN_TROOP -> {
+                case TRAIN_TROOP -> {
                     String[] strings = pack.getMessage().split(";");
 
                     String tileString = strings[0];
@@ -153,9 +153,9 @@ public class ServerPacketListener implements ListenerAdapter {
 
                     if(tile == null || owner == null) return;
 
-                    TroopStack stack = new TroopStack("dojfsnsdoi", tile,owner,owner,count, "none");
+                    TroopStack stack = new TroopStack("None to specify currently since yk i havent added it", tile,owner,owner,count, "none");
 
-                    Server.getInstance().getTroopManager().addTroopStack(stack);
+                    Server.getInstance().getTroopManager().addTroopTraining(stack);
                 }
                 case WARS_SYNC -> {
                     Server.getInstance().getSendTool().send(event.getChannel(), new ReplyPacket(Type.WARS_SYNC, Server.getInstance().getWarManager().serializeWars()));

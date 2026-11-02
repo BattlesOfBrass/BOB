@@ -235,7 +235,7 @@ public class Focus {
             if (i < array5.size() - 1) sb4.append("|");
         }
 
-        return id + ";" + name + ";" + prerequisite + ";" + point.getX() + "," + point.getY() + ";" + time + ";" + ppDebuff + ";" + visibleWhenSB + ";" + description + ";" + mapSB2 + ";" + sb3 + ";" + sb4 + ";" + weight + ";" + effect.toDataString() + ";" + requirements.toDataString();
+        return id + ";" + name + ";" + prerequisite + ";" + point.getX() + "," + point.getY() + ";" + time + ";" + ppDebuff + ";" + visibleWhenSB + ";" + description + ";" + mapSB2 + ";" + sb3 + ";" + sb4 + ";" + weight + ";" + effect.toDataString() + ";" + (requirements != null ? requirements.toDataString() : "");
     }
 
     public static Focus fromDataString(String data, ModifierResolver r) {

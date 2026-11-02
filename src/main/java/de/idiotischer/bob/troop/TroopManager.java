@@ -244,4 +244,12 @@ public class TroopManager implements TroopResolver{
     public void tp(UUID uuid, Tile tile) {
         getTroop(uuid).setTile(tile);
     }
+
+
+    public void addTrainEntry(TrainEntry trainEntry) {
+    }
+
+    //these params bc i made the timehook with em
+    public void removeTrainEntry(UUID uuid, String troopName, String troopTemplate) {
+    }
 }
