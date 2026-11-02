@@ -1,0 +1,116 @@
+
+{
+  "germany_old": {
+
+    "requiredTag": "",
+    "countries": ["GER"],
+    "alreadyDone": {},
+
+    "focuses": {
+      "zeitenwende": {
+        "name": "The \"Zeitenwende\"",
+        "description": "Following Russia's invasion of Ukraine, Chancellor Scholz announced a Zeitenwende in German foreign policy",
+        "time": 30,
+        "ppLoss": 0.1,
+        "point": "2,0",
+        "effect": {
+          "modifiers": {
+            "add": {
+              "GER": ["zeitenwende"]
+            }
+          }
+        }
+      },
+      "building_an_army": {
+        "name": "Army reforms",
+        "description": "Prepare the German army for a NATO article 5 case.",
+        "prerequisite": "zeitenwende",
+        "time": 35,
+        "ppLoss": 0.1,
+        "point": "2,1",
+        "effect": {
+          "modifiers": {
+            "add": {
+              "GER": ["army_reforms"]
+            }
+          }
+        }
+      },
+      "anschluss": {
+        "name": "Anschluss",
+        "description": "Unite Austria and Germany under one government.",
+        "prerequisite": "building_an_army",
+        "time": 45,
+        "ppLoss": 0.15,
+        "point": "2,2",
+        "effect": {
+          "modifiers": {
+            "add": {
+              "GER": ["anschluss"]
+            }
+          }
+        }
+      },
+      "demand_sudetenland": {
+        "name": "Demand Sudetenland",
+        "description": "Demand the Sudetenland and challenge Czechoslovakia's territorial integrity.",
+        "prerequisite": "anschluss",
+        "time": 45,
+        "ppLoss": 0.2,
+        "point": "2,3",
+        "effect": {
+          "modifiers": {
+            "add": {
+              "GER": ["sudetenland_claim"]
+            }
+          }
+        }
+      },
+      "fate_of_czechoslovakia": {
+        "name": "Fate of Czechoslovakia",
+        "description": "Resolve the future of Czechoslovakia and expand German influence in Central Europe.",
+        "prerequisite": "demand_sudetenland",
+        "time": 45,
+        "ppLoss": 0.2,
+        "point": "2,4",
+        "effect": {
+          "modifiers": {
+            "add": {
+              "GER": ["central_european_influence"]
+            }
+          }
+        }
+      },
+      "molotov_ribbentrop": {
+        "name": "Molotov-Ribbentrop Pact",
+        "description": "Negotiate a non-aggression agreement with the Soviet Union.",
+        "prerequisite": "fate_of_czechoslovakia",
+        "time": 35,
+        "ppLoss": 0.1,
+        "point": "2,5",
+        "effect": {
+          "modifiers": {
+            "add": {
+              "GER": ["molotov_ribbentrop_pact"]
+            }
+          }
+        }
+      },
+      "danzig_or_war": {
+        "name": "Danzig or War",
+        "description": "Escalate the dispute over Danzig and the Polish Corridor.",
+        "prerequisite": "molotov_ribbentrop",
+        "time": 50,
+        "ppLoss": 0.25,
+        "point": "2,6",
+        "effect": {
+          "modifiers": {
+            "add": {
+              "GER": ["danzig_crisis"]
+            }
+          }
+        }
+      }
+    }
+  }
+}

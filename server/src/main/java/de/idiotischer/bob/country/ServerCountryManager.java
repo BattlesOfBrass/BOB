@@ -118,10 +118,19 @@ public class ServerCountryManager implements CountryResolver {
         if(Server.getInstance().getTileManager() == null) return List.of();
         return Server.getInstance().getTileManager().getTileSet().stream().filter(s -> s.getOwner().getAbbreviation().equals(country.getAbbreviation())).toList();
     }
+    public List<Tile> getOwned(String country) {
+        if(Server.getInstance().getTileManager() == null) return List.of();
+        return Server.getInstance().getTileManager().getTileSet().stream().filter(s -> s.getOwner().getAbbreviation().equals(country)).toList();
+    }
 
     public List<Tile> getControlled(Country country) {
         if(Server.getInstance().getTileManager() == null) return List.of();
         return Server.getInstance().getTileManager().getTileSet().stream().filter(s -> s.getController().getAbbreviation().equals(country.getAbbreviation())).toList();
+    }
+
+    public List<Tile> getControlled(String country) {
+        if(Server.getInstance().getTileManager() == null) return List.of();
+        return Server.getInstance().getTileManager().getTileSet().stream().filter(s -> s.getController().getAbbreviation().equals(country)).toList();
     }
 
     public List<Country> getCountries() {

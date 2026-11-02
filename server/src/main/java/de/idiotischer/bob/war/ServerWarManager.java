@@ -56,6 +56,11 @@ public class ServerWarManager implements WarResolver {
         return activeWars.getOrDefault(c.getAbbreviation(), Collections.emptySet());
     }
 
+    public Set<WarStatus> getWars(String c) {
+        return activeWars.getOrDefault(c, Collections.emptySet());
+    }
+
+
     public boolean isAtWar(Country country) {
         if (country == null) return false;
         return !getWars(country).isEmpty();
@@ -63,6 +68,16 @@ public class ServerWarManager implements WarResolver {
 
     public boolean isAtWar(Country a, Country b) {
         if(Objects.equals(a.getAbbreviation(), b.getAbbreviation())) return false;
+        return !Collections.disjoint(getWars(a), getWars(b));
+    }
+
+    public boolean isAtWar(String country) {
+        if (country == null) return false;
+        return !getWars(country).isEmpty();
+    }
+
+    public boolean isAtWar(String a, String b) {
+        if(Objects.equals(a, b)) return false;
         return !Collections.disjoint(getWars(a), getWars(b));
     }
 

@@ -38,8 +38,6 @@ public class FocusesUI extends JPanel {
     private final JPanel topPanel;
     private final JPanel canvasPanel;
 
-    private long lastMovementTime = 0;
-
     private static final double DEFAULT_MOVE_SPEED = 200.0;
     private static final double DEFAULT_MAP_DIAG = 2000.0;
 

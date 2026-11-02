@@ -7,10 +7,12 @@ import com.google.gson.stream.JsonReader;
 import de.idiotischer.bob.Server;
 import de.idiotischer.bob.SharedCore;
 import de.idiotischer.bob.country.Country;
-import de.idiotischer.bob.effect.Effect;
+import de.idiotischer.bob.executable.Effect;
+import de.idiotischer.bob.executable.Requirements;
 import de.idiotischer.bob.modifiers.Modifier;
 import de.idiotischer.bob.networking.packet.impl.pp.ReplyPacket;
 import de.idiotischer.bob.networking.packet.impl.pp.Type;
+import de.idiotischer.bob.tile.Tile;
 import it.unimi.dsi.fastutil.Pair;
 
 import java.awt.*;
@@ -187,9 +189,18 @@ public class ServerFocusManager implements FocusResolver {
                 if(obj != null) effect = Effect.fromJson(obj);
             }
 
+            Requirements requirements = null;
+
+            JsonElement requirementsElement = element.get("requirements");
+
+            if(requirementsElement != null) {
+                JsonObject obj = requirementsElement.getAsJsonObject();
+                if(obj != null) requirements = Requirements.fromJson(obj);
+            }
+
             Set<String> countries = alreadyDone.getOrDefault(id, new HashSet<>());
 
-            Focus focus = new Focus(id,name,weight,tags,countries,exclusiveWith,visibleWhen,time,ppDebuff,new Point(x,y),prerequisite,effect,description);
+            Focus focus = new Focus(id,name,weight,tags,countries,exclusiveWith,visibleWhen,time,ppDebuff,new Point(x,y),prerequisite,requirements,effect,description);
 
             focuses.add(focus);
         });
@@ -275,6 +286,70 @@ public class ServerFocusManager implements FocusResolver {
         Focus foc = focusBy(treeId,id);
 
         if(foc == null) return;
+
+        Requirements requirements = foc.getRequirements();
+
+        if (requirements != null) {
+
+            if (!requirements.isDateLessOrMore().isEmpty() && !requirements.fulfillsDateCheck(Server.getInstance().getGameManager().getDate())) return;
+
+            if (!requirements.moreOrLessTroops().isEmpty() && !requirements.fulfillsTroopsCheck(country, Server.getInstance().getTroopManager().getForController(country).size())) return;
+
+            if (!requirements.atWarWith().entrySet().stream().allMatch(k -> {
+                String c = k.getKey();
+                Set<String> countries = k.getValue();
+
+                return countries.stream().allMatch(other -> Server.getInstance().getWarManager().isAtWar(c, other));
+            })) return;
+
+            if (!requirements.atPeaceWith().entrySet().stream().allMatch(k -> {
+                String c = k.getKey();
+                Set<String> countries = k.getValue();
+
+                return countries.stream().allMatch(other -> Server.getInstance().getWarManager().isAtWar(c, other));
+            })) return;
+
+            if (!requirements.controlsTiles().entrySet().stream().allMatch(k -> {
+                String c = k.getKey();
+                Set<String> tiles = k.getValue();
+
+                return new HashSet<>(Server.getInstance().getCountryManager().getControlled(c)).stream().map(Tile::getAbbreviation).collect(Collectors.toSet()).containsAll(tiles);
+            })) return;
+
+            if (!requirements.ownsTiles().entrySet().stream().allMatch(k -> {
+                String c = k.getKey();
+                Set<String> tiles = k.getValue();
+
+                return new HashSet<>(Server.getInstance().getCountryManager().getOwned(c)).stream().map(Tile::getAbbreviation).collect(Collectors.toSet()).containsAll(tiles);
+            })) return;
+
+            if (!requirements.needsIdeology().entrySet().stream().allMatch(k -> {
+                String c = k.getKey();
+                Set<String> ideologies = k.getValue();
+
+                String ideology = Server.getInstance().getCountryManager().getCountry(c).getRulingIdeology().abbreviation();
+
+                return ideologies.contains(ideology);
+            })) return;
+
+            if (!requirements.hasModifier().entrySet().stream().allMatch(k -> {
+                String c = k.getKey();
+                Set<String> modifiers = k.getValue();
+
+                Set<String> existing = Server.getInstance().getCountryManager().getCountry(c).getModifiers().stream().map(Modifier::getId).collect(Collectors.toSet());
+
+                return existing.containsAll(modifiers);
+            })) return;
+
+            if (!requirements.hasNotModifier().entrySet().stream().allMatch(k -> {
+                String c = k.getKey();
+                Set<String> modifiers = k.getValue();
+
+                Set<String> existing = Server.getInstance().getCountryManager().getCountry(c).getModifiers().stream().map(Modifier::getId).collect(Collectors.toSet());
+
+                return Collections.disjoint(existing, modifiers);
+            })) return;
+        }
 
         if(tree == null) return;
 

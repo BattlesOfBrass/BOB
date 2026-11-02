@@ -2,7 +2,8 @@ package de.idiotischer.bob.focus;
 
 import de.idiotischer.bob.country.Country;
 import de.idiotischer.bob.country.CountryResolver;
-import de.idiotischer.bob.effect.Effect;
+import de.idiotischer.bob.executable.Effect;
+import de.idiotischer.bob.executable.Requirements;
 import de.idiotischer.bob.modifiers.Modifier;
 import de.idiotischer.bob.modifiers.ModifierResolver;
 import de.idiotischer.bob.networking.ChannelResolver;
@@ -17,12 +18,11 @@ import de.idiotischer.bob.tile.TileResolver;
 import de.idiotischer.bob.time.TimeResolver;
 
 import java.awt.*;
-import java.nio.channels.AsynchronousChannel;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.*;
 import java.util.stream.Collectors;
 
-//these should be defined in a focustree directly but i think it'd be cool to have a global.json that registers focuses globally
+//TODO: add conditions that need to be fulfilled in order to do the focus (e.g. a specific time, ideology, war support, population, troop count etc)
 public class Focus {
 
     private final String id;
@@ -38,8 +38,9 @@ public class Focus {
     private final Set<String> exclusiveWith;
     private final int weight;
     private final Set<String> tags;
+    private final Requirements requirements;
 
-    public Focus(String id, String name, int weight, Set<String> tags, Set<String> doneFocuses, Set<String> exclusiveWith, Set<Modifier> visibleWhen, int time, float ppDebuff, Point point, String prerequisite, Effect effect, String description) {
+    public Focus(String id, String name, int weight, Set<String> tags, Set<String> doneFocuses, Set<String> exclusiveWith, Set<Modifier> visibleWhen, int time, float ppDebuff, Point point, String prerequisite, Requirements requirements, Effect effect, String description) {
         this.id = id;
         this.name = name;
         this.point = point;
@@ -53,6 +54,7 @@ public class Focus {
         this.exclusiveWith = exclusiveWith;
         this.weight = weight;
         this.tags = tags;
+        this.requirements = requirements;
     }
 
     public void startFocus(String c) {
@@ -233,13 +235,13 @@ public class Focus {
             if (i < array5.size() - 1) sb4.append("|");
         }
 
-        return id + ";" + name + ";" + prerequisite + ";" + point.getX() + "," + point.getY() + ";" + time + ";" + ppDebuff + ";" + visibleWhenSB + ";" + description + ";" + mapSB2 + ";" + sb3 + ";" + sb4 + ";" + weight+ ";" + effect.toDataString();
+        return id + ";" + name + ";" + prerequisite + ";" + point.getX() + "," + point.getY() + ";" + time + ";" + ppDebuff + ";" + visibleWhenSB + ";" + description + ";" + mapSB2 + ";" + sb3 + ";" + sb4 + ";" + weight + ";" + effect.toDataString() + ";" + requirements.toDataString();
     }
 
     public static Focus fromDataString(String data, ModifierResolver r) {
         String[] strings = data.split(";", -1);
 
-        if (strings.length != 13) {
+        if (strings.length != 14) {
             for (int i = 0; i < strings.length; i++) System.err.println(i + ": " + strings[i]);
 
             return null;
@@ -258,6 +260,7 @@ public class Focus {
         String tagString = strings[10];
         int weight = 0;
         String effectString = strings[12];
+        String requirementsS = strings[13];
 
         try {
             weight = Integer.parseInt(strings[11]);
@@ -274,10 +277,15 @@ public class Focus {
         Set<String> tags = new HashSet<>(Arrays.asList(tagString.split("\\|")));
 
         Effect effect = Effect.fromDataString(effectString);
+        Requirements requirements = Requirements.fromDataString(requirementsS);
 
         Set<String> countriesDone = new HashSet<>(Arrays.asList(countriesDoneString.split("\\|")));
 
-        return new Focus(id,name, weight, tags,countriesDone,exclusiveWith,visibleWhen,time,ppDebuff,p,prerequisite,effect,desc);
+        return new Focus(id,name, weight, tags,countriesDone,exclusiveWith,visibleWhen,time,ppDebuff,p,prerequisite,requirements,effect,desc);
+    }
+
+    public Requirements getRequirements() {
+        return requirements;
     }
 
     @Override

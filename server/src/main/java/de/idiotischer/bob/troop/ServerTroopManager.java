@@ -143,6 +143,10 @@ public class ServerTroopManager implements TroopResolver{
         return troopStacks.values().stream().filter(s -> s.getController() != null && s.getController().equals(country)).toList();
     }
 
+    public List<TroopStack> getForController(String country) {
+        return troopStacks.values().stream().filter(s -> s.getController() != null && s.getController().getAbbreviation().equals(country)).toList();
+    }
+
     public void removePathfinding(TroopStack troop) {
         activePathfindings.remove(troop);
     }

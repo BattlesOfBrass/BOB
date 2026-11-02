@@ -1,4 +1,4 @@
-package de.idiotischer.bob.effect;
+package de.idiotischer.bob.executable;
 
 import com.google.common.reflect.TypeToken;
 import com.google.gson.JsonElement;
