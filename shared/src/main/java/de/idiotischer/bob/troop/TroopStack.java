@@ -2,6 +2,10 @@ package de.idiotischer.bob.troop;
 
 import de.idiotischer.bob.country.Country;
 import de.idiotischer.bob.country.CountryResolver;
+import de.idiotischer.bob.networking.ChannelResolver;
+import de.idiotischer.bob.networking.communication.SendTool;
+import de.idiotischer.bob.networking.packet.impl.pp.ReplyPacket;
+import de.idiotischer.bob.networking.packet.impl.pp.Type;
 import de.idiotischer.bob.tile.Tile;
 import de.idiotischer.bob.tile.TileResolver;
 import de.idiotischer.bob.util.UUIDUtil;
@@ -23,6 +27,8 @@ public class TroopStack extends Troop {
     private int org = baseOrg;
     private boolean alive = true;
     private float speed = 1f;
+    private int level = 1;
+    private int exp = 1;
 
     public TroopStack(String name, Tile tile, Country owner,Country controller, int count, String template) {
         super(name,tile, owner, controller, template);
@@ -62,7 +68,7 @@ public class TroopStack extends Troop {
     }
 
     public String serialize(UUID troopId) {
-        return "uuid=" + troopId.toString() + ";name=" + getName() + ";count=" + troops.size() + ";owner=" + getOwner().getAbbreviation() + ";controller=" + getController().getAbbreviation() + ";tile=" + tile.getAbbreviation() + ";template=" + template + ";baseHp=" + baseHp + ";baseAttack=" + baseAttack + ";baseDefense=" + baseDefense + ";baseOrg=" + baseOrg + ";hp=" + hp + ";attack=" + attack + ";defense=" + defense + ";org=" + org + ";alive=" + alive + ";speed=" + speed;
+    return "uuid=" + troopId.toString() + ";name=" + getName() + ";count=" + troops.size() + ";owner=" + getOwner().getAbbreviation() + ";controller=" + getController().getAbbreviation() + ";tile=" + tile.getAbbreviation() + ";template=" + template + ";baseHp=" + baseHp + ";baseAttack=" + baseAttack + ";baseDefense=" + baseDefense + ";baseOrg=" + baseOrg + ";hp=" + hp + ";attack=" + attack + ";defense=" + defense + ";org=" + org + ";alive=" + alive + ";speed=" + speed + ";exp=" + exp + ";level=" + level;
     }
 
     public static Pair<UUID, TroopStack> deserialize(String data, CountryResolver countryResolver, TileResolver tileResolver) {
@@ -98,8 +104,29 @@ public class TroopStack extends Troop {
         stack.alive = Boolean.parseBoolean(values.getOrDefault("alive", "true"));
 
         stack.speed = Float.parseFloat(values.getOrDefault("speed", String.valueOf(stack.speed)));
+        stack.exp = Integer.parseInt(values.getOrDefault("exp", String.valueOf(stack.exp)));
+        stack.level = Integer.parseInt(values.getOrDefault("level", String.valueOf(stack.level)));
 
         return Pair.of(uuid, stack);
+    }
+
+    public int getLevel() {
+        return exp / 100;
+    }
+
+    public void setExp(int exp) {
+        this.exp = exp;
+    }
+
+    public void setExpServer(ChannelResolver r, SendTool t, UUID uuid, int exp) {
+        this.exp = exp;
+
+        t.broadcast(r.channels(), new ReplyPacket(Type.TROOP_UPDATE, "id=" + uuid.toString() +";exp=" + exp));
+    }
+
+    //buff/debuff damage and health etc and org
+    public int getExp() {
+        return exp;
     }
 
     public int getHp() {

@@ -93,7 +93,7 @@ public class CountryManager implements CountryResolver{
 
     public List<Tile> getOwned(Country country) {
         if(BOB.getInstance().getTileManager() == null) return List.of();
-        return Server.getInstance().getTileManager().getTileSet().stream().filter(s -> s.getOwner().getAbbreviation().equals(country.getAbbreviation())).toList();
+        return BOB.getInstance().getTileManager().getTileSet().stream().filter(s -> s.getOwner().getAbbreviation().equals(country.getAbbreviation())).toList();
     }
 
     public List<Tile> getControlled(Country country) {

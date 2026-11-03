@@ -1,8 +1,8 @@
 package de.idiotischer.bob.troop;
 
 import de.idiotischer.bob.BOB;
-import de.idiotischer.bob.Server;
 import de.idiotischer.bob.country.Country;
+import de.idiotischer.bob.focus.FocusManager;
 import de.idiotischer.bob.networking.packet.impl.pp.RequestPacket;
 import de.idiotischer.bob.networking.packet.impl.pp.Type;
 import de.idiotischer.bob.render.menu.impl.select.ScenarioSelectMenu;
@@ -20,12 +20,14 @@ import java.util.stream.Collectors;
 public class TroopManager implements TroopResolver{
 
     private final Map<UUID, TroopStack> troops = new HashMap<>();
+    private final Set<UUID> usedIds = new HashSet<>();
 
     private CompletableFuture<Void> awaitingFuture = new CompletableFuture<>();
 
     private Map<UUID, CompletableFuture<Pair<TroopStack, Pair<Tile, MoveStatus>>>> requests = new HashMap<>();
 
     private final Map<Set<UUID>, CompletableFuture<Set<Pair<TroopStack, Pair<Tile, MoveStatus>>>>> bundledRequests = new HashMap<>();
+    private final Set<TrainEntry> training = new HashSet<>();
 
     public CompletableFuture<Set<Pair<TroopStack, Pair<Tile, MoveStatus>>>> moveAll(Set<TroopStack> troops, Tile tile) {
         CompletableFuture<Set<Pair<TroopStack, Pair<Tile, MoveStatus>>>> future = new CompletableFuture<>();
@@ -108,11 +110,11 @@ public class TroopManager implements TroopResolver{
         Country toController = to.getController();
 
         if(!Objects.equals(toController.getAbbreviation(), troopController.getAbbreviation())) {
-            if (!Server.getInstance().getWarManager().isAtWar(troopController, toController)) return MoveStatus.FAILURE;
+            if (!BOB.getInstance().getWarManager().isAtWar(troopController, toController)) return MoveStatus.FAILURE;
         }
 
-        if(Server.getInstance().getWarManager().fightsTogetherWith(troopController, fromController) ||
-                Server.getInstance().getWarManager().isAtWar(fromController, toController)) {
+        if(BOB.getInstance().getWarManager().fightsTogetherWith(troopController, fromController) ||
+                BOB.getInstance().getWarManager().isAtWar(fromController, toController)) {
             if(!Objects.equals(fromController.getAbbreviation(), toController.getAbbreviation()) &&
                     !Objects.equals(fromController.getAbbreviation(), troopController.getAbbreviation())) {
                 return MoveStatus.FAILURE;
@@ -120,7 +122,7 @@ public class TroopManager implements TroopResolver{
         }
 
         if(hasStack(to)) {
-            if(Server.getInstance().getWarManager().isEnemy(troopController, toController)) {
+            if(BOB.getInstance().getWarManager().isEnemy(troopController, toController)) {
                 return MoveStatus.FAILURE_FIGHT;
             }
         }
@@ -213,23 +215,16 @@ public class TroopManager implements TroopResolver{
         awaitingFuture.complete(null);
     }
 
-    public void addTroopStack(UUID uuid, TroopStack stack) {
+    public void addTroopStack(TroopStack stack, UUID uuid) {
         troops.putIfAbsent(uuid, stack);
-    }
-
-    public void addTroopStack(TroopStack stack) {
-        troops.putIfAbsent(UUIDUtil.getUnused(troops.keySet()), stack);
     }
 
     public void removeTroopStack(UUID uuid) {
         troops.remove(uuid);
     }
 
-    public List<TroopStack> getEnemy() {
-        return List.of();
-    }
-
     public Map<UUID, TroopStack> getVisible(Country country) {
+        //TODO: only show ones on border tiles and yeah
         return troops;
     }
 
@@ -245,11 +240,17 @@ public class TroopManager implements TroopResolver{
         getTroop(uuid).setTile(tile);
     }
 
-
     public void addTrainEntry(TrainEntry trainEntry) {
+        this.training.add(trainEntry);
     }
 
     //these params bc i made the timehook with em
-    public void removeTrainEntry(UUID uuid, String troopName, String troopTemplate) {
+    public void removeTrainEntry(UUID uuid, boolean willUseUUID) {
+        training.removeIf(entry -> entry.getUuid().equals(uuid));
+        if(!willUseUUID) usedIds.remove(uuid);
+    }
+
+    public Set<TrainEntry> getTraining() {
+        return training;
     }
 }

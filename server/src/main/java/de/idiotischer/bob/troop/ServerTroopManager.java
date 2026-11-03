@@ -14,6 +14,7 @@ import de.idiotischer.bob.networking.packet.impl.pp.Type;
 import de.idiotischer.bob.tile.Tile;
 import de.idiotischer.bob.tile.TileResolver;
 import de.idiotischer.bob.util.UUIDUtil;
+import it.unimi.dsi.fastutil.BigArrays;
 
 import java.nio.file.Files;
 import java.util.*;
@@ -32,6 +33,7 @@ public class ServerTroopManager implements TroopResolver{
 
     private final Map<TroopStack, List<Tile>> activePathfindings = new ConcurrentHashMap<>();
     private final Map<TroopStack, Integer> pausedMovementIndex = new ConcurrentHashMap<>();
+    private Set<TrainEntry> training = new HashSet<>();
 
     public void reload() {
         troopStacks.clear();
@@ -90,11 +92,9 @@ public class ServerTroopManager implements TroopResolver{
                     troopStacks.putIfAbsent(uuid,stack);
                     usedIds.add(uuid);
 
-                    if(Server.getInstance().isDebug())
-                        System.out.println("Added troop stack with info:  owner: " + stack.getOwner().getAbbreviation() + " controller: " + stack.getController().getAbbreviation() + " tile: " + stack.getTile().getAbbreviation());
+                    if(Server.getInstance().isDebug()) System.out.println("Added troop stack with info:  owner: " + stack.getOwner().getAbbreviation() + " controller: " + stack.getController().getAbbreviation() + " tile: " + stack.getTile().getAbbreviation());
                 } else {
-                    if(Server.getInstance().isDebug())
-                        System.out.println("Couldn't add troop stack: " + name + " because the owner or tile couldn't be found!");
+                    if(Server.getInstance().isDebug()) System.out.println("Couldn't add troop stack: " + name + " because the owner or tile couldn't be found!");
                 }
             });
 
@@ -113,30 +113,39 @@ public class ServerTroopManager implements TroopResolver{
         UUID uuid = UUIDUtil.getUnused(usedIds);
         usedIds.add(uuid);
 
-        addTrainEntry(new TrainEntry(0,uuid, troop.getName(), troop.getTemplate(), troop.getTrainDays()));
+        //TODO: check for enough pop
 
-        Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().channels(), new ReplyPacket(Type.TROOP_TRAIN_START, uuid + ";" + troop.getName() + ";" + troop.getTemplate() + ";" + troop.getTrainDays()));
+        long t = Server.getInstance().getGameManager().getTimeTicks();
+        addTrainEntry(new TrainEntry(t, 0, uuid, troop.getTrainDays(), troop));
 
-        //make this a ticking task that can be delayed when we have too few guns and so that we can tick the train progress :) (maybe bundle the sent packets than though and send progress updastes eversy ingam hour or so
-        //oh no, add the ticking method i ntimeresolver but rather check directly in the tick method since its easier xD
-        Server.getInstance().getGameManager().addTimeHook("troopId=" + uuid, troop.getTrainDays(), (i) -> {
-            //TODO: dont depoloy directly but make the client need to deploy
-            //jfyi this is dumb since ofc in hoi4 it also autodeploys but you have the option not to specify a region
-            addTroopStack(troop, uuid);
-        });
+        Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().channels(), new ReplyPacket(Type.TROOP_TRAIN_START, troop.getTrainDays() + "#" + troop.serialize(uuid) + "#" + t));
+    }
+
+    public void deployNow(UUID uuid) {
+        TrainEntry entry = training.stream().filter(trainEntry ->  trainEntry.getUuid().equals(uuid)).findFirst().orElse(null);
+
+        if(entry == null) return;
+
+        if(!training.remove(entry)) return;
+
+        addTroopStack(entry.getFinalStack(),entry.getUuid());
+        entry.getFinalStack().setExpServer(Server.getInstance().getServerSocket(), Server.getInstance().getSendTool(), entry.getUuid(), entry.getExpIfDeployedNow(Server.getInstance().getGameManager().getTimeTicks()));
     }
 
     public void addTrainEntry(TrainEntry trainEntry) {
+        this.training.add(trainEntry);
     }
 
     //these params bc i made the timehook with em
-    public void removeTrainEntry(UUID uuid, String troopName, String troopTemplate) {
+    public void removeTrainEntry(UUID uuid, boolean willUseUUID) {
+        training.removeIf(entry -> entry.getUuid().equals(uuid));
+        if(!willUseUUID) usedIds.remove(uuid);
     }
 
     public void addTroopStack(TroopStack troop, UUID uuid) {
         troopStacks.putIfAbsent(uuid, troop);
 
-        Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().channels(), new ReplyPacket(Type.TROOP_TRAIN_END, uuid + ";" + troop.getName() + ";" + troop.getTemplate() + ";" + troop.getTrainDays()));
+        Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().channels(), new ReplyPacket(Type.TROOP_TRAIN_END, String.valueOf(uuid)));
 
         Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new TroopStackSyncPacket(uuid, troop));
     }
@@ -193,6 +202,10 @@ public class ServerTroopManager implements TroopResolver{
 
     public TroopStack getTroop(UUID uuid) {
         return troopStacks.get(uuid);
+    }
+
+    public Set<TrainEntry> getTraining() {
+        return training;
     }
 
     @Override

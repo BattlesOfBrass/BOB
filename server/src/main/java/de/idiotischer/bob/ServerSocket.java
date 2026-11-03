@@ -30,8 +30,7 @@ public class ServerSocket implements ChannelResolver {
 
     private boolean local;
     private final Map<AsynchronousSocketChannel, Long> lastAction = new ConcurrentHashMap<>();
-    private static final long threshold = 30000000; /*kicks player after this time, idk why i added it but its stupid, should add a safety mechanism that i only get kicked when no keepalive is sent
-    also make it configurable*/
+    private static final long threshold = 30000000; /*kicks player after this time, idk why i added it but its stupid, should add a safety mechanism that i only get kicked when no packet is sent in a while or keepalive or smth also make it configurable*/
 
     public ServerSocket(boolean local) {
         this.local = local;

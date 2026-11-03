@@ -539,6 +539,7 @@ public class MainRenderer extends Thread {
 
         if (camera == null) {
             camera = new Camera(map.getWidth(), map.getHeight());
+            camera.setMoreZoom(true);
         } else {
             camera.setMapSize(map.getWidth(), map.getHeight());
         }

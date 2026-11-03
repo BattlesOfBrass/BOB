@@ -17,6 +17,7 @@ public class Camera {
     private int viewportWidth;
     private int viewportHeight;
     private boolean wasAtMinZoom;
+    private boolean moreZoom = false;
 
     public Camera(int mapWidth, int mapHeight) {
         this.mapWidth = mapWidth;
@@ -74,9 +75,7 @@ public class Camera {
             this.zoom = newMinZoom;
             this.x = 0;
             this.y = 0;
-        } else {
-            this.zoom = Math.max(newMinZoom, this.zoom);
-        }
+        } else this.zoom = Math.max(newMinZoom, this.zoom);
 
         clamp();
     }
@@ -103,8 +102,8 @@ public class Camera {
 
         double minZoom = getMinZoom();
 
-        double maxByWidth = viewportWidth / (mapWidth / 6.0);
-        double maxByHeight = viewportHeight / (mapHeight / 6.0);
+        double maxByWidth = viewportWidth / (mapWidth / 12.0);
+        double maxByHeight = viewportHeight / (mapHeight / 12.0);
 
         double maxZoom = Math.min(maxByWidth, maxByHeight);
 
@@ -116,21 +115,13 @@ public class Camera {
         double scaledWidth = mapWidth * zoom;
         double scaledHeight = mapHeight * zoom;
 
-        if (scaledWidth > viewportWidth) {
-            x = Math.max(0, Math.min(x, scaledWidth - viewportWidth));
-        } else {
-            x = (scaledWidth - viewportWidth) / 2.0;
-        }
+        if (scaledWidth > viewportWidth) x = Math.max(0, Math.min(x, scaledWidth - viewportWidth));
+        else x = (scaledWidth - viewportWidth) / 2.0;
 
-        if (scaledHeight > viewportHeight) {
-            y = Math.max(0, Math.min(y, scaledHeight - viewportHeight));
-        } else {
-            y = (scaledHeight - viewportHeight) / 2.0;
-        }
+        if (scaledHeight > viewportHeight) y = Math.max(0, Math.min(y, scaledHeight - viewportHeight));
+        else y = (scaledHeight - viewportHeight) / 2.0;
 
-        if (Math.abs(zoom - getMinZoom()) < snapThreshold * getMinZoom()) {
-            zoom = getMinZoom();
-        }
+        if (Math.abs(zoom - getMinZoom()) < snapThreshold * getMinZoom()) zoom = getMinZoom();
     }
 
     //    public void clampOffsets() {
@@ -165,10 +156,9 @@ public class Camera {
         return new Rectangle(x1, y1, x2 - x1, y2 - y1);
     }
 
-
-
     public double getMinZoom() {
         if (viewportWidth <= 0 || viewportHeight <= 0) return 1.0;
+
         return Math.min((double) viewportWidth / mapWidth, (double) viewportHeight / mapHeight);
     }
 
@@ -220,5 +210,9 @@ public class Camera {
     public void setMapSize(int width, int height) {
         this.mapWidth = width;
         this.mapHeight = height;
+    }
+
+    public void setMoreZoom(boolean moreZoom) {
+        this.moreZoom = moreZoom;
     }
 }

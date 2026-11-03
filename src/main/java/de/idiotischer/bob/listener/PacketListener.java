@@ -26,6 +26,8 @@ import de.idiotischer.bob.tile.TileManager;
 import de.idiotischer.bob.tile.event.TileChangedEvent;
 import de.idiotischer.bob.troop.MoveStatus;
 import de.idiotischer.bob.troop.TrainEntry;
+import de.idiotischer.bob.troop.Troop;
+import de.idiotischer.bob.troop.TroopStack;
 import de.idiotischer.bob.util.AddressUtil;
 import de.idiotischer.bob.war.WarStatus;
 import it.unimi.dsi.fastutil.Pair;
@@ -142,24 +144,59 @@ public class PacketListener implements ListenerAdapter {
             BOB.getInstance().getTileManager().registerTile(tile);
         } else if(event.getPacket() instanceof ReplyPacket pack) {
             switch (pack.getReplyType()) {
+                case TROOP_UPDATE -> {
+                    String[] strings = pack.getMessage().split(";");
+
+                    UUID id = UUID.fromString(strings[0].replace("id=",""));
+
+                    TroopStack troopStack = BOB.getInstance().getTroopManager().getTroop(id);
+
+                    if(troopStack == null) return;
+
+                    String s1 = strings[1];
+
+                    if(s1.startsWith("exp")) {
+                        int exp = Integer.parseInt(s1.replace("exp=",""));
+
+                        troopStack.setExp(exp);
+                    } else if(s1.startsWith("template")) {
+                        String template = s1.replace("template=","");
+
+                        troopStack.setTemplate(template);
+                    } else if(s1.startsWith("controller")) {
+                        String controller = s1.replace("controller=","");
+
+                        Country c = BOB.getInstance().getCountryManager().getCountry(controller);
+
+                        if(c == null) return;
+
+                        troopStack.setController(c);
+                    } else if(s1.startsWith("owner")) {
+                        String owner = s1.replace("owner=","");
+
+                        Country c = BOB.getInstance().getCountryManager().getCountry(owner);
+
+                        if(c == null) return;
+
+                        troopStack.setOwner(c);
+                    }
+                }
                 case TROOP_TRAIN_START -> {
                     //uuid + ";" + troop.getName() + ";" + troop.getTemplate() + ";" + troop.getTrainDays()
-                    String[] strings = pack.getMessage().split(";");
-                    UUID uuid = UUID.fromString(strings[0]);
-                    String troopName = strings[1];
-                    String troopTemplate = strings[2];
-                    int troopTrainDays = Integer.parseInt(strings[3]);
+                    String[] strings = pack.getMessage().split("#");
+                    int troopTrainDays = Integer.parseInt(strings[0]);
+                    String troopS = strings[1];
+                    Pair<UUID, TroopStack> troop = TroopStack.deserialize(troopS, BOB.getInstance().getCountryManager(), BOB.getInstance().getTileManager());
+                    int startTime = Integer.parseInt(strings[2]);
 
-                    BOB.getInstance().getTroopManager().addTrainEntry(new TrainEntry(0,uuid,troopName,troopTemplate,troopTrainDays));
+                    BOB.getInstance().getTroopManager().addTrainEntry(new TrainEntry(startTime, 0, troop.key(),troopTrainDays, troop.value()));
                 }
                 case TROOP_TRAIN_END -> {
                     String[] strings = pack.getMessage().split(";");
 
                     UUID uuid = UUID.fromString(strings[0]);
-                    String troopName = strings[1];
-                    String troopTemplate = strings[2];
 
-                    BOB.getInstance().getTroopManager().removeTrainEntry(uuid,troopName,troopTemplate);
+                    BOB.getInstance().getTroopManager().removeTrainEntry(uuid, false);
                 }
                 case FOCUSTREE_REMOVE -> BOB.getInstance().getFocusManager().remove(pack.getMessage());
                 case MODIFIERS_UPDATE -> {
@@ -193,7 +230,7 @@ public class PacketListener implements ListenerAdapter {
                     String id = strings[0].replace("id=", "");
                     String treeId = strings[1].replace("treeId=", "");
 
-                    Focus c = Server.getInstance().getFocusManager().focusBy(treeId, id);
+                    Focus c = BOB.getInstance().getFocusManager().focusBy(treeId, id);
 
                     if(c == null) return;
 
@@ -609,7 +646,7 @@ public class PacketListener implements ListenerAdapter {
             player.country(country == null ? null: country.getAbbreviation());
         } else if(event.getPacket() instanceof TroopStackSyncPacket pack) {
             var z = pack.getTroopStack(BOB.getInstance().getCountryManager(), BOB.getInstance().getTileManager());
-            BOB.getInstance().getTroopManager().addTroopStack(z.key(), z.value());
+            BOB.getInstance().getTroopManager().addTroopStack(z.value(),z.key());
         } else if(event.getPacket() instanceof TroopStacksSyncPacket pack) {
             BOB.getInstance().getTroopManager().finishReload(pack.getPackets().stream().map(d -> {
                 var pair = d.getTroopStack(BOB.getInstance().getCountryManager(), BOB.getInstance().getTileManager());

@@ -4,6 +4,7 @@ package de.idiotischer.bob.render.menu.impl;
 import de.idiotischer.bob.BOB;
 import de.idiotischer.bob.camera.Camera;
 import de.idiotischer.bob.country.Country;
+import de.idiotischer.bob.executable.Requirements;
 import de.idiotischer.bob.focus.Focus;
 import de.idiotischer.bob.focus.FocusTree;
 import de.idiotischer.bob.render.menu.components.button.FocusButton;
@@ -22,6 +23,9 @@ public class FocusesUI extends JPanel {
     private static final int PAD_TOP = 30;
 
     private static final double ZOOM_FACTOR = 1.1;
+
+    private int popupWidth = 520;
+    private int popupHeight = 320;
 
     private String country;
     private boolean countryChanged = true;
@@ -443,11 +447,16 @@ public class FocusesUI extends JPanel {
 
         Focus focus = button.getFocus();
 
+        if(focus == null) return;
+
         Color background = BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().palette().darkColor();
+
+        Requirements requirements = focus.getRequirements();
+        String requirementsText = requirements == null ? "None" : requirements.formatRequirements();
+        if (requirementsText.isBlank()) requirementsText = "None";
 
         focusPopup = new JPanel(new BorderLayout(15, 0));
         focusPopup.setBackground(background);
-
         focusPopup.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Color.WHITE, 2), BorderFactory.createEmptyBorder(12, 12, 12, 12)));
 
         JPanel infoPanel = new JPanel();
@@ -469,6 +478,11 @@ public class FocusesUI extends JPanel {
         description.setWrapStyleWord(true);
         description.setAlignmentX(Component.LEFT_ALIGNMENT);
 
+        JLabel reqLabel = new JLabel("Requirements: " + requirementsText);
+        reqLabel.setForeground(Color.RED);
+        reqLabel.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 12));
+        reqLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+
         JLabel duration = new JLabel("Duration: " + focus.getTime() + " days");
         duration.setForeground(Color.LIGHT_GRAY);
         duration.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -481,32 +495,33 @@ public class FocusesUI extends JPanel {
         infoPanel.add(Box.createVerticalStrut(10));
         infoPanel.add(description);
         infoPanel.add(Box.createVerticalStrut(12));
+        infoPanel.add(reqLabel);
+        infoPanel.add(Box.createVerticalStrut(6));
         infoPanel.add(duration);
+        infoPanel.add(Box.createVerticalStrut(4));
         infoPanel.add(ppCost);
+
+        JPanel centerWrapper = new JPanel(new BorderLayout());
+        centerWrapper.setOpaque(false);
+        centerWrapper.add(infoPanel, BorderLayout.NORTH);
 
         JPanel actionPanel = new JPanel();
         actionPanel.setOpaque(false);
         actionPanel.setLayout(new BoxLayout(actionPanel, BoxLayout.Y_AXIS));
 
         JButton actionButton = new JButton();
-
         actionButton.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
         actionButton.setForeground(Color.WHITE);
         actionButton.setFocusPainted(false);
         actionButton.setOpaque(true);
         actionButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
-        //TODO: theme this (add theming support)
         boolean completed = focus.getCountryDone().contains(country);
 
         Focus prerequisite = null;
-
-        if(!focus.getPrerequisite().isEmpty()) {
-            prerequisite = BOB.getInstance().getFocusManager().focusBy(treeId,focus.getPrerequisite());
-        }
+        if(!focus.getPrerequisite().isEmpty()) prerequisite = BOB.getInstance().getFocusManager().focusBy(treeId, focus.getPrerequisite());
 
         boolean prerequisiteMissing = prerequisite != null && !prerequisite.getCountryDone().contains(country);
-
         Focus active = BOB.getInstance().getFocusManager().getActiveFocus(BOB.getInstance().getCountryManager().byAbbreviation(country));
 
         boolean activeFocus = active != null && active.getId().equals(focus.getId());
@@ -554,21 +569,18 @@ public class FocusesUI extends JPanel {
         actionPanel.add(actionButton);
         actionPanel.add(Box.createVerticalGlue());
 
-        focusPopup.add(infoPanel, BorderLayout.CENTER);
+        focusPopup.add(centerWrapper, BorderLayout.CENTER);
         focusPopup.add(actionPanel, BorderLayout.EAST);
 
         canvasPanel.add(focusPopup);
-
-        int popupWidth = 430;
-        int popupHeight = 190;
         int margin = 20;
 
+        int dynamicHeight = 160 + (requirementsText.split("\n").length * 16) + (focus.getDescription().length() / 40 * 18);
         int x = canvasPanel.getWidth() - popupWidth - margin;
 
-        focusPopup.setBounds(x, margin, popupWidth, popupHeight);
+        focusPopup.setBounds(x, margin, popupWidth, dynamicHeight);
 
         canvasPanel.setComponentZOrder(focusPopup, 0);
-
         focusPopup.setVisible(true);
 
         canvasPanel.revalidate();

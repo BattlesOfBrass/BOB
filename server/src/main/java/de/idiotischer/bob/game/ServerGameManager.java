@@ -133,6 +133,14 @@ public class ServerGameManager implements TimeResolver {
             }
         });
 
+        new ArrayList<>(Server.getInstance().getTroopManager().getTraining()).forEach(troop -> {
+            if(troop.canTrain())
+                if (timeTicks >= troop.getEndTick()) {
+                    Server.getInstance().getTroopManager().removeTrainEntry(troop.getUuid(), true);
+                    Server.getInstance().getTroopManager().addTroopStack(troop.getFinalStack(), troop.getUuid());
+                }
+        });
+
         if (timeTicks % (60 * 24) == 0) {
             Server.getInstance().getCountryManager().getCountries().forEach(c -> c.newDay(Server.getInstance().getServerSocket(), Server.getInstance().getSendTool()));
         /*if (timeTicks % (60 * 12) == 0)*/

@@ -1,13 +1,16 @@
 package de.idiotischer.bob.time;
 
 import de.idiotischer.bob.BOB;
+import de.idiotischer.bob.Server;
 import de.idiotischer.bob.SharedCore;
 import de.idiotischer.bob.game.GameState;
 import de.idiotischer.bob.networking.packet.impl.pp.RequestPacket;
 import de.idiotischer.bob.networking.packet.impl.pp.Type;
+import it.unimi.dsi.fastutil.Pair;
+import it.unimi.dsi.fastutil.ints.Int2BooleanSortedMap;
 
 import javax.swing.*;
-import java.util.Date;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -22,6 +25,7 @@ public class TimeManager implements TimeResolver {
 
     private Date scenarioStartDate;
     private ScheduledFuture<?> nextTick;
+    private Map<String, Pair<Long,Consumer<Long>>> timeHook = new HashMap<>();
 
     public TimeManager() {
     }
@@ -52,6 +56,23 @@ public class TimeManager implements TimeResolver {
 
     private void tickTime() {
         if (BOB.getInstance().getGameManager().getGameState() != GameState.INGAME) return;
+        BOB.getInstance().getMainRenderer().getGamePanel().getHud().refreshTrainingList();
+
+        new ArrayList<>(BOB.getInstance().getTroopManager().getTraining()).forEach(troop -> {
+            new ArrayList<>(timeHook.entrySet()).forEach(e -> {
+                if (timeTicks >= e.getValue().key()) {
+                    timeHook.remove(e.getKey());
+                    try { e.getValue().value().accept(timeTicks); }
+                    catch (Exception ex) { ex.printStackTrace(); }
+                }
+            });
+
+            if(troop.canTrain())
+                if (timeTicks >= troop.getEndTick()) {
+                    BOB.getInstance().getTroopManager().removeTrainEntry(troop.getUuid(), true);
+                    BOB.getInstance().getTroopManager().addTroopStack(troop.getFinalStack(), troop.getUuid());
+                }
+        });
 
         timeTicks++;
     }
@@ -100,7 +121,11 @@ public class TimeManager implements TimeResolver {
 
     @Override
     public void addTimeHook(String id, long days, Consumer<Long> callback) {
+        long now = timeTicks;
 
+        long goal = now + TimeUnit.DAYS.toMinutes(days); //convert to minutes
+
+        timeHook.put(id, Pair.of(goal, callback));
     }
 
     @Override

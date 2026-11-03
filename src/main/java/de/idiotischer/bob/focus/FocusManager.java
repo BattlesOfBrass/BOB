@@ -46,7 +46,7 @@ public class FocusManager implements FocusResolver{
 
     @Override
     public Set<Country> getWithFocusTree(FocusTree f) {
-        return Server.getInstance().getCountryManager().getCountries().stream().filter(f::hasTree).collect(Collectors.toSet());
+        return BOB.getInstance().getCountryManager().getCountries().stream().filter(f::hasTree).collect(Collectors.toSet());
     }
 
     @Override

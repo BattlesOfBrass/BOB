@@ -83,7 +83,7 @@ public class FactionManager implements FactionResolver {
     }
 
     public Set<Country> getFactionMembers(Faction faction) {
-        return faction.getMembers().stream().map(m -> Server.getInstance().getCountryManager().byAbbreviation(m)).collect(Collectors.toSet());
+        return faction.getMembers().stream().map(m -> BOB.getInstance().getCountryManager().byAbbreviation(m)).collect(Collectors.toSet());
     }
 
     public Set<Faction> getFactionsFor(Country c) {

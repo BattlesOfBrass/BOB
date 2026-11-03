@@ -117,7 +117,7 @@ public class WarManager implements WarResolver {
             String countryAbbr = parts[0];
             String warData = parts[1];
 
-            WarStatus war = WarStatus.fromString(warData, Server.getInstance().getCountryManager());
+            WarStatus war = WarStatus.fromString(warData, BOB.getInstance().getCountryManager());
 
             activeWars.computeIfAbsent(countryAbbr, k -> ConcurrentHashMap.newKeySet()).add(war);
         }

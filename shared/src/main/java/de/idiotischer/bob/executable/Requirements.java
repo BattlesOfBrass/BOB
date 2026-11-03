@@ -136,6 +136,43 @@ public record Requirements(Map<String, Set<String>> atWarWith, Map<String, Set<S
         return atWarBuilder + "#" + atPeaceBuilder + "#" + controlsTilesBuilder + "#" + ownsTilesBuilder + "#" + ideologyBuilder + "#" + dateBuilder + "#" + troopsBuilder + "#" + hasModifierBuilder + "#" + hasNotModifierBuilder;
     }
 
+    public String formatRequirements() {
+        StringBuilder sb = new StringBuilder();
+
+        append(sb, "At war with", this.atWarWith());
+        append(sb, "At peace with", this.atPeaceWith());
+        append(sb, "Has modifier", this.hasModifier());
+        append(sb, "Does not have modifier", this.hasNotModifier());
+        append(sb, "Controls tiles", this.controlsTiles());
+        append(sb, "Owns tiles", this.ownsTiles());
+        append(sb, "Needs ideology", this.needsIdeology());
+        append(sb, "Troop requirements", this.moreOrLessTroops());
+
+        if (this.isDateLessOrMore() != null && !this.isDateLessOrMore().isEmpty()) {
+            sb.append("Date requirements:\n");
+
+            for (String requirement : this.isDateLessOrMore()) sb.append("  • ").append(requirement).append("\n");
+        }
+
+        if (sb.isEmpty()) return "No requirements.";
+
+        return sb.toString().trim();
+    }
+
+    private void append(StringBuilder sb, String title, Map<String, Set<String>> requirements) {
+        if (requirements == null || requirements.isEmpty()) return;
+
+        sb.append(title).append(":\n");
+
+        requirements.forEach((key, values) -> {
+            sb.append("  • ").append(key);
+
+            if (values != null && !values.isEmpty()) sb.append(": ").append(String.join(" OR ", values));
+
+            sb.append("\n");
+        });
+    }
+
     public static Requirements fromDataString(String data) {
         String[] strings = data.split("#", -1);
 
