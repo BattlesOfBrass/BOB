@@ -29,17 +29,13 @@ public class TrainEntry {
     }
 
     public int getExpIfDeployedNow(long now) {
-        if (troopTrainDays <= 0) return 100;
+        long elapsedTicks = Math.max(0, now - startTime - extra);
 
-        long elapsedMillis = Math.max(0, now - startTime - extra);
-
-        double elapsedDays = elapsedMillis / (double) TimeUnit.DAYS.toMillis(1);
-
+        double elapsedDays = elapsedTicks / 1440.0;
         double totalProgress = progress + elapsedDays;
+        double percentage = troopTrainDays <= 0 ? 100 : (totalProgress / troopTrainDays) * 100;
 
-        double percentage = totalProgress / troopTrainDays;
-
-        return Math.min(100, (int) Math.floor(percentage * 100));
+        return Math.clamp((int) Math.floor(percentage), 0, 100);
     }
 
     public void setProgress(int progress) {
@@ -80,6 +76,6 @@ public class TrainEntry {
     }
 
     public long getEndTick() {
-        return startTime + TimeUnit.DAYS.toMillis(troopTrainDays) + extra;
+        return startTime + TimeUnit.DAYS.toMinutes(troopTrainDays) + extra;
     }
 }

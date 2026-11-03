@@ -134,7 +134,7 @@ public class ServerGameManager implements TimeResolver {
         });
 
         new ArrayList<>(Server.getInstance().getTroopManager().getTraining()).forEach(troop -> {
-            if(troop.canTrain())
+            if(troop.canTrain() && !(troop.getExpIfDeployedNow(timeTicks) >= 100))
                 if (timeTicks >= troop.getEndTick()) {
                     Server.getInstance().getTroopManager().removeTrainEntry(troop.getUuid(), true);
                     Server.getInstance().getTroopManager().addTroopStack(troop.getFinalStack(), troop.getUuid());

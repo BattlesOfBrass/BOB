@@ -13,6 +13,8 @@ import it.unimi.dsi.fastutil.Pair;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.StrokeBorder;
+import javax.swing.plaf.ProgressBarUI;
+import javax.swing.plaf.basic.BasicProgressBarUI;
 import javax.swing.text.DefaultFormatter;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -452,14 +454,11 @@ public class HUD extends JPanel {
             }
 
             JProgressBar progressBar = (JProgressBar) existingCard.getClientProperty("progressBar");
-            JButton deployButton = (JButton) existingCard.getClientProperty("deployButton");
 
-            int progress = entry.getExpIfDeployedNow(System.currentTimeMillis());
+            int progress = entry.getExpIfDeployedNow(BOB.getInstance().getTimeManager().getTimeTicks());
 
             progressBar.setValue(progress);
             progressBar.setString(progress + "%");
-
-            deployButton.setVisible(progress >= 100);
         }
 
         trainingList.revalidate();
@@ -470,6 +469,7 @@ public class HUD extends JPanel {
         Color dark = BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().palette().defaultColor();
         Color dark2 = BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().palette().darkColor();
         Color light = BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().palette().lightColor();
+        //TODO add deployment location reselect  button ! on server check if this player has even got the perms to do it (e.g controls the country)
 
         JPanel card = new JPanel();
         card.setOpaque(true);
@@ -491,11 +491,23 @@ public class HUD extends JPanel {
         template.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         JProgressBar progressBar = new JProgressBar(0, 100);
-        progressBar.setValue(entry.getExpIfDeployedNow(System.currentTimeMillis()));
+        progressBar.setValue(entry.getExpIfDeployedNow(BOB.getInstance().getTimeManager().getTimeTicks()));
         progressBar.setStringPainted(true);
         progressBar.setString(progressBar.getValue() + "%");
         progressBar.setForeground(dark);
         progressBar.setBackground(dark2);
+        progressBar.setUI(new BasicProgressBarUI() {
+            //TODO: add theming
+            @Override
+            protected Color getSelectionBackground() {
+                return Color.GREEN;
+            }
+
+            @Override
+            protected Color getSelectionForeground() {
+                return Color.GREEN;
+            }
+        });
         progressBar.setBorderPainted(false);
         progressBar.setBorder(BorderFactory.createLineBorder(dark, 3));
         progressBar.setMaximumSize(new Dimension(panelWidth - 45, 20));
@@ -506,13 +518,7 @@ public class HUD extends JPanel {
         deployButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         deployButton.setFocusable(false);
 
-        boolean finished = entry.getExpIfDeployedNow(System.currentTimeMillis()) >= 100;
-
-        deployButton.setVisible(finished);
-
         deployButton.addActionListener(e -> {
-            if (entry.getExpIfDeployedNow(System.currentTimeMillis()) < 100) return;
-
             RequestPacket packet = new RequestPacket(Type.DEPLOY_TROOP, entry.getUuid().toString());
             BOB.getInstance().getSendTool().send(BOB.getInstance().getClient().getChannel(), packet);
         });
