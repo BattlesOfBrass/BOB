@@ -52,4 +52,5 @@ A game inspired by [Spirits of Steel](https://gavgrub.itch.io/sos), made in java
 - [ ] Color border between two states of the same controller in the same color (make it configurable since it costs performance or let the server pre calculate it xD)
 - [ ] Add world tention for AI etc
 - [ ] Visualize focus exlusive with another one (+ what was taken of those)
-
+- [x] add population
+- [ ] make troops create manpower and not remove pop, also make it cap at a specific value than
