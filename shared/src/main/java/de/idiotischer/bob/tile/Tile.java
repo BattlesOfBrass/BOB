@@ -26,15 +26,16 @@ public class Tile {
     private final SharedCore core;
     private final int victoryPoints;
     private final Set<Country> claims;
+    private long population;
     private Country controller;
     private Country owner;
     private final List<Point> points;
     private final String cityName;
     private final boolean city;
 
-    private Set<TileConnection> tileConnections;
+    private final Set<TileConnection> tileConnections;
 
-    public Tile(SharedCore core,Set<TileConnection> tileConnections, Set<Country> claims, int victoryPoints, String cityName, boolean city, String abbreviation, String name, List<Point> points, Country controller, Country owner) {
+    public Tile(SharedCore core,Set<TileConnection> tileConnections, Set<Country> claims, long population, int victoryPoints, String cityName, boolean city, String abbreviation, String name, List<Point> points, Country controller, Country owner) {
         this.core = core;
         this.tileConnections = tileConnections;
         this.claims = claims;
@@ -46,6 +47,7 @@ public class Tile {
         this.cityName = cityName;
         this.city = city;
         this.victoryPoints = victoryPoints;
+        this.population = population;
     }
 
     public Country getOwner() {
@@ -164,12 +166,25 @@ public class Tile {
         return tileConnections;
     }
 
-    public static @NotNull Tile by(SharedCore core, Set<TileConnection> tileConnections, Set<Country> claims, @NotNull CountryResolver resolver, @NotNull String abbreviation, int victoryPoints, String name, String cityName, boolean hasCity, List<Point> points, String controllerAbbreviation, String ownerAbbreviation) {
+    public long getPopulation() {
+        return population;
+    }
+
+    public void setPopulation(long population) {
+        this.population = population;
+    }
+
+    public void setPopulationServer(SendTool t, ChannelResolver r, long population) {
+        this.population = population;
+        t.broadcast(r.channels(), new ReplyPacket(Type.TILE_CHANGE, "id=" + abbreviation + ";population=" + population));
+    }
+
+    public static @NotNull Tile by(SharedCore core, Set<TileConnection> tileConnections, Set<Country> claims, @NotNull CountryResolver resolver, @NotNull String abbreviation, long population, int victoryPoints, String name, String cityName, boolean hasCity, List<Point> points, String controllerAbbreviation, String ownerAbbreviation) {
 
         Country controller = "null".equals(controllerAbbreviation) ? null : resolver.byAbbreviation(controllerAbbreviation);
         Country owner = "null".equals(ownerAbbreviation) ? null : resolver.byAbbreviation(ownerAbbreviation);
 
-        return new Tile(core, tileConnections, claims, victoryPoints, cityName, hasCity, abbreviation, name, points, controller,owner);
+        return new Tile(core, tileConnections, claims, population, victoryPoints, cityName, hasCity, abbreviation, name, points, controller,owner);
     }
 
     public String toDataString() {
@@ -193,7 +208,7 @@ public class Tile {
 
         String connections = TileConnection.serialize(tileConnections);
 
-        return getAbbreviation() + ";" + getName() + ";" + hasCity() + ";" + getCityName() + ";" + sb + ";" + (getController() != null ? getController().getAbbreviation() : "null") + ";" + (getOwner() != null ? getOwner().getAbbreviation() : "null") + ";" + victoryPoints + ";" + claimsSb + ";" + connections;
+        return getAbbreviation() + ";" + getName() + ";" + hasCity() + ";" + getCityName() + ";" + sb + ";" + (getController() != null ? getController().getAbbreviation() : "null") + ";" + (getOwner() != null ? getOwner().getAbbreviation() : "null") + ";" + victoryPoints + ";" + claimsSb + ";" + connections + ";" + population;
     }
 
     public void addClaim(Country c) {
@@ -210,16 +225,7 @@ public class Tile {
 
     @Override
     public String toString() {
-        return "Tile{" +
-                "name='" + name + '\'' +
-                ", abbreviation='" + abbreviation + '\'' +
-                ", controller=" + (controller != null ? controller.getAbbreviation() : "null") +
-                ", owner=" + (owner != null ? owner.getAbbreviation() : "null") +
-                ", points=" + points +
-                ", hasCity=" + city +
-                ", citName=" + cityName +
-                ", victoryPoints=" + victoryPoints +
-                '}';
+        return "Tile{" + "name='" + name + '\'' + ", abbreviation='" + abbreviation + '\'' + ", controller=" + (controller != null ? controller.getAbbreviation() : "null") + ", owner=" + (owner != null ? owner.getAbbreviation() : "null") + ", points=" + points + ", hasCity=" + city + ", citName=" + cityName + ", victoryPoints=" + victoryPoints + '}';
     }
 
     @Override

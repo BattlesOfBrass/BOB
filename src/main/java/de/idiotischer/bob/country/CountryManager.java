@@ -2,10 +2,12 @@ package de.idiotischer.bob.country;
 
 import de.idiotischer.bob.BOB;
 import de.idiotischer.bob.Server;
+import de.idiotischer.bob.modifiers.Modifier;
 import de.idiotischer.bob.networking.packet.impl.pp.RequestPacket;
 import de.idiotischer.bob.networking.packet.impl.pp.Type;
 import de.idiotischer.bob.render.menu.impl.select.PeaceMenuOverlay;
 import de.idiotischer.bob.tile.Tile;
+import de.idiotischer.bob.tile.TileManager;
 
 import java.awt.*;
 import java.util.Comparator;
@@ -48,6 +50,21 @@ public class CountryManager implements CountryResolver{
         countrySet.add(country);
 
         return country;
+    }
+
+    //TODO: is this correcT? test it xD
+    public long getPopulation(Country country) {
+        var controlled = new HashSet<>(BOB.getInstance().getTileManager().getTilesControlledDirectly(country));
+        var owned = new HashSet<>(BOB.getInstance().getTileManager().getTilesOwnedDirectly(country));
+
+        owned.removeAll(controlled);
+        controlled.removeAll(owned);
+        //var mods = country.getModifiers().stream().filter(mod -> mod.getType().equals(Modifier.Types.CONSCRIPTION_FOR_OCCUPATION.getMapping())).collect(Collectors.toSet());
+
+        double controlledSumPenalty = controlled.stream().mapToLong(Tile::getPopulation).sum() * 0.75; //retain about 75%, i dont really know but we could scale it with resistance later or with modifiers
+        double ownedSum = owned.stream().mapToLong(Tile::getPopulation).sum();
+
+        return (long) (ownedSum + controlledSumPenalty);
     }
 
     public boolean has(String countryAbbreviation) {

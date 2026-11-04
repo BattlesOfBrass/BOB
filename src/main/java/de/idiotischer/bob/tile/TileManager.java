@@ -275,6 +275,16 @@ public class TileManager implements TileResolver {
     public List<String> getTilesControlled(Country country) {
         return tileSet.stream().filter(t -> Objects.equals(t.getController().getAbbreviation(), country.getAbbreviation())).map(Tile::getName).collect(Collectors.toList());
     }
+    public List<String> getTilesOwned(Country country) {
+        return tileSet.stream().filter(t -> Objects.equals(t.getOwner().getAbbreviation(), country.getAbbreviation())).map(Tile::getName).collect(Collectors.toList());
+    }
+
+    public List<Tile> getTilesControlledDirectly(Country country) {
+        return tileSet.stream().filter(t -> Objects.equals(t.getController().getAbbreviation(), country.getAbbreviation())).collect(Collectors.toList());
+    }
+    public List<Tile> getTilesOwnedDirectly(Country country) {
+        return tileSet.stream().filter(t -> Objects.equals(t.getOwner().getAbbreviation(), country.getAbbreviation())).collect(Collectors.toList());
+    }
 
     public List<String> getTiles() {
         return tileSet.stream().map(Tile::getName).collect(Collectors.toList());

@@ -62,6 +62,10 @@ public class ServerTileManager implements TileResolver {
                 JsonElement victoryPointsElement = tileElement.get("victoryPoints");
                 if (victoryPointsElement != null && !victoryPointsElement.isJsonNull()) victoryPoints = victoryPointsElement.getAsInt();
 
+                int population = 0;
+                JsonElement populationElement = tileElement.get("population");
+                if (populationElement != null && !populationElement.isJsonNull()) population = populationElement.getAsInt();
+
                 String cityName = "";
 
                 JsonElement cityElement = tileElement.get("city");
@@ -210,7 +214,7 @@ public class ServerTileManager implements TileResolver {
                 }
 
 
-                Tile tile = new Tile(Server.getInstance().getSharedCore(), conns, claims, victoryPoints, cityName, hasCity, abbreviation, name, points, controller, owner);
+                Tile tile = new Tile(Server.getInstance().getSharedCore(), conns, claims, population, victoryPoints, cityName, hasCity, abbreviation, name, points, controller, owner);
 
                 registerTile(tile);
 
@@ -441,6 +445,20 @@ public class ServerTileManager implements TileResolver {
         }
 
         return neighborsByCountry;
+    }
+
+    public List<String> getTilesControlled(Country country) {
+        return tileSet.stream().filter(t -> Objects.equals(t.getController().getAbbreviation(), country.getAbbreviation())).map(Tile::getName).collect(Collectors.toList());
+    }
+    public List<String> getTilesOwned(Country country) {
+        return tileSet.stream().filter(t -> Objects.equals(t.getOwner().getAbbreviation(), country.getAbbreviation())).map(Tile::getName).collect(Collectors.toList());
+    }
+
+    public List<Tile> getTilesControlledDirectly(Country country) {
+        return tileSet.stream().filter(t -> Objects.equals(t.getController().getAbbreviation(), country.getAbbreviation())).collect(Collectors.toList());
+    }
+    public List<Tile> getTilesOwnedDirectly(Country country) {
+        return tileSet.stream().filter(t -> Objects.equals(t.getOwner().getAbbreviation(), country.getAbbreviation())).collect(Collectors.toList());
     }
 
     public List<String> getTiles() {

@@ -2,6 +2,7 @@ package de.idiotischer.bob.networking.packet.impl.pp;
 
 public enum Type {
     TILE_CHANGE,
+    TILE_UPDATE,
     ERROR,
     TILES_SYNC,
     COUNTRIES_SYNC,
@@ -47,6 +48,7 @@ public enum Type {
     FOCUSES_SYNC,
     FACTION_REMOVE,
     FOCUS_UPDATE,
+    TROOP_TRAIN_UPDATE,
     TROOP_TRAIN_START,
     TROOP_TRAIN_END,
     TROOP_UPDATE,

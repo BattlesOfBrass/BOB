@@ -29,6 +29,7 @@ public class TroopStack extends Troop {
     private float speed = 1f;
     private int level = 1;
     private int exp = 1;
+    private long pop = 0;
 
     public TroopStack(String name, Tile tile, Country owner,Country controller, int count, String template) {
         super(name,tile, owner, controller, template);
@@ -68,7 +69,7 @@ public class TroopStack extends Troop {
     }
 
     public String serialize(UUID troopId) {
-    return "uuid=" + troopId.toString() + ";name=" + getName() + ";count=" + troops.size() + ";owner=" + getOwner().getAbbreviation() + ";controller=" + getController().getAbbreviation() + ";tile=" + tile.getAbbreviation() + ";template=" + template + ";baseHp=" + baseHp + ";baseAttack=" + baseAttack + ";baseDefense=" + baseDefense + ";baseOrg=" + baseOrg + ";hp=" + hp + ";attack=" + attack + ";defense=" + defense + ";org=" + org + ";alive=" + alive + ";speed=" + speed + ";exp=" + exp + ";level=" + level;
+    return "uuid=" + troopId.toString() + ";name=" + getName() + ";count=" + troops.size() + ";owner=" + getOwner().getAbbreviation() + ";controller=" + getController().getAbbreviation() + ";tile=" + tile.getAbbreviation() + ";template=" + template + ";baseHp=" + baseHp + ";baseAttack=" + baseAttack + ";baseDefense=" + baseDefense + ";baseOrg=" + baseOrg + ";hp=" + hp + ";attack=" + attack + ";defense=" + defense + ";org=" + org + ";alive=" + alive + ";speed=" + speed + ";exp=" + exp + ";pop=" + pop + ";level=" + level;
     }
 
     public static Pair<UUID, TroopStack> deserialize(String data, CountryResolver countryResolver, TileResolver tileResolver) {
@@ -106,6 +107,7 @@ public class TroopStack extends Troop {
         stack.speed = Float.parseFloat(values.getOrDefault("speed", String.valueOf(stack.speed)));
         stack.exp = Integer.parseInt(values.getOrDefault("exp", String.valueOf(stack.exp)));
         stack.level = Integer.parseInt(values.getOrDefault("level", String.valueOf(stack.level)));
+        stack.pop = Integer.parseInt(values.getOrDefault("pop", String.valueOf(stack.pop)));
 
         return Pair.of(uuid, stack);
     }
@@ -197,5 +199,20 @@ public class TroopStack extends Troop {
 
     public float getSpeed() {
         return speed;
+    }
+
+    public long getPop() {
+        return 9 * 1000; //hoi4 3x3 div by default
+    }
+
+
+    public void setPopulation(long availablePop) {
+        this.pop = availablePop;
+    }
+
+    public void setPopServer(ChannelResolver r, SendTool t, UUID uuid, long pop) {
+        this.pop = pop;
+
+        t.broadcast(r.channels(), new ReplyPacket(Type.TROOP_UPDATE, "id=" + uuid.toString() +";pop=" + pop));
     }
 }

@@ -34,6 +34,7 @@ public class Modifier {
         modifierTypes.add("manpower");
         modifierTypes.add("attack");
         modifierTypes.add("removeModifier");
+        modifierTypes.add("conscriptingOccupation");
     }
 
     public Modifier(ChannelResolver r, SendTool t, String id, String displayName, boolean display, int lasts, String modifier, String type) {
@@ -142,7 +143,8 @@ public class Modifier {
         POLITICAL_POWER("politicalPower"),
         MANPOWER("manpower"),
         ATTACK("attack"),
-        REMOVE_MODIFIER("removeModifier");
+        REMOVE_MODIFIER("removeModifier"),
+        CONSCRIPTION_FOR_OCCUPATION("conscriptingOccupation");
 
         private final String mapping;
 

@@ -9,6 +9,6 @@ public class TileChangedEvent extends CancellableEvent {
 
     public enum Type {
         OWNER,
-        CONTROLLER
+        CONTROLLER,
     }
 }

@@ -102,6 +102,116 @@ public class ServerCountryManager implements CountryResolver {
         return this.getCountries().stream().filter(c -> c.getPuppetState() != PuppetState.NONE).collect(Collectors.toSet());
     }
 
+    public long getTotalPopulation(Country country) {
+        var controlled = new HashSet<>(Server.getInstance().getTileManager().getTilesControlledDirectly(country));
+        var owned = new HashSet<>(Server.getInstance().getTileManager().getTilesOwnedDirectly(country));
+
+        owned.removeAll(controlled);
+        controlled.removeAll(owned);
+
+        double controlledSumPenalty = controlled.stream().mapToLong(Tile::getPopulation).sum();
+        double ownedSum = owned.stream().mapToLong(Tile::getPopulation).sum();
+
+        return (long) (ownedSum + controlledSumPenalty);
+    }
+
+
+    public long getPopulation(Country country) {
+        var controlled = new HashSet<>(Server.getInstance().getTileManager().getTilesControlledDirectly(country));
+        var owned = new HashSet<>(Server.getInstance().getTileManager().getTilesOwnedDirectly(country));
+
+        owned.removeAll(controlled);
+        controlled.removeAll(owned);
+        //var mods = country.getModifiers().stream().filter(mod -> mod.getType().equals(Modifier.Types.CONSCRIPTION_FOR_OCCUPATION.getMapping())).collect(Collectors.toSet());
+
+        double controlledSumPenalty = controlled.stream().mapToLong(Tile::getPopulation).sum() * 0.75; //retain about 75%, i dont really know but we could scale it with resistance later or with modifiers
+        double ownedSum = owned.stream().mapToLong(Tile::getPopulation).sum();
+
+        return (long) (ownedSum + controlledSumPenalty);
+    }
+
+    public long removePopulationCheck(long pop, Country country) {
+        Set<Tile> controlled = new HashSet<>(Server.getInstance().getTileManager().getTilesControlledDirectly(country));
+        Set<Tile> owned = new HashSet<>(Server.getInstance().getTileManager().getTilesOwnedDirectly(country));
+
+        owned.removeIf(t -> !controlled.contains(t));
+
+        Set<Tile> tiles = new HashSet<>(owned);
+        tiles.addAll(controlled);
+
+        if (tiles.isEmpty() || pop <= 0) return 0;
+
+        long totalPopulation = getTotalPopulation(country);
+
+        long actualRemoval = Math.min(pop, totalPopulation);
+
+        long perTile = actualRemoval / tiles.size();
+        long remainder = actualRemoval % tiles.size();
+
+        for (Tile tile : tiles) {
+            long amount = perTile;
+
+            if (remainder > 0) {
+                amount++;
+                remainder--;
+            }
+
+            tile.setPopulation(tile.getPopulation() - amount);
+        }
+
+        return actualRemoval;
+    }
+
+    public void removePopulation(long pop, Country country) {
+        Set<Tile> controlled = new HashSet<>(Server.getInstance().getTileManager().getTilesControlledDirectly(country));
+        Set<Tile> owned = new HashSet<>(Server.getInstance().getTileManager().getTilesOwnedDirectly(country));
+
+        owned.removeIf(t -> !controlled.contains(t));
+
+        Set<Tile> tiles = new HashSet<>();
+        tiles.addAll(owned);
+        tiles.addAll(controlled);
+
+        long perTile = pop / tiles.size();
+        long remainder = pop % tiles.size();
+
+        for (var tile : tiles) {
+            long amount = perTile;
+
+            if (remainder > 0) {
+                amount++;
+                remainder--;
+            }
+
+            tile.setPopulation(tile.getPopulation() - amount);
+        }
+    }
+
+    public void addPop(long pop, Country country) {
+        Set<Tile> controlled = new HashSet<>(Server.getInstance().getTileManager().getTilesControlledDirectly(country));
+        Set<Tile> owned = new HashSet<>(Server.getInstance().getTileManager().getTilesOwnedDirectly(country));
+
+        owned.removeIf(t -> !controlled.contains(t));
+
+        Set<Tile> tiles = new HashSet<>();
+        tiles.addAll(owned);
+        tiles.addAll(controlled);
+
+        long perTile = pop / tiles.size();
+        long remainder = pop % tiles.size();
+
+        for (var tile : tiles) {
+            long amount = perTile;
+
+            if (remainder > 0) {
+                amount++;
+                remainder--;
+            }
+
+            tile.setPopulation(tile.getPopulation() + amount);
+        }
+    }
+
     public Country registerCountry(Country country) {
         countrySet.remove(country);
 

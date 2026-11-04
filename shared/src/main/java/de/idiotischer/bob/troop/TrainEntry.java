@@ -1,6 +1,9 @@
 package de.idiotischer.bob.troop;
 
-import it.unimi.dsi.fastutil.Pair;
+import de.idiotischer.bob.networking.ChannelResolver;
+import de.idiotischer.bob.networking.communication.SendTool;
+import de.idiotischer.bob.networking.packet.impl.pp.ReplyPacket;
+import de.idiotischer.bob.networking.packet.impl.pp.Type;
 
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -8,20 +11,25 @@ import java.util.concurrent.TimeUnit;
 public class TrainEntry {
 
     private final long startTime;
+    private long availablePop;
     private int progress;
     private final UUID uuid;
     private final int troopTrainDays;
     private TroopStack finalStack;
 
+    private long lastAvailablePop;
+
     public long extra = 0;
 
     //progress is as long as troopTrainDays, so NOT 100 xD
-    public TrainEntry(long startTime, int progress, UUID uuid,int troopTrainDays, TroopStack finalStack) {
+    public TrainEntry(long startTime, int progress, UUID uuid, long availablePop, int troopTrainDays, TroopStack finalStack) {
         this.startTime = startTime;
         this.progress = progress;
         this.uuid = uuid;
         this.troopTrainDays = troopTrainDays;
         this.finalStack = finalStack;
+        this.availablePop = availablePop;
+        this.lastAvailablePop = availablePop;
     }
 
     public TroopStack getFinalStack() {
@@ -68,14 +76,53 @@ public class TrainEntry {
 
     public boolean canTrain() {
         //blabla
+
         boolean result = true;
+
+        if(availablePop >= finalStack.getPop()) result = true;
+
+        long lastAvailablePopStamp = lastAvailablePop;
+
+        this.lastAvailablePop = availablePop;
+
+        if(lastAvailablePopStamp >= availablePop) result = false;
 
         if(!result) extra++;
 
         return result;
     }
 
+    private void addAvailablePop(long availablePop) {
+        this.availablePop += availablePop;
+    }
+
+    public boolean canTrainServer(ChannelResolver r, SendTool t, long availablePop) {
+        //blabla
+        boolean result = true;
+        //for some reason percentage still goes up but on server its correct
+
+        if(availablePop >= finalStack.getPop()) result = true;
+
+        if(availablePop >= 0) result =  false;
+
+        addAvailablePopServer(r,t,availablePop);
+
+        if(!result) extra++;
+
+        return result;
+    }
+
+    private void addAvailablePopServer(ChannelResolver r, SendTool t, long availablePop) {
+        this.availablePop += availablePop;
+        finalStack.setPopulation(availablePop);
+        t.broadcast(r.channels(), new ReplyPacket(Type.TROOP_TRAIN_UPDATE, "id=" + this.uuid.toString() + ";pop=" + this.availablePop));
+    }
+
     public long getEndTick() {
         return startTime + TimeUnit.DAYS.toMinutes(troopTrainDays) + extra;
+    }
+
+    public void setPop(long full) {
+        this.availablePop = full;
     }
 }

@@ -4,7 +4,6 @@ import de.craftsblock.craftscore.event.EventHandler;
 import de.craftsblock.craftscore.event.EventPriority;
 import de.craftsblock.craftscore.event.ListenerAdapter;
 import de.idiotischer.bob.BOB;
-import de.idiotischer.bob.Server;
 import de.idiotischer.bob.conference.PeaceConference;
 import de.idiotischer.bob.country.Country;
 import de.idiotischer.bob.country.CountryResolver;
@@ -26,7 +25,6 @@ import de.idiotischer.bob.tile.TileManager;
 import de.idiotischer.bob.tile.event.TileChangedEvent;
 import de.idiotischer.bob.troop.MoveStatus;
 import de.idiotischer.bob.troop.TrainEntry;
-import de.idiotischer.bob.troop.Troop;
 import de.idiotischer.bob.troop.TroopStack;
 import de.idiotischer.bob.util.AddressUtil;
 import de.idiotischer.bob.war.WarStatus;
@@ -144,6 +142,23 @@ public class PacketListener implements ListenerAdapter {
             BOB.getInstance().getTileManager().registerTile(tile);
         } else if(event.getPacket() instanceof ReplyPacket pack) {
             switch (pack.getReplyType()) {
+                case TROOP_TRAIN_UPDATE -> {
+                    String[] strings = pack.getMessage().split(";");
+
+                    UUID id = UUID.fromString(strings[0].replace("id=",""));
+
+                    TrainEntry e = BOB.getInstance().getTroopManager().getTraining().stream().filter(te -> te.getUuid().equals(id)).findFirst().orElse(null);
+
+                    if(e == null) return;
+
+                    String s1 = strings[1];
+
+                    if(s1.startsWith("pop")) {
+                        long full = Long.parseLong(s1.replace("pop=",""));
+
+                        e.setPop(full);
+                    }
+                }
                 case TROOP_UPDATE -> {
                     String[] strings = pack.getMessage().split(";");
 
@@ -179,6 +194,10 @@ public class PacketListener implements ListenerAdapter {
                         if(c == null) return;
 
                         troopStack.setOwner(c);
+                    } else if(s1.startsWith("pop")) {
+                        long pop = Long.parseLong(s1.replace("pop=",""));
+
+                       troopStack.setPopulation(pop);
                     }
                 }
                 case TROOP_TRAIN_START -> {
@@ -188,8 +207,9 @@ public class PacketListener implements ListenerAdapter {
                     String troopS = strings[1];
                     Pair<UUID, TroopStack> troop = TroopStack.deserialize(troopS, BOB.getInstance().getCountryManager(), BOB.getInstance().getTileManager());
                     int startTime = Integer.parseInt(strings[2]);
+                    long availablePop = Long.parseLong(strings[3]);
 
-                    BOB.getInstance().getTroopManager().addTrainEntry(new TrainEntry(startTime, 0, troop.key(),troopTrainDays, troop.value()));
+                    BOB.getInstance().getTroopManager().addTrainEntry(new TrainEntry(startTime, 0, troop.key(), availablePop, troopTrainDays, troop.value()));
                 }
                 case TROOP_TRAIN_END -> {
                     String[] strings = pack.getMessage().split(";");
@@ -525,8 +545,7 @@ public class PacketListener implements ListenerAdapter {
                         MoveStatus status = MoveStatus.values()[Integer.parseInt(statusPart[1])];
 
                         BOB.getInstance().getTroopManager().finishMove(uuid, tile, status);
-                    }
-                    else if (troopPart[0].equals("troops")) {
+                    } else if (troopPart[0].equals("troops")) {
                         String[] uuids = troopPart[1].split(",");
                         String[] statuses = statusPart[1].split(",");
 
@@ -541,6 +560,27 @@ public class PacketListener implements ListenerAdapter {
 
                         BOB.getInstance().getTroopManager().finishMoveAll(results, tile);
                     }
+                }
+                case TILE_UPDATE -> {
+                    String s = pack.getMessage();
+
+                    if(s.isEmpty()) return;
+
+                    String[] strings = pack.getMessage().split(";");
+
+                    String id = strings[0].replace("id=","");
+
+                    Tile t = BOB.getInstance().getTileManager().byAbbreviation(id);
+
+                    if(t == null) return;
+
+                    String s1 = strings[1];
+
+                    if(s1.startsWith("population")) {
+                        long population = Integer.parseInt(s1.replace("population=",""));
+                        t.setPopulation(population);
+                    }
+
                 }
                 case TILE_CHANGE -> {
                     String s = pack.getMessage();

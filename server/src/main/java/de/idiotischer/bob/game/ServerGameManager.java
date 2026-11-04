@@ -134,15 +134,22 @@ public class ServerGameManager implements TimeResolver {
         });
 
         new ArrayList<>(Server.getInstance().getTroopManager().getTraining()).forEach(troop -> {
-            if(troop.canTrain() && !(troop.getExpIfDeployedNow(timeTicks) >= 100))
+            long availablePop = Server.getInstance().getCountryManager().removePopulationCheck(troop.getFinalStack().getPop(), troop.getFinalStack().getController());
+            if(troop.canTrainServer(Server.getInstance().getServerSocket(),Server.getInstance().getSendTool(), availablePop) && !(troop.getExpIfDeployedNow(timeTicks) >= 100))
                 if (timeTicks >= troop.getEndTick()) {
                     Server.getInstance().getTroopManager().removeTrainEntry(troop.getUuid(), true);
                     Server.getInstance().getTroopManager().addTroopStack(troop.getFinalStack(), troop.getUuid());
                 }
         });
 
+        //TODO for every troop update them and add equipment and population, whatever they miss and you have
+
         if (timeTicks % (60 * 24) == 0) {
-            Server.getInstance().getCountryManager().getCountries().forEach(c -> c.newDay(Server.getInstance().getServerSocket(), Server.getInstance().getSendTool()));
+
+            Server.getInstance().getCountryManager().getCountries().forEach(c -> {
+                c.newDay(Server.getInstance().getServerSocket(), Server.getInstance().getSendTool());
+                Server.getInstance().getCountryManager().addPop(1000, c);
+            });
         /*if (timeTicks % (60 * 12) == 0)*/
             broadcastTimeSync();
         }
