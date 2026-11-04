@@ -29,7 +29,7 @@ public class TroopStack extends Troop {
     private float speed = 1f;
     private int level = 1;
     private int exp = 1;
-    private long pop = 0;
+    private double pop = 0;
 
     public TroopStack(String name, Tile tile, Country owner,Country controller, int count, String template) {
         super(name,tile, owner, controller, template);
@@ -107,7 +107,7 @@ public class TroopStack extends Troop {
         stack.speed = Float.parseFloat(values.getOrDefault("speed", String.valueOf(stack.speed)));
         stack.exp = Integer.parseInt(values.getOrDefault("exp", String.valueOf(stack.exp)));
         stack.level = Integer.parseInt(values.getOrDefault("level", String.valueOf(stack.level)));
-        stack.pop = Integer.parseInt(values.getOrDefault("pop", String.valueOf(stack.pop)));
+        stack.pop = Double.parseDouble(values.getOrDefault("pop", String.valueOf(stack.pop)));
 
         return Pair.of(uuid, stack);
     }
@@ -206,7 +206,7 @@ public class TroopStack extends Troop {
     }
 
 
-    public void setPopulation(long availablePop) {
+    public void setPopulation(double availablePop) {
         this.pop = availablePop;
     }
 

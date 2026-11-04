@@ -114,7 +114,7 @@ public class ServerTroopManager implements TroopResolver{
         usedIds.add(uuid);
 
         //TODO: check for enough pop
-        long availablePop = Server.getInstance().getCountryManager().removePopulationCheck(troop.getPop(), troop.getController());
+        double availablePop = Server.getInstance().getCountryManager().removePopulationCheck(troop.getPop(), troop.getController());
 
         long t = Server.getInstance().getGameManager().getTimeTicks();
         addTrainEntry(new TrainEntry(t, 0, uuid, availablePop, troop.getTrainDays(), troop));

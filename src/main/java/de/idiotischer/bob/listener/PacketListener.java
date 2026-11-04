@@ -577,10 +577,21 @@ public class PacketListener implements ListenerAdapter {
                     String s1 = strings[1];
 
                     if(s1.startsWith("population")) {
-                        long population = Integer.parseInt(s1.replace("population=",""));
+                        double population = Double.parseDouble(s1.replace("population=",""));
                         t.setPopulation(population);
+                    } else if(s1.startsWith("addCore")) {
+                        String core = s1.replace("addCore=", "");
+                        t.addCore(core);
+                    } else if(s1.startsWith("removeCore")) {
+                        String core = s1.replace("removeCore=", "");
+                        t.removeCore(core);
+                    } else if(s1.startsWith("addClaim")) {
+                        String core = s1.replace("addClaim=", "");
+                        t.addClaim(core);
+                    } else if(s1.startsWith("removeClaim")) {
+                        String core = s1.replace("removeClaim=", "");
+                        t.removeClaim(core);
                     }
-
                 }
                 case TILE_CHANGE -> {
                     String s = pack.getMessage();

@@ -25,8 +25,10 @@ public class Tile {
     private final String abbreviation;
     private final SharedCore core;
     private final int victoryPoints;
-    private final Set<Country> claims;
-    private long population;
+    private final Set<String> claims;
+    private final double basePop;
+    private final Set<String> cores;
+    private double population;
     private Country controller;
     private Country owner;
     private final List<Point> points;
@@ -35,10 +37,11 @@ public class Tile {
 
     private final Set<TileConnection> tileConnections;
 
-    public Tile(SharedCore core,Set<TileConnection> tileConnections, Set<Country> claims, long population, int victoryPoints, String cityName, boolean city, String abbreviation, String name, List<Point> points, Country controller, Country owner) {
+    public Tile(SharedCore core,Set<TileConnection> tileConnections, Set<String> cores, Set<String> claims, double population, int victoryPoints, String cityName, boolean city, String abbreviation, String name, List<Point> points, Country controller, Country owner) {
         this.core = core;
         this.tileConnections = tileConnections;
         this.claims = claims;
+        this.cores = cores;
         this.abbreviation = abbreviation;
         this.name = name;
         this.controller = controller;
@@ -48,6 +51,7 @@ public class Tile {
         this.city = city;
         this.victoryPoints = victoryPoints;
         this.population = population;
+        this.basePop = population;
     }
 
     public Country getOwner() {
@@ -166,25 +170,25 @@ public class Tile {
         return tileConnections;
     }
 
-    public long getPopulation() {
+    public double getPopulation() {
         return population;
     }
 
-    public void setPopulation(long population) {
+    public void setPopulation(double population) {
         this.population = population;
     }
 
-    public void setPopulationServer(SendTool t, ChannelResolver r, long population) {
+    public void setPopulationServer(SendTool t, ChannelResolver r, double population) {
         this.population = population;
-        t.broadcast(r.channels(), new ReplyPacket(Type.TILE_CHANGE, "id=" + abbreviation + ";population=" + population));
+        t.broadcast(r.channels(), new ReplyPacket(Type.TILE_UPDATE, "id=" + abbreviation + ";population=" + population));
     }
 
-    public static @NotNull Tile by(SharedCore core, Set<TileConnection> tileConnections, Set<Country> claims, @NotNull CountryResolver resolver, @NotNull String abbreviation, long population, int victoryPoints, String name, String cityName, boolean hasCity, List<Point> points, String controllerAbbreviation, String ownerAbbreviation) {
+    public static @NotNull Tile by(SharedCore core, Set<TileConnection> tileConnections, Set<String> cores, Set<String> claims, @NotNull CountryResolver resolver, @NotNull String abbreviation, double population, int victoryPoints, String name, String cityName, boolean hasCity, List<Point> points, String controllerAbbreviation, String ownerAbbreviation) {
 
         Country controller = "null".equals(controllerAbbreviation) ? null : resolver.byAbbreviation(controllerAbbreviation);
         Country owner = "null".equals(ownerAbbreviation) ? null : resolver.byAbbreviation(ownerAbbreviation);
 
-        return new Tile(core, tileConnections, claims, population, victoryPoints, cityName, hasCity, abbreviation, name, points, controller,owner);
+        return new Tile(core, tileConnections, cores, claims, population, victoryPoints, cityName, hasCity, abbreviation, name, points, controller,owner);
     }
 
     public String toDataString() {
@@ -197,29 +201,75 @@ public class Tile {
             if (i < points.size() - 1) sb.append("|");
         }
 
-        List<Country> claims = new ArrayList<>(this.claims);
+        List<String> claims = new ArrayList<>(this.claims);
         StringBuilder claimsSb = new StringBuilder();
 
         for (int i = 0; i < claims.size(); i++) {
-            claimsSb.append(claims.get(i).getAbbreviation());
+            claimsSb.append(claims.get(i));
 
             if (i < claims.size() - 1) claimsSb.append(",");
         }
 
+        List<String> cores = new ArrayList<>(this.cores);
+        StringBuilder coresSb = new StringBuilder();
+
+        for (int i = 0; i < cores.size(); i++) {
+            coresSb.append(cores.get(i));
+
+            if (i < cores.size() - 1) coresSb.append(",");
+        }
+
         String connections = TileConnection.serialize(tileConnections);
 
-        return getAbbreviation() + ";" + getName() + ";" + hasCity() + ";" + getCityName() + ";" + sb + ";" + (getController() != null ? getController().getAbbreviation() : "null") + ";" + (getOwner() != null ? getOwner().getAbbreviation() : "null") + ";" + victoryPoints + ";" + claimsSb + ";" + connections + ";" + population;
+        return getAbbreviation() + ";" + getName() + ";" + hasCity() + ";" + getCityName() + ";" + sb + ";" + (getController() != null ? getController().getAbbreviation() : "null") + ";" + (getOwner() != null ? getOwner().getAbbreviation() : "null") + ";" + victoryPoints + ";" + claimsSb + ";" + connections + ";" + population + ";" + coresSb;
     }
 
-    public void addClaim(Country c) {
+    public Set<String> getCores() {
+        return cores;
+    }
+
+    public void addCore(String c) {
+        cores.add(c);
+    }
+
+    public void removeCore(String c) {
+        cores.remove(c);
+    }
+
+    public void addClaim(String c) {
         claims.add(c);
     }
 
-    public void removeClaim(Country c) {
+    public void removeClaim(String c) {
         claims.remove(c);
     }
 
-    public Set<Country> getClaims() {
+    public void addCoreServer(SendTool t, ChannelResolver r, String c) {
+        cores.add(c);
+
+        t.broadcast(r.channels(), new ReplyPacket(Type.TILE_UPDATE, "id=" + abbreviation + ";addCore=" + c));
+    }
+
+    public void removeCoreServer(SendTool t, ChannelResolver r, String c) {
+        cores.remove(c);
+
+        t.broadcast(r.channels(), new ReplyPacket(Type.TILE_UPDATE, "id=" + abbreviation + ";removeCore=" + c));
+    }
+
+    public void addClaimServer(SendTool t, ChannelResolver r, String c) {
+        claims.add(c);
+
+        t.broadcast(r.channels(), new ReplyPacket(Type.TILE_UPDATE, "id=" + abbreviation + ";addClaim=" + c));
+    }
+
+    public void removeClaimServer(SendTool t, ChannelResolver r, String c) {
+        claims.remove(c);
+
+        t.broadcast(r.channels(), new ReplyPacket(Type.TILE_UPDATE, "id=" + abbreviation + ";removeClaim=" + c));
+    }
+
+
+    public Set<String> getClaims() {
         return claims;
     }
 
@@ -407,5 +457,14 @@ public class Tile {
                 return canBeBlown;
             }
         }
+    }
+
+    public double getUsablePopFor() {
+        //look at modifiers, cores etc
+        return basePop;
+    }
+
+    public double getBasePop() {
+        return basePop;
     }
 }

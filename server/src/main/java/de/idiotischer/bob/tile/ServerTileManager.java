@@ -108,7 +108,7 @@ public class ServerTileManager implements TileResolver {
                 if(owner == null) owner = controller;
                 if(controller == null) controller = owner;
 
-                Set<Country> claims = new HashSet<>();
+                Set<String> claims = new HashSet<>();
 
                 JsonElement claimsElement = tileElement.get("claims");
 
@@ -117,9 +117,22 @@ public class ServerTileManager implements TileResolver {
                         if (el == null || el.isJsonNull()) continue;
 
                         String claimString = el.getAsString();
-                        Country claim = Server.getInstance().getCountryManager().byAbbreviation(claimString);
 
-                        if (claim != null) claims.add(claim);
+                        if (claimString != null) claims.add(claimString);
+                    }
+                }
+
+                Set<String> cores = new HashSet<>();
+
+                JsonElement coresElement = tileElement.get("claims");
+
+                if (coresElement != null && coresElement.isJsonArray()) {
+                    for (JsonElement el : coresElement.getAsJsonArray()) {
+                        if (el == null || el.isJsonNull()) continue;
+
+                        String coreString = el.getAsString();
+
+                        if (coreString != null) cores.add(coreString);
                     }
                 }
 
@@ -214,7 +227,7 @@ public class ServerTileManager implements TileResolver {
                 }
 
 
-                Tile tile = new Tile(Server.getInstance().getSharedCore(), conns, claims, population, victoryPoints, cityName, hasCity, abbreviation, name, points, controller, owner);
+                Tile tile = new Tile(Server.getInstance().getSharedCore(), conns, cores, claims, population, victoryPoints, cityName, hasCity, abbreviation, name, points, controller, owner);
 
                 registerTile(tile);
 

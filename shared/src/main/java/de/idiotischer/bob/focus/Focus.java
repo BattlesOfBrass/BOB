@@ -110,11 +110,24 @@ public class Focus {
                 });
             });
             this.effect.popMap().forEach((key,value) -> {
-                State state = sr.resolve(key);
-
-                if(state != null) {
-                    //do stuff haha
-                }
+                Tile tile = tir.byAbbreviation(key);
+                if(tile != null) tile.setPopulationServer(t,r,value);
+            });
+            this.effect.tilesAddCores().forEach((key,value) -> {
+                Tile tile = tir.byAbbreviation(key);
+                if(tile != null) value.forEach(s -> tile.addCoreServer(t,r,s));
+            });
+            this.effect.tilesRemoveCores().forEach((key,value) -> {
+                Tile tile = tir.byAbbreviation(key);
+                if(tile != null) value.forEach(s -> tile.removeCoreServer(t,r,s));
+            });
+            this.effect.tilesAddClaims().forEach((key,value) -> {
+                Tile tile = tir.byAbbreviation(key);
+                if(tile != null) value.forEach(s -> tile.addClaimServer(t,r,s));
+            });
+            this.effect.tilesRemoveClaims().forEach((key,value) -> {
+                Tile tile = tir.byAbbreviation(key);
+                if(tile != null) value.forEach(s -> tile.removeClaimServer(t,r,s));
             });
         }
 

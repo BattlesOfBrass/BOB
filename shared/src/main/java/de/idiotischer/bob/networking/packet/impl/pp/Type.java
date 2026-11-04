@@ -2,7 +2,7 @@ package de.idiotischer.bob.networking.packet.impl.pp;
 
 public enum Type {
     TILE_CHANGE,
-    TILE_UPDATE,
+    TILE_UPDATE, //TODO: bundle multiple or add auto bundler or packetbundler or smth
     ERROR,
     TILES_SYNC,
     COUNTRIES_SYNC,

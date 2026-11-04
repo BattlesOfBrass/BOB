@@ -102,21 +102,21 @@ public class ServerCountryManager implements CountryResolver {
         return this.getCountries().stream().filter(c -> c.getPuppetState() != PuppetState.NONE).collect(Collectors.toSet());
     }
 
-    public long getTotalPopulation(Country country) {
+    public double getTotalPopulation(Country country) {
         var controlled = new HashSet<>(Server.getInstance().getTileManager().getTilesControlledDirectly(country));
         var owned = new HashSet<>(Server.getInstance().getTileManager().getTilesOwnedDirectly(country));
 
         owned.removeAll(controlled);
         controlled.removeAll(owned);
 
-        double controlledSumPenalty = controlled.stream().mapToLong(Tile::getPopulation).sum();
-        double ownedSum = owned.stream().mapToLong(Tile::getPopulation).sum();
+        double controlledSumPenalty = controlled.stream().mapToDouble(Tile::getPopulation).sum();
+        double ownedSum = owned.stream().mapToDouble(Tile::getPopulation).sum();
 
-        return (long) (ownedSum + controlledSumPenalty);
+        return ownedSum + controlledSumPenalty;
     }
 
 
-    public long getPopulation(Country country) {
+    public double getPopulation(Country country) {
         var controlled = new HashSet<>(Server.getInstance().getTileManager().getTilesControlledDirectly(country));
         var owned = new HashSet<>(Server.getInstance().getTileManager().getTilesOwnedDirectly(country));
 
@@ -124,13 +124,13 @@ public class ServerCountryManager implements CountryResolver {
         controlled.removeAll(owned);
         //var mods = country.getModifiers().stream().filter(mod -> mod.getType().equals(Modifier.Types.CONSCRIPTION_FOR_OCCUPATION.getMapping())).collect(Collectors.toSet());
 
-        double controlledSumPenalty = controlled.stream().mapToLong(Tile::getPopulation).sum() * 0.75; //retain about 75%, i dont really know but we could scale it with resistance later or with modifiers
-        double ownedSum = owned.stream().mapToLong(Tile::getPopulation).sum();
+        double controlledSumPenalty = controlled.stream().mapToDouble(Tile::getPopulation).sum() * 0.75; //retain about 75%, i dont really know but we could scale it with resistance later or with modifiers
+        double ownedSum = owned.stream().mapToDouble(Tile::getPopulation).sum();
 
-        return (long) (ownedSum + controlledSumPenalty);
+        return ownedSum + controlledSumPenalty;
     }
 
-    public long removePopulationCheck(long pop, Country country) {
+    public double removePopulationCheck(double pop, Country country) {
         Set<Tile> controlled = new HashSet<>(Server.getInstance().getTileManager().getTilesControlledDirectly(country));
         Set<Tile> owned = new HashSet<>(Server.getInstance().getTileManager().getTilesOwnedDirectly(country));
 
@@ -141,28 +141,28 @@ public class ServerCountryManager implements CountryResolver {
 
         if (tiles.isEmpty() || pop <= 0) return 0;
 
-        long totalPopulation = getTotalPopulation(country);
+        double totalPopulation = getTotalPopulation(country);
 
-        long actualRemoval = Math.min(pop, totalPopulation);
+        double actualRemoval = Math.min(pop, totalPopulation);
 
-        long perTile = actualRemoval / tiles.size();
-        long remainder = actualRemoval % tiles.size();
+        double perTile = actualRemoval / tiles.size();
+        double remainder = actualRemoval % tiles.size();
 
         for (Tile tile : tiles) {
-            long amount = perTile;
+            double amount = perTile;
 
             if (remainder > 0) {
                 amount++;
                 remainder--;
             }
 
-            tile.setPopulation(tile.getPopulation() - amount);
+            tile.setPopulationServer(Server.getInstance().getSendTool(), Server.getInstance().getServerSocket(), tile.getPopulation() - amount);
         }
 
         return actualRemoval;
     }
 
-    public void removePopulation(long pop, Country country) {
+    public void removePopulation(double pop, Country country) {
         Set<Tile> controlled = new HashSet<>(Server.getInstance().getTileManager().getTilesControlledDirectly(country));
         Set<Tile> owned = new HashSet<>(Server.getInstance().getTileManager().getTilesOwnedDirectly(country));
 
@@ -172,22 +172,50 @@ public class ServerCountryManager implements CountryResolver {
         tiles.addAll(owned);
         tiles.addAll(controlled);
 
-        long perTile = pop / tiles.size();
-        long remainder = pop % tiles.size();
+        double perTile = pop / tiles.size();
+        double remainder = pop % tiles.size();
 
         for (var tile : tiles) {
-            long amount = perTile;
+            double amount = perTile;
 
             if (remainder > 0) {
                 amount++;
                 remainder--;
             }
 
-            tile.setPopulation(tile.getPopulation() - amount);
+            tile.setPopulationServer(Server.getInstance().getSendTool(), Server.getInstance().getServerSocket(), tile.getPopulation() - amount);
+        }
+    }
+    public void addPopPercent(float perc, Country country) {
+        Set<Tile> controlled = new HashSet<>(Server.getInstance().getTileManager().getTilesControlledDirectly(country));
+        Set<Tile> owned = new HashSet<>(Server.getInstance().getTileManager().getTilesOwnedDirectly(country));
+
+        owned.removeIf(t -> !controlled.contains(t));
+
+        Set<Tile> tiles = new HashSet<>();
+        tiles.addAll(owned);
+        tiles.addAll(controlled);
+
+        if(tiles.isEmpty() || perc <= 0) return;
+
+        double pop = getTotalPopulation(country) * perc;
+
+        double perTile = pop / tiles.size();
+        double remainder = pop % tiles.size();
+
+        for (var tile : tiles) {
+            double amount = perTile;
+
+            if (remainder > 0) {
+                amount++;
+                remainder--;
+            }
+
+            tile.setPopulationServer(Server.getInstance().getSendTool(), Server.getInstance().getServerSocket(), tile.getPopulation() + amount);
         }
     }
 
-    public void addPop(long pop, Country country) {
+    public void addPop(double pop, Country country) {
         Set<Tile> controlled = new HashSet<>(Server.getInstance().getTileManager().getTilesControlledDirectly(country));
         Set<Tile> owned = new HashSet<>(Server.getInstance().getTileManager().getTilesOwnedDirectly(country));
 
@@ -197,18 +225,20 @@ public class ServerCountryManager implements CountryResolver {
         tiles.addAll(owned);
         tiles.addAll(controlled);
 
-        long perTile = pop / tiles.size();
-        long remainder = pop % tiles.size();
+        if(tiles.isEmpty() || pop <= 0) return ;
+
+        double perTile = pop / tiles.size();
+        double remainder = pop % tiles.size();
 
         for (var tile : tiles) {
-            long amount = perTile;
+            double amount = perTile;
 
             if (remainder > 0) {
                 amount++;
                 remainder--;
             }
 
-            tile.setPopulation(tile.getPopulation() + amount);
+            tile.setPopulationServer(Server.getInstance().getSendTool(), Server.getInstance().getServerSocket(), tile.getPopulation() + amount);
         }
     }
 
@@ -222,6 +252,10 @@ public class ServerCountryManager implements CountryResolver {
 
     public Country getCountry(String abbreviation) {
         return countrySet.stream().filter(c -> c.getAbbreviation().equals(abbreviation)).findFirst().orElse(null);
+    }
+
+    public Set<Country> getCountrySet() {
+        return countrySet;
     }
 
     public List<Tile> getOwned(Country country) {

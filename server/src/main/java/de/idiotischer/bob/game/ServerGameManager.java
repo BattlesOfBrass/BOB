@@ -134,7 +134,7 @@ public class ServerGameManager implements TimeResolver {
         });
 
         new ArrayList<>(Server.getInstance().getTroopManager().getTraining()).forEach(troop -> {
-            long availablePop = Server.getInstance().getCountryManager().removePopulationCheck(troop.getFinalStack().getPop(), troop.getFinalStack().getController());
+            double availablePop = Server.getInstance().getCountryManager().removePopulationCheck(troop.getFinalStack().getPop(), troop.getFinalStack().getController());
             if(troop.canTrainServer(Server.getInstance().getServerSocket(),Server.getInstance().getSendTool(), availablePop) && !(troop.getExpIfDeployedNow(timeTicks) >= 100))
                 if (timeTicks >= troop.getEndTick()) {
                     Server.getInstance().getTroopManager().removeTrainEntry(troop.getUuid(), true);
@@ -145,10 +145,11 @@ public class ServerGameManager implements TimeResolver {
         //TODO for every troop update them and add equipment and population, whatever they miss and you have
 
         if (timeTicks % (60 * 24) == 0) {
-
             Server.getInstance().getCountryManager().getCountries().forEach(c -> {
-                c.newDay(Server.getInstance().getServerSocket(), Server.getInstance().getSendTool());
-                Server.getInstance().getCountryManager().addPop(1000, c);
+                try {
+                    c.newDay(Server.getInstance().getServerSocket(), Server.getInstance().getSendTool());
+                    Server.getInstance().getCountryManager().addPop(/*0.125f later do liek in hoi4 with percentage based on core pop etc*/125, c);
+                } catch (Exception ex) { ex.printStackTrace(); }
             });
         /*if (timeTicks % (60 * 12) == 0)*/
             broadcastTimeSync();

@@ -122,7 +122,19 @@ public class HUDTopBar extends JPanel {
 
         FontMetrics fm = g2.getFontMetrics();
 
-        String ppText = "PP: " + BOB.getInstance().getPlayer().country().getPoliticalPower();
+        double pp;
+        double pop;
+
+        if(BOB.getInstance().getPlayer().country() == null) {
+            pp = 0;
+            pop = 0;
+        } else {
+            pp = BOB.getInstance().getPlayer().country().getPoliticalPower();
+            pop = BOB.getInstance().getCountryManager().getPopulation(BOB.getInstance().getPlayer().country());
+        }
+
+        String ppText = "PP: " + pp;
+        String popText = "POP: " + (pop >= 1_000_000 ? String.format("%.1fM", pop / 1_000_000) : pop >= 1_000 ? String.format("%.1fk", pop / 1_000) : Math.round(pop));
 
         //TODO: REPLACE WITH FLAG NOW!
         String text = "Current country: " + countryName;
@@ -133,6 +145,9 @@ public class HUDTopBar extends JPanel {
         int spacing = 10;
         int xSpaced = x + fm.stringWidth(text /*later the image width*/) + spacing;
         g2.drawString(ppText,xSpaced,y);
+
+        int xSpaced1 = x + fm.stringWidth(text /*later the image width*/) + spacing + fm.stringWidth(ppText /*later the image width*/) + spacing;
+        g2.drawString(popText,xSpaced1,y);
 
         Date currentDate = BOB.getInstance().getTimeManager().getDate();
         long ticks = BOB.getInstance().getTimeManager().getTimeTicks();
