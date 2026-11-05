@@ -1,25 +1,218 @@
 package de.idiotischer.bob.troop;
 
 import de.idiotischer.bob.country.Country;
-import de.idiotischer.bob.state.State;
+import de.idiotischer.bob.country.CountryResolver;
+import de.idiotischer.bob.networking.ChannelResolver;
+import de.idiotischer.bob.networking.communication.SendTool;
+import de.idiotischer.bob.networking.packet.impl.pp.ReplyPacket;
+import de.idiotischer.bob.networking.packet.impl.pp.Type;
+import de.idiotischer.bob.tile.Tile;
+import de.idiotischer.bob.tile.TileResolver;
+import de.idiotischer.bob.util.UUIDUtil;
+import it.unimi.dsi.fastutil.Pair;
 
-import java.util.List;
+import java.util.*;
 
-public record TroopStack(List<Troop> troops) {
+public class TroopStack extends Troop {
 
-    public Country getOwner() {
-        return null;
+    private final List<Troop> troops;
+    private Tile tile;
+    private int baseHp = 200;
+    private int baseAttack = 25;
+    private int baseDefense = 10;
+    private int baseOrg = 50;
+    private int hp = baseHp;
+    private int attack = baseAttack;
+    private int defense = baseDefense;
+    private int org = baseOrg;
+    private boolean alive = true;
+    private float speed = 1f;
+    private int level = 1;
+    private int exp = 1;
+    private double pop = 0;
+
+    public TroopStack(String name, Tile tile, Country owner,Country controller, int count, String template) {
+        super(name,tile, owner, controller, template);
+
+        this.tile = tile;
+        this.troops = new ArrayList<>();
+
+        for(int i = 0; i < count; i++) {
+            Troop troop = new Troop(name,tile, owner, controller,template);
+
+            troops.add(troop);
+        }
     }
 
-    public Country getController() {
-        return null;
+    @Deprecated
+    public TroopStack(Tile tile, Country controller, List<Troop> troops) {
+        super("",tile, controller,controller, "");
+
+        this.tile = tile;
+        this.troops = troops;
+
+        troops.forEach(troop -> troop.setTile(tile));
     }
 
-    public boolean isVisible() {
-        return true;
+    public Tile getTile() {
+        return tile;
     }
 
-    public State getState() {
-        return null;
+    public void setTile(Tile tile) {
+        this.tile = tile;
+
+        this.troops.forEach(troop -> troop.setTile(tile));
+    }
+
+    public List<Troop> getTroops() {
+        return troops;
+    }
+
+    public String serialize(UUID troopId) {
+    return "uuid=" + troopId.toString() + ";name=" + getName() + ";count=" + troops.size() + ";owner=" + getOwner().getAbbreviation() + ";controller=" + getController().getAbbreviation() + ";tile=" + tile.getAbbreviation() + ";template=" + template + ";baseHp=" + baseHp + ";baseAttack=" + baseAttack + ";baseDefense=" + baseDefense + ";baseOrg=" + baseOrg + ";hp=" + hp + ";attack=" + attack + ";defense=" + defense + ";org=" + org + ";alive=" + alive + ";speed=" + speed + ";exp=" + exp + ";pop=" + pop + ";level=" + level;
+    }
+
+    public static Pair<UUID, TroopStack> deserialize(String data, CountryResolver countryResolver, TileResolver tileResolver) {
+        Map<String, String> values = new HashMap<>();
+
+        for (String part : data.split(";")) {
+            String[] keyValue = part.split("=", 2);
+            if (keyValue.length == 2) values.put(keyValue[0], keyValue[1]);
+        }
+
+        UUID uuid = UUID.fromString(values.get("uuid"));
+        String name = values.get("name");
+        int count = Integer.parseInt(values.get("count"));
+
+        Country owner = countryResolver.byAbbreviation(values.get("owner"));
+        Country controller = countryResolver.byAbbreviation(values.get("controller"));
+        Tile tile = tileResolver.byAbbreviation(values.get("tile"));
+
+        String template = values.get("template");
+
+        TroopStack stack = new TroopStack(name, tile, owner, controller, count, template);
+
+        stack.baseHp = Integer.parseInt(values.getOrDefault("baseHp", "200"));
+        stack.baseAttack = Integer.parseInt(values.getOrDefault("baseAttack", "25"));
+        stack.baseDefense = Integer.parseInt(values.getOrDefault("baseDefense", "10"));
+        stack.baseOrg = Integer.parseInt(values.getOrDefault("baseOrg", "100"));
+
+        stack.hp = Integer.parseInt(values.getOrDefault("hp", String.valueOf(stack.baseHp)));
+        stack.attack = Integer.parseInt(values.getOrDefault("attack", String.valueOf(stack.baseAttack)));
+        stack.defense = Integer.parseInt(values.getOrDefault("defense", String.valueOf(stack.baseDefense)));
+        stack.org = Integer.parseInt(values.getOrDefault("org", String.valueOf(stack.baseOrg)));
+
+        stack.alive = Boolean.parseBoolean(values.getOrDefault("alive", "true"));
+
+        stack.speed = Float.parseFloat(values.getOrDefault("speed", String.valueOf(stack.speed)));
+        stack.exp = Integer.parseInt(values.getOrDefault("exp", String.valueOf(stack.exp)));
+        stack.level = Integer.parseInt(values.getOrDefault("level", String.valueOf(stack.level)));
+        stack.pop = Double.parseDouble(values.getOrDefault("pop", String.valueOf(stack.pop)));
+
+        return Pair.of(uuid, stack);
+    }
+
+    public int getLevel() {
+        return exp / 100;
+    }
+
+    public void setExp(int exp) {
+        this.exp = exp;
+    }
+
+    public void setExpServer(ChannelResolver r, SendTool t, UUID uuid, int exp) {
+        this.exp = exp;
+
+        t.broadcast(r.channels(), new ReplyPacket(Type.TROOP_UPDATE, "id=" + uuid.toString() +";exp=" + exp));
+    }
+
+    //buff/debuff damage and health etc and org
+    public int getExp() {
+        return exp;
+    }
+
+    public int getHp() {
+        return hp * troops.size();
+    }
+
+    public void setHp(int totalHp) {
+        int size = troops.size();
+        this.hp = size == 0 ? 0 : totalHp / size;
+
+        if(hp <= 0) hp = 0;
+    }
+
+    public int getTrainDays() {
+        //later get the slowest training division in template and use that training speed
+
+        return 90;
+    }
+
+    public int getAttack() {
+        return attack * troops.size();
+    }
+
+    public void setAttack(int attack) {
+        this.attack = attack;
+    }
+
+    public int getDefense() {
+        return defense * troops.size();
+    }
+
+    public void setDefense(int defense) {
+        this.defense = defense;
+    }
+
+    public int getOrg() {
+        return org * troops.size();
+    }
+
+    public void setOrg(int org) {
+        this.org = Math.max(0, Math.min(baseOrg, org));
+    }
+
+    public boolean isBroken() {
+        return org <= 0;
+    }
+
+    public void resetAttributes() {
+        this.hp = this.baseHp;
+        this.org = this.baseOrg;
+        this.attack = this.baseAttack;
+        this.defense = this.baseDefense;
+    }
+
+    public boolean isAlive() {
+        return alive;
+    }
+
+    public void setAlive(boolean b) {
+        setHp(0);
+        this.alive = b;
+    }
+
+    public void setSpeed(float speed) {
+        //update client too xD
+        this.speed = speed;
+    }
+
+    public float getSpeed() {
+        return speed;
+    }
+
+    public long getPop() {
+        return 9 * 1000; //hoi4 3x3 div by default
+    }
+
+
+    public void setPopulation(double availablePop) {
+        this.pop = availablePop;
+    }
+
+    public void setPopServer(ChannelResolver r, SendTool t, UUID uuid, long pop) {
+        this.pop = pop;
+
+        t.broadcast(r.channels(), new ReplyPacket(Type.TROOP_UPDATE, "id=" + uuid.toString() +";pop=" + pop));
     }
 }

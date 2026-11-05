@@ -1,0 +1,102 @@
+package de.idiotischer.bob.render.menu.components.button;
+
+import de.idiotischer.bob.BOB;
+import de.idiotischer.bob.focus.Focus;
+
+import javax.swing.*;
+import java.awt.*;
+import java.util.function.Consumer;
+
+public class FocusButton extends JToggleButton {
+
+    private final String treeId;
+    private final Point p;
+    private final Focus focus;
+    private final String country;
+    private final String displayName;
+
+    public FocusButton(String id, String country, Focus focus, Point point, Consumer<FocusButton> onCLick) {
+        this.focus = focus;
+        this.p = point;
+        this.treeId = id;
+        this.country = country;
+
+        setContentAreaFilled(false);
+        setBorderPainted(false);
+        setFocusPainted(false);
+        setOpaque(false);
+        setFocusable(false);
+
+        Font font = new Font(Font.SANS_SERIF, Font.PLAIN, 12);
+        FontMetrics fm = getFontMetrics(font);
+
+        String original = focus.getName();
+        String suffix = "...";
+
+        int maxWidth = 120 - 12;
+        int end = original.length();
+        while (end > 0 && fm.stringWidth(original.substring(0, end) + suffix) > maxWidth) end--;
+        this.displayName = fm.stringWidth(original) > maxWidth ? original.substring(0, end) + suffix : original;
+
+        addActionListener(e -> onCLick.accept(this));
+        //addActionListener(e -> {
+        //    //open small ui that gives description etc than have a start button like in hoi4 or a cancel button depending on if the focus is active or not
+        //});
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        Graphics2D g2 = (Graphics2D) g.create();
+
+        try {
+            g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+
+            boolean done = focus.getCountryDone().contains(country);
+            Focus active = BOB.getInstance().getFocusManager().getActiveFocus(country);
+            boolean running = active != null && active.getId().equals(focus.getId());
+
+            //TODO:add theming support
+            Color bg = done ? new Color(34, 220, 14) : running ? new Color(244, 114, 6) : BOB.getInstance().getSettingsTheme().button().bgColor();
+            Color border = done ? new Color(22, 131, 10) : running ? new Color(161, 75, 3) : BOB.getInstance().getSettingsTheme().button().borderColor();
+
+            g2.setColor(bg);
+            g2.fillRect(0, 0, getWidth(), getHeight());
+
+            g2.setColor(border);
+            g2.setStroke(new BasicStroke(6));
+            g2.drawRect(0, 0, getWidth() - 1, getHeight() - 1);
+
+            g2.setColor(Color.WHITE);
+
+            float fontSize = (float) (12 * getWidth() / 120.0);
+            g2.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, Math.max(1, Math.round(fontSize))));
+
+            FontMetrics fm = g2.getFontMetrics();
+
+            int x = (getWidth() - fm.stringWidth(displayName)) / 2;
+            int y = (getHeight() - fm.getHeight()) / 2 + fm.getAscent();
+
+            g2.drawString(displayName, x, y);
+
+        } finally {
+            g2.dispose();
+        }
+    }
+
+    @Override
+    public Dimension getPreferredSize() {
+        return new Dimension(120, 50);
+    }
+
+    public String getTreeId() {
+        return treeId;
+    }
+
+    public Focus getFocus() {
+        return focus;
+    }
+
+    public Point getPoint() {
+        return p;
+    }
+}

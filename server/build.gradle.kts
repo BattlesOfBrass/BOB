@@ -35,6 +35,7 @@ dependencies {
     implementation("de.craftsblock.craftsnet.modules.websocketpackets:common:1.1.2-pre5")
     implementation("de.craftsblock.craftscore:event")
 
+    implementation("at.yawk.lz4:lz4-java:1.11.0")
     implementation("com.google.code.gson:gson:2.13.2")
 
     // Source: https://mvnrepository.com/artifact/org.jetbrains/annotations

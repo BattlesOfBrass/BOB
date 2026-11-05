@@ -1,0 +1,116 @@
+
+{
+  "germany_old": {
+
+    "requiredTag": "",
+    "countries": ["GER"],
+    "alreadyDone": {},
+
+    "focuses": {
+      "rhineland": {
+        "name": "Reoccupation of the Rhineland",
+        "description": "Remilitarize the Rhineland and challenge the post-war settlement.",
+        "time": 30,
+        "ppLoss": 0.1,
+        "point": "2,0",
+        "effect": {
+          "modifiers": {
+            "add": {
+              "GER": ["rhineland_remilitarized"]
+            }
+          }
+        }
+      },
+      "four_year_plan": {
+        "name": "The Four Year Plan",
+        "description": "Prepare German industry for economic and military expansion.",
+        "prerequisite": "rhineland",
+        "time": 35,
+        "ppLoss": 0.1,
+        "point": "2,1",
+        "effect": {
+          "modifiers": {
+            "add": {
+              "GER": ["four_year_plan"]
+            }
+          }
+        }
+      },
+      "anschluss": {
+        "name": "Anschluss",
+        "description": "Unite Austria and Germany under one government.",
+        "prerequisite": "four_year_plan",
+        "time": 45,
+        "ppLoss": 0.15,
+        "point": "2,2",
+        "effect": {
+          "modifiers": {
+            "add": {
+              "GER": ["anschluss"]
+            }
+          }
+        }
+      },
+      "demand_sudetenland": {
+        "name": "Demand Sudetenland",
+        "description": "Demand the Sudetenland and challenge Czechoslovakia's territorial integrity.",
+        "prerequisite": "anschluss",
+        "time": 45,
+        "ppLoss": 0.2,
+        "point": "2,3",
+        "effect": {
+          "modifiers": {
+            "add": {
+              "GER": ["sudetenland_claim"]
+            }
+          }
+        }
+      },
+      "fate_of_czechoslovakia": {
+        "name": "Fate of Czechoslovakia",
+        "description": "Resolve the future of Czechoslovakia and expand German influence in Central Europe.",
+        "prerequisite": "demand_sudetenland",
+        "time": 45,
+        "ppLoss": 0.2,
+        "point": "2,4",
+        "effect": {
+          "modifiers": {
+            "add": {
+              "GER": ["central_european_influence"]
+            }
+          }
+        }
+      },
+      "molotov_ribbentrop": {
+        "name": "Molotov-Ribbentrop Pact",
+        "description": "Negotiate a non-aggression agreement with the Soviet Union.",
+        "prerequisite": "fate_of_czechoslovakia",
+        "time": 35,
+        "ppLoss": 0.1,
+        "point": "2,5",
+        "effect": {
+          "modifiers": {
+            "add": {
+              "GER": ["molotov_ribbentrop_pact"]
+            }
+          }
+        }
+      },
+      "danzig_or_war": {
+        "name": "Danzig or War",
+        "description": "Escalate the dispute over Danzig and the Polish Corridor.",
+        "prerequisite": "molotov_ribbentrop",
+        "time": 50,
+        "ppLoss": 0.25,
+        "point": "2,6",
+        "effect": {
+          "modifiers": {
+            "add": {
+              "GER": ["danzig_crisis"]
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,6 +1,7 @@
 package de.idiotischer.bob.networking;
 
 import de.idiotischer.bob.BOB;
+import de.idiotischer.bob.Server;
 import de.idiotischer.bob.ServerSocket;
 import de.idiotischer.bob.auth.Credentials;
 import de.idiotischer.bob.networking.packet.Packet;

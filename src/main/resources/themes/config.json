@@ -1,0 +1,8 @@
+{
+  "dark": {
+    "path": "dark/dark.json"
+  },
+  "omegus": {
+    "path": "omegus/omegus.json"
+  }
+}

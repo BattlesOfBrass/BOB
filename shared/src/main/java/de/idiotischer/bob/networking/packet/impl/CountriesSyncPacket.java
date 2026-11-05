@@ -1,9 +1,7 @@
 package de.idiotischer.bob.networking.packet.impl;
 
 import de.idiotischer.bob.country.Country;
-import de.idiotischer.bob.networking.communication.SendTool;
 import de.idiotischer.bob.networking.packet.Packet;
-import de.idiotischer.bob.state.State;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;

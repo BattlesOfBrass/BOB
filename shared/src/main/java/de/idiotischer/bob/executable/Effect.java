@@ -1,0 +1,246 @@
+package de.idiotischer.bob.executable;
+
+import com.google.common.reflect.TypeToken;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import de.idiotischer.bob.SharedCore;
+
+import java.lang.reflect.Type;
+import java.util.*;
+import java.util.stream.Collectors;
+
+public record Effect(Map<String, Integer> popMap, Map<String, Set<String>> tilesTransferMap, Map<String, Set<String>> tilesRemoveClaims, Map<String, Set<String>> tilesAddClaims,  Map<String, Set<String>> tilesRemoveCores, Map<String, Set<String>> tilesAddCores, Map<String, Set<String>> modsAdd, Map<String, Set<String>> modsRemove) {
+
+    public static Effect fromJson(JsonObject obj) {
+        Type mapStringSetType = new TypeToken<Map<String, Set<String>>>(){}.getType();
+        Type popType = new TypeToken<Map<String, Integer>>(){}.getType();
+
+        Map<String, Set<String>> tilesTransferMap = new HashMap<>();
+
+        if(obj.has("tiles")) {
+            JsonElement el = obj.get("tiles");
+            if(el != null) tilesTransferMap = SharedCore.GSON.fromJson(el,mapStringSetType);
+        }
+
+        Map<String, Integer> popMap = new HashMap<>();
+
+        if(obj.has("population")) {
+            JsonElement el = obj.get("population");
+            if(el != null) popMap = SharedCore.GSON.fromJson(el,popType);
+        }
+
+        Map<String, Set<String>> addModsMap = new HashMap<>();
+        Map<String, Set<String>> rmModsMap = new HashMap<>();
+
+        if(obj.has("modifiers")) {
+            JsonObject el = obj.getAsJsonObject("modifiers");
+            if(el != null) {
+                if(el.has("add")) {
+                    JsonObject addObj = el.getAsJsonObject("add");
+                    if(addObj != null) addModsMap = SharedCore.GSON.fromJson(addObj,mapStringSetType);
+                }
+
+                if(el.has("remove")) {
+                    JsonObject rmObj = el.getAsJsonObject("remove");
+                    if(rmObj != null) rmModsMap = SharedCore.GSON.fromJson(rmObj,mapStringSetType);
+                }
+            }
+        }
+
+        Map<String, Set<String>> addClaimsMap = new HashMap<>();
+        Map<String, Set<String>> rmClaimsMap = new HashMap<>();
+
+        if(obj.has("claims")) {
+            JsonObject el = obj.getAsJsonObject("claims");
+            if(el != null) {
+                if(el.has("add")) {
+                    JsonObject addObj = el.getAsJsonObject("add");
+                    if(addObj != null) addClaimsMap = SharedCore.GSON.fromJson(addObj,mapStringSetType);
+                }
+
+                if(el.has("remove")) {
+                    JsonObject rmObj = el.getAsJsonObject("remove");
+                    if(rmObj != null) rmClaimsMap = SharedCore.GSON.fromJson(rmObj,mapStringSetType);
+                }
+            }
+        }
+
+        Map<String, Set<String>> addCoresMap = new HashMap<>();
+        Map<String, Set<String>> rmCoresMap = new HashMap<>();
+
+        if(obj.has("cores")) {
+            JsonObject el = obj.getAsJsonObject("cores");
+            if(el != null) {
+                if(el.has("add")) {
+                    JsonObject addObj = el.getAsJsonObject("add");
+                    if(addObj != null) addCoresMap = SharedCore.GSON.fromJson(addObj,mapStringSetType);
+                }
+
+                if(el.has("remove")) {
+                    JsonObject rmObj = el.getAsJsonObject("remove");
+                    if(rmObj != null) rmCoresMap = SharedCore.GSON.fromJson(rmObj,mapStringSetType);
+                }
+            }
+        }
+
+        return new Effect(popMap,tilesTransferMap,addClaimsMap,rmCoresMap,addCoresMap,rmCoresMap,addModsMap,rmModsMap);
+    }
+
+    public String toDataString() {
+        StringBuilder popBuilder = new StringBuilder();
+        StringBuilder tilesBuilder = new StringBuilder();
+        StringBuilder modsAddBuilder = new StringBuilder();
+        StringBuilder modsRemoveBuilder = new StringBuilder();
+
+        for (var entry : popMap.entrySet()) {
+            if (!popBuilder.isEmpty()) popBuilder.append(",");
+            popBuilder.append(entry.getKey()).append(":").append(entry.getValue());
+        }
+
+        for (var entry : tilesTransferMap.entrySet()) {
+            if (!tilesBuilder.isEmpty()) tilesBuilder.append(",");
+            tilesBuilder.append(entry.getKey()).append(":").append(String.join("|", entry.getValue()));
+        }
+
+        for (var entry : modsAdd.entrySet()) {
+            if (!modsAddBuilder.isEmpty()) modsAddBuilder.append(",");
+            modsAddBuilder.append(entry.getKey()).append(":").append(String.join("|", entry.getValue()));
+        }
+
+        for (var entry : modsRemove.entrySet()) {
+            if (!modsRemoveBuilder.isEmpty()) modsRemoveBuilder.append(",");
+            modsRemoveBuilder.append(entry.getKey()).append(":").append(String.join("|", entry.getValue()));
+        }
+
+        return popBuilder + "#" + tilesBuilder + "#" +
+                modsAddBuilder + "#" + modsRemoveBuilder;
+    }
+
+    public static Effect fromDataString(String data) {
+        String[] strings = data.split("#", -1);
+
+        if (strings.length != 4) return null;
+
+        String popString = strings[0];
+        String tilesString = strings[1];
+        String modsAddString = strings[2];
+        String modsRmString = strings[3];
+        String claimsAddString = strings[2];
+        String claimsRmString = strings[3];
+        String coresAddString = strings[2];
+        String coresRmString = strings[3];
+
+        Map<String, Integer> popAddMap = new HashMap<>();
+
+        for (String entry : popString.split(",")) {
+            String[] keyV = entry.split(":", 2);
+
+            if (keyV.length != 2) continue;
+
+            String key = keyV[0];
+            int value = Integer.parseInt(keyV[1]);
+
+            popAddMap.put(key, value);
+        }
+
+        Map<String, Set<String>> tilesTransferMap = new HashMap<>();
+
+        for (String entry : tilesString.split(",")) {
+            String[] keyV = entry.split(":", 2);
+
+            if (keyV.length != 2) continue;
+
+            String key = keyV[0];
+
+            Set<String> tiles = Arrays.stream(keyV[1].split("\\|")).collect(Collectors.toSet());
+
+            tilesTransferMap.put(key, tiles);
+        }
+
+        Map<String, Set<String>> modifierAddMap = new HashMap<>();
+
+        for (String entry : modsAddString.split(",")) {
+            String[] keyV = entry.split(":", 2);
+
+            if (keyV.length != 2) continue;
+
+            String key = keyV[0];
+
+            Set<String> modifiers = Arrays.stream(keyV[1].split("\\|")).collect(Collectors.toSet());
+
+            modifierAddMap.put(key, modifiers);
+        }
+
+        Map<String, Set<String>> modifierRmMap = new HashMap<>();
+
+        for (String entry : modsRmString.split(",")) {
+            String[] keyV = entry.split(":", 2);
+
+            if (keyV.length != 2) continue;
+
+            String key = keyV[0];
+
+            Set<String> modifiers = Arrays.stream(keyV[1].split("\\|")).collect(Collectors.toSet());
+
+            modifierRmMap.put(key, modifiers);
+        }
+
+        Map<String, Set<String>> claimsAddMap = new HashMap<>();
+
+        for (String entry : claimsAddString.split(",")) {
+            String[] keyV = entry.split(":", 2);
+
+            if (keyV.length != 2) continue;
+
+            String key = keyV[0];
+
+            Set<String> claims = Arrays.stream(keyV[1].split("\\|")).collect(Collectors.toSet());
+
+            claimsAddMap.put(key, claims);
+        }
+
+        Map<String, Set<String>> claimsRmMap = new HashMap<>();
+
+        for (String entry : claimsRmString.split(",")) {
+            String[] keyV = entry.split(":", 2);
+
+            if (keyV.length != 2) continue;
+
+            String key = keyV[0];
+
+            Set<String> claims = Arrays.stream(keyV[1].split("\\|")).collect(Collectors.toSet());
+
+            claimsRmMap.put(key, claims);
+        }
+
+        Map<String, Set<String>> coresAddMap = new HashMap<>();
+
+        for (String entry : coresAddString.split(",")) {
+            String[] keyV = entry.split(":", 2);
+
+            if (keyV.length != 2) continue;
+
+            String key = keyV[0];
+
+            Set<String> cores = Arrays.stream(keyV[1].split("\\|")).collect(Collectors.toSet());
+
+            coresAddMap.put(key, cores);
+        }
+
+        Map<String, Set<String>> coresRmMap = new HashMap<>();
+
+        for (String entry : coresRmString.split(",")) {
+            String[] keyV = entry.split(":", 2);
+
+            if (keyV.length != 2) continue;
+
+            String key = keyV[0];
+
+            Set<String> cores = Arrays.stream(keyV[1].split("\\|")).collect(Collectors.toSet());
+
+            coresRmMap.put(key, cores);
+        }
+
+        return new Effect(popAddMap, tilesTransferMap, modifierAddMap, claimsAddMap, claimsRmMap, coresAddMap, coresRmMap, modifierRmMap);
+    }
+}

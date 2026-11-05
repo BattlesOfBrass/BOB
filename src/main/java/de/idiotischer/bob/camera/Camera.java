@@ -2,6 +2,7 @@ package de.idiotischer.bob.camera;
 
 import org.jetbrains.annotations.ApiStatus;
 
+import java.awt.*;
 import java.awt.geom.AffineTransform;
 
 public class Camera {
@@ -10,12 +11,13 @@ public class Camera {
     private double y = 0;
     private double zoom = 1.0;
 
-    private final int mapWidth;
-    private final int mapHeight;
+    private int mapWidth;
+    private int mapHeight;
 
     private int viewportWidth;
     private int viewportHeight;
     private boolean wasAtMinZoom;
+    private boolean moreZoom = false;
 
     public Camera(int mapWidth, int mapHeight) {
         this.mapWidth = mapWidth;
@@ -73,9 +75,7 @@ public class Camera {
             this.zoom = newMinZoom;
             this.x = 0;
             this.y = 0;
-        } else {
-            this.zoom = Math.max(newMinZoom, this.zoom);
-        }
+        } else this.zoom = Math.max(newMinZoom, this.zoom);
 
         clamp();
     }
@@ -87,7 +87,7 @@ public class Camera {
         zoom *= factor;
 
         double min = getMinZoom();
-        zoom = Math.max(min, Math.min(zoom, 20));
+        zoom = Math.max(min, Math.min(zoom, getMaxZoom()));
 
         x = worldX * zoom - pivotX;
         y = worldY * zoom - pivotY;
@@ -97,26 +97,31 @@ public class Camera {
         clamp();
     }
 
+    private double getMaxZoom() {
+        if (viewportWidth <= 0 || viewportHeight <= 0) return 1.0;
+
+        double minZoom = getMinZoom();
+
+        double maxByWidth = viewportWidth / (mapWidth / 12.0);
+        double maxByHeight = viewportHeight / (mapHeight / 12.0);
+
+        double maxZoom = Math.min(maxByWidth, maxByHeight);
+
+        return Math.max(minZoom, maxZoom);
+    }
+
     public void clamp() {
         double snapThreshold = 0.05;
         double scaledWidth = mapWidth * zoom;
         double scaledHeight = mapHeight * zoom;
 
-        if (scaledWidth > viewportWidth) {
-            x = Math.max(0, Math.min(x, scaledWidth - viewportWidth));
-        } else {
-            x = (scaledWidth - viewportWidth) / 2.0;
-        }
+        if (scaledWidth > viewportWidth) x = Math.max(0, Math.min(x, scaledWidth - viewportWidth));
+        else x = (scaledWidth - viewportWidth) / 2.0;
 
-        if (scaledHeight > viewportHeight) {
-            y = Math.max(0, Math.min(y, scaledHeight - viewportHeight));
-        } else {
-            y = (scaledHeight - viewportHeight) / 2.0;
-        }
+        if (scaledHeight > viewportHeight) y = Math.max(0, Math.min(y, scaledHeight - viewportHeight));
+        else y = (scaledHeight - viewportHeight) / 2.0;
 
-        if (Math.abs(zoom - getMinZoom()) < snapThreshold * getMinZoom()) {
-            zoom = getMinZoom();
-        }
+        if (Math.abs(zoom - getMinZoom()) < snapThreshold * getMinZoom()) zoom = getMinZoom();
     }
 
     //    public void clampOffsets() {
@@ -141,9 +146,19 @@ public class Camera {
     //            offsetY = Math.max(0, Math.min(offsetY, scaledHeight - panelHeight));
     //        }
     //    }
+    public Rectangle getVisibleWorldBounds(int viewportWidth, int viewportHeight) {
+        int x1 = screenToWorldX(0);
+        int y1 = screenToWorldY(0);
+
+        int x2 = screenToWorldX(viewportWidth);
+        int y2 = screenToWorldY(viewportHeight);
+
+        return new Rectangle(x1, y1, x2 - x1, y2 - y1);
+    }
 
     public double getMinZoom() {
         if (viewportWidth <= 0 || viewportHeight <= 0) return 1.0;
+
         return Math.min((double) viewportWidth / mapWidth, (double) viewportHeight / mapHeight);
     }
 
@@ -172,6 +187,14 @@ public class Camera {
         return (int) ((screenY + y) / zoom);
     }
 
+    public int worldToScreenX(double worldX) {
+        return (int) (worldX * zoom - x);
+    }
+
+    public int worldToScreenY(double worldY) {
+        return (int) (worldY * zoom - y);
+    }
+
     public double getX() { return x; }
     public double getY() { return y; }
     public double getZoom() { return zoom; }
@@ -182,5 +205,14 @@ public class Camera {
 
     public int getMapHeight() {
         return mapHeight;
+    }
+
+    public void setMapSize(int width, int height) {
+        this.mapWidth = width;
+        this.mapHeight = height;
+    }
+
+    public void setMoreZoom(boolean moreZoom) {
+        this.moreZoom = moreZoom;
     }
 }

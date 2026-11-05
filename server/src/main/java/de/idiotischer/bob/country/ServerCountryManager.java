@@ -1,20 +1,20 @@
 package de.idiotischer.bob.country;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonReader;
 import de.idiotischer.bob.Server;
 import de.idiotischer.bob.SharedCore;
-import de.idiotischer.bob.networking.packet.impl.CountriesSyncPacket;
-import de.idiotischer.bob.networking.packet.impl.StatesSyncPacket;
-import de.idiotischer.bob.state.State;
+import de.idiotischer.bob.ideology.Ideology;
+import de.idiotischer.bob.modifiers.Modifier;
+import de.idiotischer.bob.networking.packet.impl.CountrySyncPacket;
+import de.idiotischer.bob.tile.Tile;
 
 import java.awt.*;
 import java.nio.file.Files;
-import java.util.Comparator;
-import java.util.HashSet;
+import java.util.*;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
@@ -45,19 +45,45 @@ public class ServerCountryManager implements CountryResolver {
                 boolean majorAtStart = false;
                 boolean selectScreen = false;
 
-                if(countryElement.has("majorAtStart") && !countryElement.get("majorAtStart").isJsonNull()) {
-                    majorAtStart = countryElement.get("majorAtStart").getAsBoolean();
+                Ideology rulingIdeology = null;
+                Set<Ideology> availableIdeologies = new HashSet<>();
+
+                Country overlord = null;
+
+                Set<Modifier> mods = new HashSet<>();
+
+                if(countryElement.has("modifiers") && !countryElement.get("modifiers").isJsonNull() && countryElement.get("modifiers").isJsonArray()) {
+                    JsonArray array = countryElement.getAsJsonArray("modifiers");
+
+                    array.forEach(el -> {
+                        mods.add(Server.getInstance().getModifierManager().by(el.getAsString()));
+                    });
                 }
 
-                if(countryElement.has("selectScreen") && !countryElement.get("selectScreen").isJsonNull()) {
+                if(countryElement.has("majorAtStart") && !countryElement.get("majorAtStart").isJsonNull())
+                    majorAtStart = countryElement.get("majorAtStart").getAsBoolean();
+
+                if(countryElement.has("ideology") && !countryElement.get("ideology").isJsonNull())
+                    rulingIdeology = Server.getInstance().getIdeologyManager().byAbbreviation(countryElement.get("ideology").getAsString().toUpperCase());
+
+                if(countryElement.has("overlord") && !countryElement.get("overlord").isJsonNull())
+                    overlord = Server.getInstance().getCountryManager().byAbbreviation(countryElement.get("overlord").getAsString().toUpperCase());
+
+                if(countryElement.has("availableIdeologies") && !countryElement.get("availableIdeologies").isJsonNull())
+                    availableIdeologies = countryElement.get("availableIdeologies").getAsJsonArray().asList().stream().map(s -> Server.getInstance().getIdeologyManager().byAbbreviation(s.getAsString().toUpperCase())).collect(Collectors.toSet());
+
+                if(countryElement.has("selectScreen") && !countryElement.get("selectScreen").isJsonNull())
                     selectScreen = countryElement.get("selectScreen").getAsBoolean();
-                }
 
                 String[] colorStrings = countryElement.get("color").getAsString().split("[;,]");
 
                 Color color = new Color(Integer.parseInt(colorStrings[0]), Integer.parseInt(colorStrings[1]), Integer.parseInt(colorStrings[2]));
 
-                Country country = new Country(countryAbbreviation.toUpperCase(), name, color, majorAtStart, selectScreen);
+                Country country = new Country(countryAbbreviation.toUpperCase(), name, color, majorAtStart, selectScreen,overlord == null ? "" : overlord.getAbbreviation(), mods);
+
+                country.setStartIdeologySimple(rulingIdeology);
+                country.setRulingIdeologySimple(rulingIdeology);
+                availableIdeologies.forEach(country::addAvailableIdeologiesSimple);
 
                 registerCountry(country);
 
@@ -68,7 +94,7 @@ public class ServerCountryManager implements CountryResolver {
             e.printStackTrace();
         }
 
-        //TODO: make this send sync packets without crashing the client (liek statemanager)
+        //TODO: make this send sync packets without crashing the client (liek tilemanager)
         //Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), CountriesSyncPacket.fromCountries(countrySet));
     }
 
@@ -76,23 +102,144 @@ public class ServerCountryManager implements CountryResolver {
         return this.getCountries().stream().filter(c -> c.getPuppetState() != PuppetState.NONE).collect(Collectors.toSet());
     }
 
-    public Country fromNameExact(String name) {
-        return this.getCountries().stream().filter(country -> country.countryName().equals(name)).findFirst().orElse(null);
+    public double getTotalPopulation(Country country) {
+        var controlled = new HashSet<>(Server.getInstance().getTileManager().getTilesControlledDirectly(country));
+        var owned = new HashSet<>(Server.getInstance().getTileManager().getTilesOwnedDirectly(country));
+
+        owned.removeAll(controlled);
+        controlled.removeAll(owned);
+
+        double controlledSumPenalty = controlled.stream().mapToDouble(Tile::getPopulation).sum();
+        double ownedSum = owned.stream().mapToDouble(Tile::getPopulation).sum();
+
+        return ownedSum + controlledSumPenalty;
     }
 
-    public Country fromAbbreviation(String abbreviation) {
-        return this.getCountries().stream().filter(country -> country.getAbbreviation().equals(abbreviation.toUpperCase())).findFirst().orElse(null);
+
+    public double getPopulation(Country country) {
+        var controlled = new HashSet<>(Server.getInstance().getTileManager().getTilesControlledDirectly(country));
+        var owned = new HashSet<>(Server.getInstance().getTileManager().getTilesOwnedDirectly(country));
+
+        owned.removeAll(controlled);
+        controlled.removeAll(owned);
+        //var mods = country.getModifiers().stream().filter(mod -> mod.getType().equals(Modifier.Types.CONSCRIPTION_FOR_OCCUPATION.getMapping())).collect(Collectors.toSet());
+
+        double controlledSumPenalty = controlled.stream().mapToDouble(Tile::getPopulation).sum() * 0.75; //retain about 75%, i dont really know but we could scale it with resistance later or with modifiers
+        double ownedSum = owned.stream().mapToDouble(Tile::getPopulation).sum();
+
+        return ownedSum + controlledSumPenalty;
     }
 
-    @Deprecated(forRemoval = true)
-    public Country fromColor(Color color) {
-        return this.getCountries().stream().filter(country -> country.countryColor().equals(color)).findFirst().orElse(null);
+    public double removePopulationCheck(double pop, Country country) {
+        Set<Tile> controlled = new HashSet<>(Server.getInstance().getTileManager().getTilesControlledDirectly(country));
+        Set<Tile> owned = new HashSet<>(Server.getInstance().getTileManager().getTilesOwnedDirectly(country));
+
+        owned.removeIf(t -> !controlled.contains(t));
+
+        Set<Tile> tiles = new HashSet<>(owned);
+        tiles.addAll(controlled);
+
+        if (tiles.isEmpty() || pop <= 0) return 0;
+
+        double totalPopulation = getTotalPopulation(country);
+
+        double actualRemoval = Math.min(pop, totalPopulation);
+
+        double perTile = actualRemoval / tiles.size();
+        double remainder = actualRemoval % tiles.size();
+
+        for (Tile tile : tiles) {
+            double amount = perTile;
+
+            if (remainder > 0) {
+                amount++;
+                remainder--;
+            }
+
+            tile.setPopulationServer(Server.getInstance().getSendTool(), Server.getInstance().getServerSocket(), tile.getPopulation() - amount);
+        }
+
+        return actualRemoval;
     }
 
-    @Deprecated(forRemoval = true)
-    public Country fromPixel(int x, int y) {
-        Color color = null;//color getten
-        return this.getCountries().stream().filter(country -> country.countryColor().equals(color)).findFirst().orElse(null);
+    public void removePopulation(double pop, Country country) {
+        Set<Tile> controlled = new HashSet<>(Server.getInstance().getTileManager().getTilesControlledDirectly(country));
+        Set<Tile> owned = new HashSet<>(Server.getInstance().getTileManager().getTilesOwnedDirectly(country));
+
+        owned.removeIf(t -> !controlled.contains(t));
+
+        Set<Tile> tiles = new HashSet<>();
+        tiles.addAll(owned);
+        tiles.addAll(controlled);
+
+        double perTile = pop / tiles.size();
+        double remainder = pop % tiles.size();
+
+        for (var tile : tiles) {
+            double amount = perTile;
+
+            if (remainder > 0) {
+                amount++;
+                remainder--;
+            }
+
+            tile.setPopulationServer(Server.getInstance().getSendTool(), Server.getInstance().getServerSocket(), tile.getPopulation() - amount);
+        }
+    }
+    public void addPopPercent(float perc, Country country) {
+        Set<Tile> controlled = new HashSet<>(Server.getInstance().getTileManager().getTilesControlledDirectly(country));
+        Set<Tile> owned = new HashSet<>(Server.getInstance().getTileManager().getTilesOwnedDirectly(country));
+
+        owned.removeIf(t -> !controlled.contains(t));
+
+        Set<Tile> tiles = new HashSet<>();
+        tiles.addAll(owned);
+        tiles.addAll(controlled);
+
+        if(tiles.isEmpty() || perc <= 0) return;
+
+        double pop = getTotalPopulation(country) * perc;
+
+        double perTile = pop / tiles.size();
+        double remainder = pop % tiles.size();
+
+        for (var tile : tiles) {
+            double amount = perTile;
+
+            if (remainder > 0) {
+                amount++;
+                remainder--;
+            }
+
+            tile.setPopulationServer(Server.getInstance().getSendTool(), Server.getInstance().getServerSocket(), tile.getPopulation() + amount);
+        }
+    }
+
+    public void addPop(double pop, Country country) {
+        Set<Tile> controlled = new HashSet<>(Server.getInstance().getTileManager().getTilesControlledDirectly(country));
+        Set<Tile> owned = new HashSet<>(Server.getInstance().getTileManager().getTilesOwnedDirectly(country));
+
+        owned.removeIf(t -> !controlled.contains(t));
+
+        Set<Tile> tiles = new HashSet<>();
+        tiles.addAll(owned);
+        tiles.addAll(controlled);
+
+        if(tiles.isEmpty() || pop <= 0) return ;
+
+        double perTile = pop / tiles.size();
+        double remainder = pop % tiles.size();
+
+        for (var tile : tiles) {
+            double amount = perTile;
+
+            if (remainder > 0) {
+                amount++;
+                remainder--;
+            }
+
+            tile.setPopulationServer(Server.getInstance().getSendTool(), Server.getInstance().getServerSocket(), tile.getPopulation() + amount);
+        }
     }
 
     public Country registerCountry(Country country) {
@@ -103,30 +250,40 @@ public class ServerCountryManager implements CountryResolver {
         return country;
     }
 
-    @Deprecated(forRemoval = true)
-    public Country colorToCountry(int red, int green, int blue) {
-        return fromColor(new Color(red, green, blue));
-    }
-
-    @Deprecated(forRemoval = true)
-    public Country colorToCountry(int rgb) {
-        return fromColor(new Color(rgb));
-    }
-
     public Country getCountry(String abbreviation) {
         return countrySet.stream().filter(c -> c.getAbbreviation().equals(abbreviation)).findFirst().orElse(null);
     }
 
-    public List<State> getControlled(Country country) {
-        if(Server.getInstance().getStateManager() == null) return List.of();
-        return Server.getInstance().getStateManager().getStateSet().stream().filter(s -> s.getController() == country).toList();
+    public Set<Country> getCountrySet() {
+        return countrySet;
+    }
+
+    public List<Tile> getOwned(Country country) {
+        if(Server.getInstance().getTileManager() == null) return List.of();
+        return Server.getInstance().getTileManager().getTileSet().stream().filter(s -> s.getOwner().getAbbreviation().equals(country.getAbbreviation())).toList();
+    }
+    public List<Tile> getOwned(String country) {
+        if(Server.getInstance().getTileManager() == null) return List.of();
+        return Server.getInstance().getTileManager().getTileSet().stream().filter(s -> s.getOwner().getAbbreviation().equals(country)).toList();
+    }
+
+    public List<Tile> getControlled(Country country) {
+        if(Server.getInstance().getTileManager() == null) return List.of();
+        return Server.getInstance().getTileManager().getTileSet().stream().filter(s -> s.getController().getAbbreviation().equals(country.getAbbreviation())).toList();
+    }
+
+    public List<Tile> getControlled(String country) {
+        if(Server.getInstance().getTileManager() == null) return List.of();
+        return Server.getInstance().getTileManager().getTileSet().stream().filter(s -> s.getController().getAbbreviation().equals(country)).toList();
     }
 
     public List<Country> getCountries() {
-        return countrySet
-                .stream()
-                .sorted(Comparator.comparing(Country::getAbbreviation))
-                .toList();
+        return countrySet.stream().sorted(Comparator.comparing(Country::getAbbreviation)).toList();
+    }
+
+    public int getTotalVPs(Country country) {
+        //getOwned(country).;
+        return getOwned(country).stream().mapToInt(Tile::getVictoryPoints).sum();
     }
 
     //public List<Country> getMajors() {
@@ -137,29 +294,45 @@ public class ServerCountryManager implements CountryResolver {
     //    return getCountrySet().stream().filter(Country::isSelectScreen).toList();
     //}
 
+    public void splitCountry(Country country) {
+        String newAbbr;
+        int turn = 0;
+
+        do {
+            newAbbr = country.getAbbreviation() + "-split-" + turn; //TODO: if civ war Return to the original country tag after civil war is over
+            turn++;
+        } while(abbreviationExists(newAbbr));
+
+        Country newC = country.uniqueCopy(newAbbr);
+
+        countrySet.add(newC);
+        CountrySyncPacket pack = new CountrySyncPacket(country);
+        Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().channels(), pack);
+    }
+
     public List<Country> getMajors() {
-        return getCountries().stream()
-                .filter(Country::isMajor)
-                .sorted(Comparator.comparing(Country::getAbbreviation))
-                .toList();
+        return getCountries().stream().filter(Country::isMajor).sorted(Comparator.comparing(Country::getAbbreviation)).toList();
+    }
+
+    public boolean isAllied(Country a, Country b) {
+        return Server.getInstance().getFactionManager().inFactionWith(a,b);
+    }
+
+    public boolean abbreviationExists(String abbr) {
+        return countrySet.stream().anyMatch(c -> c.getAbbreviation().equals(abbr));
+    }
+
+    @Override
+    public boolean anyAlliedWith(List<Country> testers, Country country) {
+        return testers.stream().anyMatch(c -> isAllied(c, country));
     }
 
     public List<Country> getOnSelectScreen() {
-        return getCountries().stream()
-                .filter(Country::isSelectScreen)
-                .sorted(Comparator.comparing(Country::getAbbreviation))
-                .toList();
+        return getCountries().stream().filter(Country::isSelectScreen).sorted(Comparator.comparing(Country::getAbbreviation)).toList();
     }
 
     public List<Country> getMinors() {
-        return getCountries().stream()
-                .filter(c -> !c.isMajor())
-                .sorted(Comparator.comparing(Country::getAbbreviation))
-                .toList();
-    }
-
-    public void splitCountry(Country country) {
-        //halt um ddr, brd zu machen
+        return getCountries().stream().filter(c -> !c.isMajor()).sorted(Comparator.comparing(Country::getAbbreviation)).toList();
     }
 
     public Country getRandom() {

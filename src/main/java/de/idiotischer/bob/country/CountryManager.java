@@ -1,9 +1,13 @@
 package de.idiotischer.bob.country;
 
 import de.idiotischer.bob.BOB;
+import de.idiotischer.bob.Server;
+import de.idiotischer.bob.modifiers.Modifier;
 import de.idiotischer.bob.networking.packet.impl.pp.RequestPacket;
 import de.idiotischer.bob.networking.packet.impl.pp.Type;
-import de.idiotischer.bob.state.State;
+import de.idiotischer.bob.render.menu.impl.select.PeaceMenuOverlay;
+import de.idiotischer.bob.tile.Tile;
+import de.idiotischer.bob.tile.TileManager;
 
 import java.awt.*;
 import java.util.Comparator;
@@ -34,7 +38,7 @@ public class CountryManager implements CountryResolver{
     }
 
     public void finishReload() {
-        BOB.getInstance().getStateManager().reload();
+        BOB.getInstance().getFocusManager().reload();
 
         if(awaitingFuture == null || awaitingFuture.isDone()) return;
         awaitingFuture.complete(null);
@@ -48,6 +52,146 @@ public class CountryManager implements CountryResolver{
         return country;
     }
 
+    public double getTotalPopulation(Country country) {
+        var controlled = new HashSet<>(BOB.getInstance().getTileManager().getTilesControlledDirectly(country));
+        var owned = new HashSet<>(BOB.getInstance().getTileManager().getTilesOwnedDirectly(country));
+
+        owned.removeAll(controlled);
+        controlled.removeAll(owned);
+
+        double controlledSumPenalty = controlled.stream().mapToDouble(Tile::getPopulation).sum();
+        double ownedSum = owned.stream().mapToDouble(Tile::getPopulation).sum();
+
+        return ownedSum + controlledSumPenalty;
+    }
+
+
+    public double getPopulation(Country country) {
+        var controlled = new HashSet<>(BOB.getInstance().getTileManager().getTilesControlledDirectly(country));
+        var owned = new HashSet<>(BOB.getInstance().getTileManager().getTilesOwnedDirectly(country));
+
+        owned.removeAll(controlled);
+        controlled.removeAll(owned);
+        //var mods = country.getModifiers().stream().filter(mod -> mod.getType().equals(Modifier.Types.CONSCRIPTION_FOR_OCCUPATION.getMapping())).collect(Collectors.toSet());
+
+        double controlledSumPenalty = controlled.stream().mapToDouble(Tile::getPopulation).sum() * 0.75; //retain about 75%, i dont really know but we could scale it with resistance later or with modifiers
+        double ownedSum = owned.stream().mapToDouble(Tile::getPopulation).sum();
+
+        return ownedSum + controlledSumPenalty;
+    }
+
+    public double removePopulationCheck(double pop, Country country) {
+        Set<Tile> controlled = new HashSet<>(BOB.getInstance().getTileManager().getTilesControlledDirectly(country));
+        Set<Tile> owned = new HashSet<>(BOB.getInstance().getTileManager().getTilesOwnedDirectly(country));
+
+        owned.removeIf(t -> !controlled.contains(t));
+
+        Set<Tile> tiles = new HashSet<>(owned);
+        tiles.addAll(controlled);
+
+        if (tiles.isEmpty() || pop <= 0) return 0;
+
+        double totalPopulation = getTotalPopulation(country);
+
+        double actualRemoval = Math.min(pop, totalPopulation);
+
+        double perTile = actualRemoval / tiles.size();
+        double remainder = actualRemoval % tiles.size();
+
+        for (Tile tile : tiles) {
+            double amount = perTile;
+
+            if (remainder > 0) {
+                amount++;
+                remainder--;
+            }
+
+            tile.setPopulation(tile.getPopulation() - amount);
+        }
+
+        return actualRemoval;
+    }
+
+    public void removePopulation(double pop, Country country) {
+        Set<Tile> controlled = new HashSet<>(BOB.getInstance().getTileManager().getTilesControlledDirectly(country));
+        Set<Tile> owned = new HashSet<>(BOB.getInstance().getTileManager().getTilesOwnedDirectly(country));
+
+        owned.removeIf(t -> !controlled.contains(t));
+
+        Set<Tile> tiles = new HashSet<>();
+        tiles.addAll(owned);
+        tiles.addAll(controlled);
+
+        double perTile = pop / tiles.size();
+        double remainder = pop % tiles.size();
+
+        for (var tile : tiles) {
+            double amount = perTile;
+
+            if (remainder > 0) {
+                amount++;
+                remainder--;
+            }
+
+            tile.setPopulation(tile.getPopulation() - amount);
+        }
+    }
+    public void addPop(float perc, Country country) {
+        Set<Tile> controlled = new HashSet<>(BOB.getInstance().getTileManager().getTilesControlledDirectly(country));
+        Set<Tile> owned = new HashSet<>(BOB.getInstance().getTileManager().getTilesOwnedDirectly(country));
+
+        owned.removeIf(t -> !controlled.contains(t));
+
+        Set<Tile> tiles = new HashSet<>();
+        tiles.addAll(owned);
+        tiles.addAll(controlled);
+
+        if(tiles.isEmpty() || perc <= 0) return;
+
+        double pop = getTotalPopulation(country) * perc;
+
+        double perTile = pop / tiles.size();
+        double remainder = pop % tiles.size();
+
+        for (var tile : tiles) {
+            double amount = perTile;
+
+            if (remainder > 0) {
+                amount++;
+                remainder--;
+            }
+
+            tile.setPopulation(tile.getPopulation() + amount);
+        }
+    }
+
+    public void addPop(double pop, Country country) {
+        Set<Tile> controlled = new HashSet<>(BOB.getInstance().getTileManager().getTilesControlledDirectly(country));
+        Set<Tile> owned = new HashSet<>(BOB.getInstance().getTileManager().getTilesOwnedDirectly(country));
+
+        owned.removeIf(t -> !controlled.contains(t));
+
+        Set<Tile> tiles = new HashSet<>();
+        tiles.addAll(owned);
+        tiles.addAll(controlled);
+
+        if(tiles.isEmpty() || pop <= 0) return ;
+
+        double perTile = pop / tiles.size();
+        double remainder = pop % tiles.size();
+
+        for (var tile : tiles) {
+            double amount = perTile;
+
+            if (remainder > 0) {
+                amount++;
+                remainder--;
+            }
+
+            tile.setPopulation(tile.getPopulation() + amount);
+        }
+    }
+    
     public boolean has(String countryAbbreviation) {
         return getCountries().stream().map(Country::getAbbreviation).collect(Collectors.toSet()).contains(countryAbbreviation);
     }
@@ -89,9 +233,19 @@ public class CountryManager implements CountryResolver{
         return countrySet.stream().filter(c -> c.getAbbreviation().equals(abbreviation)).findFirst().orElse(null);
     }
 
-    public List<State> getControlled(Country country) {
-        if(BOB.getInstance().getStateManager() == null) return List.of();
-        return BOB.getInstance().getStateManager().getStateSet().stream().filter(s -> s.getController() == country).toList();
+    public List<Tile> getOwned(Country country) {
+        if(BOB.getInstance().getTileManager() == null) return List.of();
+        return BOB.getInstance().getTileManager().getTileSet().stream().filter(s -> s.getOwner().getAbbreviation().equals(country.getAbbreviation())).toList();
+    }
+
+    public List<Tile> getControlled(Country country) {
+        if(BOB.getInstance().getTileManager() == null) return List.of();
+        return BOB.getInstance().getTileManager().getTileSet().stream().filter(s -> s.getController().getAbbreviation().equals(country.getAbbreviation())).toList();
+    }
+
+    public int getTotalVPs(Country country) {
+        //getOwned(country).;
+        return getOwned(country).stream().mapToInt(Tile::getVictoryPoints).sum();
     }
 
     public List<Country> getCountries() {
@@ -99,6 +253,16 @@ public class CountryManager implements CountryResolver{
                 .stream()
                 .sorted(Comparator.comparing(Country::getAbbreviation))
                 .toList();
+    }
+
+    @Override
+    public boolean isAllied(Country a, Country b) {
+        return false;
+    }
+
+    @Override
+    public boolean anyAlliedWith(List<Country> testers, Country country) {
+        return testers.stream().anyMatch(c -> isAllied(c, country));
     }
 
     //public List<Country> getMajors() {
