@@ -172,6 +172,8 @@ public class ServerCountryManager implements CountryResolver {
         tiles.addAll(owned);
         tiles.addAll(controlled);
 
+        if (tiles.isEmpty() || pop <= 0) return;
+
         double perTile = pop / tiles.size();
         double remainder = pop % tiles.size();
 
@@ -341,5 +343,15 @@ public class ServerCountryManager implements CountryResolver {
         int n = ThreadLocalRandom.current().nextInt(countrySet.size());
 
         return country[n];
+    }
+
+    public void defaultManpowerNow() {
+        for(Country country : getCountries()) {
+            List<Tile> tiles = getAllTiles(country);
+
+            double sum = tiles.stream().mapToDouble(Tile::getPopulation).sum();
+
+            country.setManpowerServer(Server.getInstance().getSendTool(), Server.getInstance().getServerSocket(), sum);
+        }
     }
 }

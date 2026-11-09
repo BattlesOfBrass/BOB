@@ -1,4 +1,3 @@
-
 package de.idiotischer.bob.game;
 
 import de.idiotischer.bob.Server;
@@ -49,8 +48,10 @@ public class ServerGameManager implements TimeResolver {
         }, SYNC_INTERVAL, SYNC_INTERVAL, TimeUnit.SECONDS);
     }
 
-    private void scheduleNextTick() {
+    private synchronized void scheduleNextTick() {
         if (timeService.isShutdown()) return;
+
+        if (nextTick != null) nextTick.cancel(false);
 
         nextTick = timeService.schedule(() -> {
             try {
@@ -62,8 +63,6 @@ public class ServerGameManager implements TimeResolver {
     }
 
     private void rescheduleNextTick() {
-        if (nextTick != null) nextTick.cancel(false);
-
         scheduleNextTick();
     }
 
@@ -88,8 +87,6 @@ public class ServerGameManager implements TimeResolver {
                     if(whoChanged != this.whoChanged && System.currentTimeMillis() - lastChangedTime < delay) return;
                 }
             }
-
-            scheduleNextTick();
         }
 
         this.lastChangedTime = System.currentTimeMillis();
@@ -151,7 +148,7 @@ public class ServerGameManager implements TimeResolver {
                     Server.getInstance().getCountryManager().addPop(/*0.125f later do liek in hoi4 with percentage based on core pop etc*/125, c);
                 } catch (Exception ex) { ex.printStackTrace(); }
             });
-        /*if (timeTicks % (60 * 12) == 0)*/
+            /*if (timeTicks % (60 * 12) == 0)*/
             broadcastTimeSync();
         }
     }
@@ -176,8 +173,6 @@ public class ServerGameManager implements TimeResolver {
 
     public void setSpeed(int speed) {
         this.speed = Math.clamp(speed, 1, 5);
-
-        Server.getInstance().getTroopManager().rescheduleAllTroopMovements();
 
         rescheduleNextTick();
         broadcastTimeSync();

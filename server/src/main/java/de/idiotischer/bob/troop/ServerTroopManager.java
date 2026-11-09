@@ -302,7 +302,10 @@ public class ServerTroopManager implements TroopResolver{
         final long[] lastMoveTime = {System.nanoTime()};
 
         scheduledFutures[0] = movementExecutor.scheduleAtFixedRate(() -> {
-            if (Server.getInstance().getGameManager().getState() != GameState.INGAME) return;
+            if (Server.getInstance().getGameManager().getState() != GameState.INGAME) {
+                lastMoveTime[0] = System.nanoTime(); //fix the issue with pausing being neglected yk
+                return;
+            }
 
             long now = System.nanoTime();
             long delay = TimeUnit.MILLISECONDS.toNanos(getInterval(troopStack));

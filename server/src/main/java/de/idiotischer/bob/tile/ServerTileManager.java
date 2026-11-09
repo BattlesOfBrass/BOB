@@ -232,9 +232,9 @@ public class ServerTileManager implements TileResolver {
                 registerTile(tile);
 
                 if (Server.getInstance().isDebug()) System.out.println("registered tile: " + tile.getName() + " (" + tile.getAbbreviation() + ") points: " + tile.getPoints() + " controller: " + (tile.getController() == null ? "none" : tile.getController().getAbbreviation()) + " owner: " + (tile.getOwner() == null ? "none" : tile.getOwner().getAbbreviation()));
-
             });
 
+            Server.getInstance().getCountryManager().defaultManpowerNow();
         } catch (Exception e) {
             e.printStackTrace();
         }

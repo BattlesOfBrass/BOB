@@ -54,6 +54,7 @@ public class Country /*implements Comparable<Country>*/{
     private Ideology rulingIdeology;
     private Ideology startIdeology;
     private Map<Ideology,Float> availableIdeologies = new HashMap<>(); //used for parties
+    private double manpower;
 
     public Country(String abbreviation, String name, Color color, boolean major, boolean selectScreen, String overlord, Set<Modifier> modifiers) {
         this.abbreviation = abbreviation;
@@ -532,6 +533,20 @@ public class Country /*implements Comparable<Country>*/{
 
     public Country uniqueCopy(String abbreviation) {
         return new Country(this,abbreviation);
+    }
+
+    public void setManpowerServer(SendTool sendTool, ChannelResolver r, double sum) {
+    }
+
+    public void addManpowerServer(SendTool sendTool, ChannelResolver r, double sum) {
+    }
+
+    public void setManpowerServer(double sum) {
+        this.manpower = sum;
+    }
+
+    public double getManpower() {
+        return manpower;
     }
 
     //@Override
