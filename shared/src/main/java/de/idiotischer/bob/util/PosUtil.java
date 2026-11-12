@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -16,56 +17,127 @@ import java.util.stream.Collectors;
 public class PosUtil {
 
     private static Scenario lastUsed;
-    private static Map<Tile, List<Point>> cachedPoints = new HashMap<>();
+    private static final Map<Tile, List<Point>> cachedPoints = new HashMap<>();
 
     //weil wir nen sos like game machen brauchen wir halt keine logic für einzelne pixel
     //WICHTIG: das bleibt bitte mit color, nicht mit tiles, das würde auch nicht wirklich gehen
-    public static List<Point> getPossiblePos(
-            Set<Integer> unusableRgb,
-            BufferedImage surface,
-            int startX,
-            int startY
-    ) {
+    //old comemnt
+
+    private static final class Chunk {
+        int[] visited = new int[0];
+        int[] stack = new int[1024];
+        int stamp = 0;
+    }
+
+    private static final ThreadLocal<Chunk> CHUNK = ThreadLocal.withInitial(Chunk::new);
+
+    public static List<Point> getPossiblePos(Set<Integer> unusableRgb, BufferedImage surface, int startX, int startY) {
+        return getPossiblePos(unusableRgb, surface, List.of(new Point(startX, startY)));
+    }
+
+    public static List<Point> getPossiblePos(Set<Integer> unusableRgb, BufferedImage surface, Collection<Point> starts) {
         int width = surface.getWidth();
         int height = surface.getHeight();
-
-        boolean[][] visited = new boolean[width][height];
-
-        Deque<int[]> stack = new ArrayDeque<>();
+        int area = width * height;
 
         List<Point> result = new ArrayList<>();
 
-        if (startX < 0 || startY < 0 || startX >= width || startY >= height) {
-            return result;
+        Chunk s = CHUNK.get();
+
+        if (s.visited.length < area) {
+            s.visited = new int[area];
+            s.stamp = 0;
         }
 
-        int startRgb = surface.getRGB(startX, startY);
-        stack.push(new int[]{startX, startY});
+        if (++s.stamp == Integer.MAX_VALUE) {
+            Arrays.fill(s.visited, 0);
+            s.stamp = 1;
+        }
 
-        while (!stack.isEmpty()) {
-            int[] p = stack.pop();
-            int x = p[0];
-            int y = p[1];
+        int[] visited = s.visited;
+        int stamp = s.stamp;
+        int[] stack = s.stack;
+        int size = 0;
 
-            if (x < 0 || y < 0 || x >= width || y >= height) continue;
+        int type = surface.getType();
+        int[] data = null;
+        int alpha = 0;
 
-            if (visited[x][y]) continue;
-            visited[x][y] = true;
+        if (type == BufferedImage.TYPE_INT_ARGB || type == BufferedImage.TYPE_INT_RGB) {
+            int[] raw = ((DataBufferInt) surface.getRaster().getDataBuffer()).getData();
 
-            int rgb = ImageUtil.get(surface, x, y);
-
-            if (unusableRgb.contains(rgb)) {
-                continue;
+            if (raw.length == area) {
+                data = raw;
+                alpha = type == BufferedImage.TYPE_INT_RGB ? 0xFF000000 : 0;
             }
-
-            result.add(new Point(x, y));
-
-            stack.push(new int[]{x + 1, y});
-            stack.push(new int[]{x - 1, y});
-            stack.push(new int[]{x, y + 1});
-            stack.push(new int[]{x, y - 1});
         }
 
+        int lastRgb = ~0;
+        boolean lastUnusable = false;
+
+        for (Point start : starts) {
+            if (start.x < 0 || start.y < 0 || start.x >= width || start.y >= height) continue;
+
+            int startIdx = start.y * width + start.x;
+
+            if (visited[startIdx] == stamp) continue;
+
+            visited[startIdx] = stamp;
+            stack[size++] = startIdx;
+
+            while (size > 0) {
+                int idx = stack[--size];
+
+                int x = idx % width;
+                int y = idx / width;
+
+                int rgb = data != null ? data[idx] | alpha : surface.getRGB(x, y);
+
+                if (rgb != lastRgb) {
+                    lastRgb = rgb;
+                    lastUnusable = unusableRgb.contains(rgb);
+                }
+
+                if (lastUnusable) continue;
+
+                result.add(new Point(x, y));
+
+                if (size + 4 > stack.length) stack = Arrays.copyOf(stack, stack.length * 2);
+
+                int nextIdx;
+
+                if (x + 1 < width) {
+                    nextIdx = idx + 1;
+                    if (visited[nextIdx] != stamp) {
+                        visited[nextIdx] = stamp;
+                        stack[size++] = nextIdx;
+                    }
+                }
+                if (x > 0) {
+                    nextIdx = idx - 1;
+                    if (visited[nextIdx] != stamp) {
+                        visited[nextIdx] = stamp;
+                        stack[size++] = nextIdx;
+                    }
+                }
+                if (y + 1 < height) {
+                    nextIdx = idx + width;
+                    if (visited[nextIdx] != stamp) {
+                        visited[nextIdx] = stamp;
+                        stack[size++] = nextIdx;
+                    }
+                }
+                if (y > 0) {
+                    nextIdx = idx - width;
+                    if (visited[nextIdx] != stamp) {
+                        visited[nextIdx] = stamp;
+                        stack[size++] = nextIdx;
+                    }
+                }
+            }
+        }
+
+        s.stack = stack;
         return result;
     }
 
@@ -164,20 +236,20 @@ public class PosUtil {
     }
 
     public List<Point> getPossiblePos(List<Color> unusables, @NotNull TileResolver resolver, BufferedImage surface, int x, int y) {
-        Tile tile = resolver.fromPos(x, y);
-
         if (surface == null) return Collections.emptyList();
 
-        Set<Point> result = new HashSet<>();
-
-        if (tile.getPoints() == null) return Collections.emptyList();
-
-        for (Point p : tile.getPoints()) {
-            List<Point> possible = PosUtil.getPossiblePos(unusables.stream().map(Color::getRGB).collect(Collectors.toSet()), surface, p.x, p.y);
-            result.addAll(possible);
+        Tile tile = resolver.fromPos(x, y);
+        if (tile == null || tile.getPoints() == null || tile.getPoints().isEmpty()) {
+            return Collections.emptyList();
         }
 
-        return new ArrayList<>(result);
+        // 1. Hoist the Set creation outside the loop once
+        Set<Integer> unusableRgbSet = unusables.stream()
+                .map(Color::getRGB)
+                .collect(Collectors.toSet());
+
+        // 2. Pass all points directly to the collection-based flood-fill in one go
+        return PosUtil.getPossiblePos(unusableRgbSet, surface, tile.getPoints());
     }
 
     public static int round(double d){

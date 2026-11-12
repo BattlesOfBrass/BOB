@@ -102,6 +102,7 @@ public class HUDTopBar extends JPanel {
         repaint();
     }
 
+    //optimize
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);

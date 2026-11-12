@@ -72,12 +72,20 @@ public class Country /*implements Comparable<Country>*/{
         return FileUtil.getFlag(scenario,this);
     }
 
+    private final Map<Scenario, BufferedImage> flagCache = new HashMap<>();
+
     public BufferedImage getFlagImage(Scenario scenario) {
+        if (scenario == null) return null;
+
+        if (flagCache.containsKey(scenario)) return flagCache.get(scenario);
+
         var path = FileUtil.getFlag(scenario, this);
-        if(path == null) return null;
+        if (path == null) return null;
 
         try {
-            return ImageIO.read(path.toFile());
+            BufferedImage img = ImageIO.read(path.toFile());
+            if (img != null) flagCache.put(scenario, img);
+            return img;
         } catch (IOException e) {
             return null;
         }

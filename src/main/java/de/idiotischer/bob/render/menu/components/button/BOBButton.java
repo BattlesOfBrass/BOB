@@ -1,16 +1,19 @@
 package de.idiotischer.bob.render.menu.components.button;
 
-import de.idiotischer.bob.util.FileUtil;
-
 import javax.swing.*;
 import java.awt.*;
 
+//TODO: check if this breaks theme changing, if so make a theme update event or smth
 public class BOBButton extends JButton {
 
     private final Color bgColor;
     private final Color textColor;
     private final Color borderColor;
     private final Color borderColorHover;
+
+    private final Color hoverBgColor;
+    private final Color pressedBgColor;
+
     private final int arcWidth;
     private final int arcHeight;
     private final int borderWidth;
@@ -18,8 +21,9 @@ public class BOBButton extends JButton {
     private boolean toggled;
 
     public BOBButton(String text, Color textColor, Color bgColor, Color borderColor, Color borderColorHover, int arc, int borderWidth) {
-        this("",text,textColor,bgColor, borderColor, borderColorHover, arc, borderWidth);
+        this("", text, textColor, bgColor, borderColor, borderColorHover, arc, borderWidth);
     }
+
     public BOBButton(String id, String text, Color textColor, Color bgColor, Color borderColor, Color borderColorHover, int arc, int borderWidth) {
         super(text);
         this.id = id;
@@ -30,13 +34,15 @@ public class BOBButton extends JButton {
         this.arcWidth = arc;
         this.arcHeight = arc;
         this.borderWidth = borderWidth;
+        this.hoverBgColor = bgColor.brighter();
+        this.pressedBgColor = bgColor.darker();
 
         setContentAreaFilled(false);
         setBorderPainted(false);
         setFocusPainted(false);
         setOpaque(false);
         setForeground(textColor);
-        setFont(/*FileUtil.getFont();*/new Font(Font.SANS_SERIF, Font.BOLD, 16));
+        setFont(new Font(Font.SANS_SERIF, Font.BOLD, 16));
     }
 
     @Override
@@ -49,29 +55,22 @@ public class BOBButton extends JButton {
         ButtonModel model = getModel();
 
         Color drawBg = bgColor;
-        if (model.isPressed()) {
-            drawBg = bgColor.darker();
-        } else if (model.isRollover()) {
-            drawBg = bgColor.brighter();
-        }
-
-        if (getModel().isRollover()) {
-            drawBg =  bgColor.brighter();
-        }
-
         Color bdColor = borderColor;
 
-        if (isSelected()) {
-            drawBg = bgColor.darker();
-            bdColor = Color.WHITE;
+        if (model.isPressed() || isSelected()) {
+            drawBg = pressedBgColor;
+            if (isSelected()) bdColor = Color.WHITE;
+        } else if (model.isRollover()) {
+            drawBg = hoverBgColor;
+            bdColor = borderColorHover;
         }
 
         g2.setColor(drawBg);
-        g2.fillRoundRect(borderWidth/2, borderWidth/2, width - borderWidth, height - borderWidth, arcWidth, arcHeight);
+        g2.fillRoundRect(borderWidth / 2, borderWidth / 2, width - borderWidth, height - borderWidth, arcWidth, arcHeight);
 
         g2.setStroke(new BasicStroke(borderWidth));
-        g2.setColor(model.isRollover() ? borderColorHover : bdColor);
-        g2.drawRoundRect(borderWidth/2, borderWidth/2, width - borderWidth, height - borderWidth, arcWidth, arcHeight);
+        g2.setColor(bdColor);
+        g2.drawRoundRect(borderWidth / 2, borderWidth / 2, width - borderWidth, height - borderWidth, arcWidth, arcHeight);
 
         FontMetrics fm = g2.getFontMetrics();
         int textX = (width - fm.stringWidth(getText())) / 2;
@@ -82,8 +81,6 @@ public class BOBButton extends JButton {
 
         g2.dispose();
     }
-
-    //only has ONE purpose
 
     public void setToggled(boolean toggled) {
         this.toggled = toggled;

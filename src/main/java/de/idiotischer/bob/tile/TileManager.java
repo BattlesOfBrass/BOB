@@ -91,10 +91,10 @@ public class TileManager implements TileResolver {
             List<Color> takenColors = BOB.getInstance().getScenarioSceneLoader().getTakenColors();
             BufferedImage logicMap = BOB.getInstance().getScenarioSceneLoader().getMap();
 
+            Set<Integer> unusable = takenColors.stream().map(Color::getRGB).collect(Collectors.toSet());
             points.parallelStream().forEach(basePoint -> {
                 pointsSet.add(basePoint);
-                List<Point> expanded = PosUtil.getPossiblePos(takenColors.stream().map(Color::getRGB).collect(Collectors.toSet()), logicMap, basePoint.x, basePoint.y);
-                pointsSet.addAll(expanded);
+                pointsSet.addAll(PosUtil.getPossiblePos(unusable, logicMap, basePoint.x, basePoint.y));
             });
 
             synchronized (cache) {
@@ -103,86 +103,6 @@ public class TileManager implements TileResolver {
 
             if (BOB.getInstance().isDebug()) System.out.println(tile.getAbbreviation() + " caching finished!");
         });
-    }
-
-    public Set<Point> findNonBorderPoints(Tile tile) {
-        Set<Point> pixels = cache.get(tile);
-
-        if (pixels == null) {
-            cache(tile, tile.getPoints());
-            return Set.of();
-        }
-
-        BufferedImage map = BOB.getInstance().getScenarioSceneLoader().getMap();
-
-        int width = map.getWidth();
-        int height = map.getHeight();
-
-        int maxBorderThickness = 1;
-
-        Set<Integer> borderColors = BOB.getInstance().getScenarioSceneLoader().getBorderColors().stream().map(Color::getRGB).collect(Collectors.toSet());
-
-        Set<Point> nonBorderPoints = new HashSet<>();
-
-        int[][] dirs = {{-1, 0}, {-1, 1}, {0, 1}, {1, 1}, {1, 0}, {1, -1}, {0, -1}, {-1, -1}};
-
-        for (Point p : pixels) {
-            boolean bordersSomethingExternal = false;
-
-            for (int[] dir : dirs) {
-
-                boolean enteredBorder = false;
-
-                for (int distance = 1; distance <= maxBorderThickness + 1; distance++) {
-
-                    int x = p.x + dir[0] * distance;
-                    int y = p.y + dir[1] * distance;
-
-                    if (x < 0 || y < 0 || x >= width || y >= height) {
-                        bordersSomethingExternal = true;
-                        break;
-                    }
-
-                    int rgb = map.getRGB(x, y);
-
-                    Color color = new Color(rgb, true);
-
-                    if (color.getAlpha() == 0) {
-                        bordersSomethingExternal = true;
-                        break;
-                    }
-
-                    if (borderColors.contains(rgb)) {
-                        enteredBorder = true;
-                        continue;
-                    }
-
-                    Tile other = getTileAt(x, y);
-
-                    if (other == null) {
-                        bordersSomethingExternal = true;
-                        break;
-                    }
-
-                    if (other == tile) break;
-
-                    if (enteredBorder) {
-                        Country ownCountry = tile.getController();
-                        Country otherCountry = other.getController();
-
-                        if (ownCountry == null || otherCountry == null || !ownCountry.getAbbreviation().equals(otherCountry.getAbbreviation())) bordersSomethingExternal = true;
-                    }
-
-                    break;
-                }
-
-                if (bordersSomethingExternal) break;
-            }
-
-            if (!bordersSomethingExternal) nonBorderPoints.add(p);
-        }
-
-        return nonBorderPoints;
     }
 
     public Set<Tile> findNeighbors(Tile tile) {
@@ -208,7 +128,6 @@ public class TileManager implements TileResolver {
         for (Point p : pixels) {
 
             for (int[] dir : dirs) {
-
                 boolean enteredBorder = false;
 
                 for (int distance = 1; distance <= maxBorderThickness + 1/*without +1 it doesnt work for some reason but with it this is great*/ /*+ 20*/; distance++) {
@@ -216,9 +135,7 @@ public class TileManager implements TileResolver {
                     int x = p.x + dir[0] * distance;
                     int y = p.y + dir[1] * distance;
 
-                    if (x < 0 || y < 0 || x >= width || y >= height) {
-                        break;
-                    }
+                    if (x < 0 || y < 0 || x >= width || y >= height) break;
 
                     int rgb = map.getRGB(x, y);
 
@@ -229,17 +146,11 @@ public class TileManager implements TileResolver {
 
                     Tile other = getTileAt(x, y);
 
-                    if (other == null) {
-                        break;
-                    }
+                    if (other == null) break;
 
-                    if (other == tile) {
-                        break;
-                    }
+                    if (other == tile) break;
 
-                    if (enteredBorder) {
-                        neighbors.add(other);
-                    }
+                    if (enteredBorder) neighbors.add(other);
 
                     break;
                 }
@@ -323,6 +234,17 @@ public class TileManager implements TileResolver {
         return null;
     }
 
+    private Set<Point> getCachedPoints(Tile tile) {
+        Set<Point> points = cache.get(tile);
+
+        if (points == null) {
+            cache(tile, tile.getPoints());
+            return new HashSet<>(tile.getPoints());
+        }
+
+        return points;
+    }
+
     public void colorAllDefault() {
         getTileSet().forEach(this::colorTileDefault);
     }
@@ -350,59 +272,82 @@ public class TileManager implements TileResolver {
         return Collections.unmodifiableList(new ArrayList<>(tileSet));
     }
 
-    public static void recolorTile(Tile tile) {
-        List<Color> taken = BOB.getInstance().getScenarioSceneLoader().getTakenColors();
+    public void recolorTile(Tile tile, Color color) {
+        Set<Point> points = getCachedPoints(tile);
 
-        tile.getPoints().forEach(pos -> {
-            //try {
-            //    int rgb = BOB.getInstance().getMainRenderer().getLogicMap().getRGB(pos.x, pos.y);
-            //    Color currentColor = new Color(rgb, true);
+        int rgb = color.getRGB();
 
-            //    if (currentColor.getAlpha() == 0) System.out.println("Recoloring tile at " + pos.x + ", " + pos.y + " - starting point has alpha 0 " + tile.getAbbreviation());
-            //
-            //} catch (Exception e) {
-            //    System.out.println("Failed to get RGB for tile: " + tile.getAbbreviation());
-            //}
-
-            //PosUtil.getPossibleBDPos(taken, BOB.getInstance().getMainRenderer().getLogicMap(), pos.x, pos.y).forEach(px -> {
-            //    BOB.getInstance().getMainRenderer().getVisualBorderOverlay().setRGB(px.x,px.y, tile.getController().countryColor().darker().getRGB());
-            //});
-            PosUtil.getPossiblePos(taken.stream().map(Color::getRGB).collect(Collectors.toSet()), BOB.getInstance().getMainRenderer().getLogicMap(), pos.x, pos.y).forEach(px -> {
-                ImageUtil.set(BOB.getInstance().getMainRenderer().getLogicMap(), px.x,px.y, tile.getController().countryColor().getRGB());
-            });
-
-            ImageUtil.set(BOB.getInstance().getMainRenderer().getLogicMap(), pos.x,pos.y, tile.getController().countryColor().getRGB());
-        });
+        points.forEach(pos -> ImageUtil.set(BOB.getInstance().getMainRenderer().getLogicMap(), pos.x, pos.y, rgb));
 
         BOB.getInstance().getMainRenderer().syncBuffers();
         BOB.getInstance().getMainRenderer().setDirty(true);
     }
 
-    public static void recolorTile(Tile tile, Color color) {
-        List<Color> taken = BOB.getInstance().getScenarioSceneLoader().getTakenColors();
+    public void recolorTile(Tile tile) {
+        Set<Point> points = getCachedPoints(tile);
 
-        tile.getPoints().forEach(pos -> {
-            //try {
-            //    int rgb = BOB.getInstance().getMainRenderer().getLogicMap().getRGB(pos.x, pos.y);
-            //    Color currentColor = new Color(rgb, true);
+        int color = tile.getController().countryColor().getRGB();
+        BufferedImage map = BOB.getInstance().getMainRenderer().getLogicMap();
 
-            //    if (currentColor.getAlpha() == 0) System.out.println("Recoloring tile at " + pos.x + ", " + pos.y + " - starting point has alpha 0 " + tile.getAbbreviation());
-            //
-            //} catch (Exception e) {
-            //    System.out.println("Failed to get RGB for tile: " + tile.getAbbreviation());
-            //}
-
-            PosUtil.getPossiblePos(taken.stream().map(Color::getRGB).collect(Collectors.toSet()), BOB.getInstance().getMainRenderer().getLogicMap(), pos.x, pos.y).forEach(px -> {
-                ImageUtil.set(BOB.getInstance().getMainRenderer().getLogicMap(), px.x,px.y, color.getRGB());
-            });
-
-            ImageUtil.set(BOB.getInstance().getMainRenderer().getLogicMap(), pos.x,pos.y, color.getRGB());
-
-        });
+        points.forEach(pos -> ImageUtil.set(map, pos.x, pos.y, color));
 
         BOB.getInstance().getMainRenderer().syncBuffers();
         BOB.getInstance().getMainRenderer().setDirty(true);
     }
+
+    //public static void recolorTile(Tile tile) {
+    //    List<Color> taken = BOB.getInstance().getScenarioSceneLoader().getTakenColors();
+//
+    //    tile.getPoints().forEach(pos -> {
+    //        //try {
+    //        //    int rgb = BOB.getInstance().getMainRenderer().getLogicMap().getRGB(pos.x, pos.y);
+    //        //    Color currentColor = new Color(rgb, true);
+//
+    //        //    if (currentColor.getAlpha() == 0) System.out.println("Recoloring tile at " + pos.x + ", " + pos.y + " - starting point has alpha 0 " + tile.getAbbreviation());
+    //        //
+    //        //} catch (Exception e) {
+    //        //    System.out.println("Failed to get RGB for tile: " + tile.getAbbreviation());
+    //        //}
+//
+    //        //PosUtil.getPossibleBDPos(taken, BOB.getInstance().getMainRenderer().getLogicMap(), pos.x, pos.y).forEach(px -> {
+    //        //    BOB.getInstance().getMainRenderer().getVisualBorderOverlay().setRGB(px.x,px.y, tile.getController().countryColor().darker().getRGB());
+    //        //});
+    //        PosUtil.getPossiblePos(taken.stream().map(Color::getRGB).collect(Collectors.toSet()), BOB.getInstance().getMainRenderer().getLogicMap(), pos.x, pos.y).forEach(px -> {
+    //            ImageUtil.set(BOB.getInstance().getMainRenderer().getLogicMap(), px.x,px.y, tile.getController().countryColor().getRGB());
+    //        });
+//
+    //        ImageUtil.set(BOB.getInstance().getMainRenderer().getLogicMap(), pos.x,pos.y, tile.getController().countryColor().getRGB());
+    //    });
+//
+    //    BOB.getInstance().getMainRenderer().syncBuffers();
+    //    BOB.getInstance().getMainRenderer().setDirty(true);
+    //}
+
+    //public static void recolorTile(Tile tile, Color color) {
+    //    List<Color> taken = BOB.getInstance().getScenarioSceneLoader().getTakenColors();
+//
+    //    tile.getPoints().forEach(pos -> {
+    //        //try {
+    //        //    int rgb = BOB.getInstance().getMainRenderer().getLogicMap().getRGB(pos.x, pos.y);
+    //        //    Color currentColor = new Color(rgb, true);
+//
+    //        //    if (currentColor.getAlpha() == 0) System.out.println("Recoloring tile at " + pos.x + ", " + pos.y + " - starting point has alpha 0 " + tile.getAbbreviation());
+    //        //
+    //        //} catch (Exception e) {
+    //        //    System.out.println("Failed to get RGB for tile: " + tile.getAbbreviation());
+    //        //}
+//
+    //        PosUtil.getPossiblePos(taken.stream().map(Color::getRGB).collect(Collectors.toSet()), BOB.getInstance().getMainRenderer().getLogicMap(), pos.x, pos.y).forEach(px -> {
+    //            ImageUtil.set(BOB.getInstance().getMainRenderer().getLogicMap(), px.x,px.y, color.getRGB());
+    //        });
+//
+    //        ImageUtil.set(BOB.getInstance().getMainRenderer().getLogicMap(), pos.x,pos.y, color.getRGB());
+//
+    //    });
+//
+    //    BOB.getInstance().getMainRenderer().syncBuffers();
+    //    BOB.getInstance().getMainRenderer().setDirty(true);
+    //}
 
     //private boolean isPointInTile(java.awt.Point p, List<java.awt.Point> polygon) {
     //    boolean result = false;

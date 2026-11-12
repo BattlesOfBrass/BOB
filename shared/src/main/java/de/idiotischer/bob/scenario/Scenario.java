@@ -32,6 +32,9 @@ public class Scenario {
     private final List<Color> borderColors = new  ArrayList<>();
     private Theme theme;
     private Date startDate;
+    private volatile BufferedImage mapImage;
+    private volatile BufferedImage backgroundImage;
+
 
     public Scenario(boolean server, String abbreviation, String name, Path dir) {
         this.server = server;
@@ -197,23 +200,39 @@ public class Scenario {
     }
 
     public BufferedImage getBackgroundImage() {
-        Path path = getBackground();
-
-        try {
-            return ImageIO.read(path.toFile());
-        } catch (IOException e) {
-            return  null;
+        BufferedImage img = backgroundImage;
+        if (img == null) {
+            synchronized (this) {
+                img = backgroundImage;
+                if (img == null) {
+                    try {
+                        img = ImageIO.read(getBackground().toFile());
+                        backgroundImage = img;
+                    } catch (IOException e) {
+                        return null;
+                    }
+                }
+            }
         }
+        return img;
     }
 
     public BufferedImage getMapImage() {
-        Path path = getMap();
-
-        try {
-            return ImageIO.read(path.toFile());
-        } catch (IOException e) {
-            return  null;
+        BufferedImage img = mapImage;
+        if (img == null) {
+            synchronized (this) {
+                img = mapImage;
+                if (img == null) {
+                    try {
+                        img = ImageIO.read(getMap().toFile());
+                        mapImage = img;
+                    } catch (IOException e) {
+                        return null;
+                    }
+                }
+            }
         }
+        return img;
     }
 
     public Date getStartDate() {

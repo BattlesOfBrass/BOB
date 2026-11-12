@@ -615,7 +615,7 @@ public class PacketListener implements ListenerAdapter {
                         tile.setOwner(country);
                     } else if(Objects.equals(t, TileChangedEvent.Type.CONTROLLER)) {
                         tile.setController(country);
-                        TileManager.recolorTile(tile, c);
+                        BOB.getInstance().getTileManager().recolorTile(tile, c);
 
                         //System.out.println("TILE THAT WAS CHANGED: " + tile.getController().getAbbreviation());
 //

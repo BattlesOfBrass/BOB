@@ -284,10 +284,10 @@ public class ServerTileManager implements TileResolver {
             List<Color> takenColors = Server.getInstance().getScenarioSceneLoader().getTakenColors();
             BufferedImage logicMap = Server.getInstance().getScenarioSceneLoader().getMap();
 
+            Set<Integer> unusable = takenColors.stream().map(Color::getRGB).collect(Collectors.toSet());
             points.parallelStream().forEach(basePoint -> {
                 pointsSet.add(basePoint);
-                List<Point> expanded = PosUtil.getPossiblePos(takenColors.stream().map(Color::getRGB).collect(Collectors.toSet()), logicMap, basePoint.x, basePoint.y);
-                pointsSet.addAll(expanded);
+                pointsSet.addAll(PosUtil.getPossiblePos(unusable, logicMap, basePoint.x, basePoint.y));
             });
 
             synchronized (cache) {

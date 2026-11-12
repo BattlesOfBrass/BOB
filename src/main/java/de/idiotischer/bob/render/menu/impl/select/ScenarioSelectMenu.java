@@ -6,10 +6,10 @@ import de.idiotischer.bob.render.menu.components.ModernScrollBarUI;
 import de.idiotischer.bob.render.menu.components.button.BOBButton;
 import de.idiotischer.bob.scenario.Scenario;
 import de.idiotischer.bob.util.Helper;
-import de.idiotischer.bob.util.ImageUtil;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 
 //TODO: make this redraw the image in chunks and multiple draw cycles yk (like 8 chunks or smth)
@@ -19,6 +19,14 @@ public class ScenarioSelectMenu extends JPanel {
     private final int layoutScaleY = 500;
     private Scenario selectedScenario;
     private final JPanel listPanel;
+
+    private Scenario lastCachedScenario;
+    private BufferedImage lastSourceMapImg;
+    private BufferedImage lastSourceBgImg;
+    private int lastCachedDrawW = -1;
+    private int lastCachedDrawH = -1;
+    private BufferedImage cachedBackgroundImage;
+    private BufferedImage cachedMapImage;
 
     public ScenarioSelectMenu(Scenario selected) {
         this.selectedScenario = selected;
@@ -94,8 +102,6 @@ public class ScenarioSelectMenu extends JPanel {
                 selectedScenario = s;
                 Helper.loadPreview(selectedScenario, true);
                 sBtn.setSelected(true);
-
-                //repaint();
             });
 
             group.add(sBtn);
@@ -103,7 +109,6 @@ public class ScenarioSelectMenu extends JPanel {
             listPanel.add(Box.createVerticalStrut(10));
         }
         listPanel.revalidate();
-        //listPanel.repaint();
     }
 
     @Override
@@ -146,9 +151,45 @@ public class ScenarioSelectMenu extends JPanel {
 
             g2.setStroke(new BasicStroke(6));
             g2.drawRoundRect(imgFrameX + 10, 50, drawW, drawH, 24, 24);
-            g2.drawImage(ImageUtil.makeRoundedCorner(backgroundImage, 100), imgFrameX + 10, 50, drawW, drawH, null);
-            g2.drawImage(ImageUtil.makeRoundedCorner(mapImg, 100), imgFrameX + 10, 50, drawW, drawH, null);
+
+            if (selectedScenario != lastCachedScenario || mapImg != lastSourceMapImg || backgroundImage != lastSourceBgImg || drawW != lastCachedDrawW || drawH != lastCachedDrawH) {
+                lastCachedScenario = selectedScenario;
+                lastSourceMapImg = mapImg;
+                lastSourceBgImg = backgroundImage;
+                lastCachedDrawW = drawW;
+                lastCachedDrawH = drawH;
+
+                cachedBackgroundImage = createImage(backgroundImage, drawW, drawH, 24);
+                cachedMapImage = createImage(mapImg, drawW, drawH, 24);
+            }
+
+            g2.drawImage(cachedBackgroundImage, imgFrameX + 10, 50, drawW, drawH, null);
+            g2.drawImage(cachedMapImage, imgFrameX + 10, 50, drawW, drawH, null);
         }
+    }
+
+    private static BufferedImage createImage(BufferedImage image, int targetW, int targetH, int cornerRadius) {
+        BufferedImage output = new BufferedImage(targetW, targetH, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2 = output.createGraphics();
+
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+
+        g2.drawImage(image, 0, 0, targetW, targetH, null);
+
+        BufferedImage mask = new BufferedImage(targetW, targetH, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D gMask = mask.createGraphics();
+        gMask.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        gMask.setColor(Color.WHITE);
+        gMask.fill(new RoundRectangle2D.Float(0, 0, targetW, targetH, cornerRadius, cornerRadius));
+        gMask.dispose();
+
+        g2.setComposite(AlphaComposite.DstIn);
+        g2.drawImage(mask, 0, 0, null);
+
+        g2.dispose();
+        return output;
     }
 
     private JButton createButton(String text, int width, int height) {
@@ -157,5 +198,4 @@ public class ScenarioSelectMenu extends JPanel {
         btn.setFocusable(false);
         return btn;
     }
-
 }
