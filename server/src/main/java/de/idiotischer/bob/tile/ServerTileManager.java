@@ -62,7 +62,7 @@ public class ServerTileManager implements TileResolver {
                 JsonElement victoryPointsElement = tileElement.get("victoryPoints");
                 if (victoryPointsElement != null && !victoryPointsElement.isJsonNull()) victoryPoints = victoryPointsElement.getAsInt();
 
-                int population = 0;
+                int population = 100; //defaultly 100 so i dfont need to config erverything, just set it explicitly to 0 if needed
                 JsonElement populationElement = tileElement.get("population");
                 if (populationElement != null && !populationElement.isJsonNull()) population = populationElement.getAsInt();
 

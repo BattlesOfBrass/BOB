@@ -8,7 +8,6 @@ import de.idiotischer.bob.networking.packet.impl.pp.ReplyPacket;
 import de.idiotischer.bob.networking.packet.impl.pp.Type;
 import de.idiotischer.bob.tile.Tile;
 import de.idiotischer.bob.tile.TileResolver;
-import de.idiotischer.bob.util.UUIDUtil;
 import it.unimi.dsi.fastutil.Pair;
 
 import java.util.*;
@@ -201,7 +200,7 @@ public class TroopStack extends Troop {
         return speed;
     }
 
-    public long getPop() {
+    public long getManpower() {
         return 9 * 1000; //hoi4 3x3 div by default
     }
 

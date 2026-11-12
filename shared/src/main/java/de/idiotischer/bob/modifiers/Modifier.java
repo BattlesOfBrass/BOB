@@ -141,7 +141,9 @@ public class Modifier {
 
     public enum Types {
         POLITICAL_POWER("politicalPower"),
-        MANPOWER("manpower"),
+        DAILY_MANPOWER("daily_manpower_long"),
+        DAILY_MANPOWER_PERCENT("daily_manpower_percent"),
+        RECRUITABLE_POP("recruitable_pop"),
         ATTACK("attack"),
         REMOVE_MODIFIER("removeModifier"),
         CONSCRIPTION_FOR_OCCUPATION("conscriptingOccupation");

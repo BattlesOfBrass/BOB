@@ -42,7 +42,7 @@ public class TrainEntry {
         double elapsedDays = elapsedTicks / 1440.0;
         double timePercentage = troopTrainDays <= 0 ? 100 : ((progress + elapsedDays) / troopTrainDays) * 100;
 
-        long requiredPop = finalStack.getPop();
+        long requiredPop = finalStack.getManpower();
 
         double populationPercentage = requiredPop <= 0 ? 100 : Math.min(1.0, (double) availablePop / requiredPop);
 
@@ -84,7 +84,7 @@ public class TrainEntry {
 
         boolean result = true;
 
-        if(availablePop >= finalStack.getPop()) result = true;
+        if(availablePop >= finalStack.getManpower()) result = true;
 
         double lastAvailablePopStamp = lastAvailablePop;
 
@@ -106,7 +106,7 @@ public class TrainEntry {
         boolean result = true;
         //for some reason percentage still goes up but on server its correct
 
-        if(availablePop >= finalStack.getPop()) result = true;
+        if(availablePop >= finalStack.getManpower()) result = true;
 
         if(availablePop >= 0) result = false;
 
@@ -128,7 +128,7 @@ public class TrainEntry {
         return startTime + TimeUnit.DAYS.toMinutes(troopTrainDays) + extra;
     }
 
-    public void setPop(long full) {
+    public void setPop(double full) {
         this.availablePop = full;
     }
 }

@@ -125,17 +125,21 @@ public class HUDTopBar extends JPanel {
 
         double pp;
         double pop;
+        double mp;
 
         if(BOB.getInstance().getPlayer().country() == null) {
             pp = 0;
             pop = 0;
+            mp = 0;
         } else {
             pp = BOB.getInstance().getPlayer().country().getPoliticalPower();
             pop = BOB.getInstance().getCountryManager().getPopulation(BOB.getInstance().getPlayer().country());
+            mp = BOB.getInstance().getPlayer().country().getManpower();
         }
 
         String ppText = "PP: " + pp;
         String popText = "POP: " + (pop >= 1_000_000 ? String.format("%.1fM", pop / 1_000_000) : pop >= 1_000 ? String.format("%.1fk", pop / 1_000) : Math.round(pop));
+        String mpText = "Manpower: " + (mp >= 1_000_000 ? String.format("%.1fM", mp / 1_000_000) : mp >= 1_000 ? String.format("%.1fk", mp / 1_000) : Math.round(mp));
 
         //TODO: REPLACE WITH FLAG NOW!
         String text = "Current country: " + countryName;
@@ -149,6 +153,9 @@ public class HUDTopBar extends JPanel {
 
         int xSpaced1 = x + fm.stringWidth(text /*later the image width*/) + spacing + fm.stringWidth(ppText /*later the image width*/) + spacing;
         g2.drawString(popText,xSpaced1,y);
+
+        int xSpaced2 = x + fm.stringWidth(text /*later the image width*/) + spacing + fm.stringWidth(ppText /*later the image width*/) + spacing +  fm.stringWidth(popText ) + spacing;
+        g2.drawString(mpText,xSpaced2,y);
 
         Date currentDate = BOB.getInstance().getTimeManager().getDate();
         long ticks = BOB.getInstance().getTimeManager().getTimeTicks();

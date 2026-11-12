@@ -53,5 +53,6 @@ public enum Type {
     TROOP_TRAIN_END,
     TROOP_UPDATE,
     DEPLOY_TROOP,
+    TIME_RESTART,
     FOCUSTREE_REMOVE
 }

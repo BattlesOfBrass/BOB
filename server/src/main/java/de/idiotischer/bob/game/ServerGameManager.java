@@ -1,3 +1,4 @@
+
 package de.idiotischer.bob.game;
 
 import de.idiotischer.bob.Server;
@@ -39,6 +40,8 @@ public class ServerGameManager implements TimeResolver {
 
     private final Map<String, Pair<Long, Consumer<Long>>> timeHook = new HashMap<>();
 
+    public boolean begun = false;
+
     public void begin() {
         clear();
         scheduleNextTick();
@@ -46,12 +49,12 @@ public class ServerGameManager implements TimeResolver {
         timeService.scheduleAtFixedRate(() -> {
             if (state == GameState.INGAME) broadcastTimeSync();
         }, SYNC_INTERVAL, SYNC_INTERVAL, TimeUnit.SECONDS);
+
+        Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().channels(),new ReplyPacket(Type.TIME_RESTART, getDate() != null ? getDate().getTime() : -1L));
     }
 
-    private synchronized void scheduleNextTick() {
+    private void scheduleNextTick() {
         if (timeService.isShutdown()) return;
-
-        if (nextTick != null) nextTick.cancel(false);
 
         nextTick = timeService.schedule(() -> {
             try {
@@ -63,6 +66,8 @@ public class ServerGameManager implements TimeResolver {
     }
 
     private void rescheduleNextTick() {
+        if (nextTick != null) nextTick.cancel(false);
+
         scheduleNextTick();
     }
 
@@ -75,18 +80,18 @@ public class ServerGameManager implements TimeResolver {
     }
 
     public void setState(GameState state, Player whoChanged) {
-        if(state != GameState.INGAME && state != GameState.PAUSED) begin();
+        if(state != GameState.INGAME && state != GameState.PAUSED) clear();
 
         if(state == GameState.INGAME) {
             if(this.state == GameState.PAUSED && whoChanged != null) {
-                //if we are not in singleplayer
                 if(Server.getInstance().getPlayerManager().getPlayers().size() > 1) {
                     int delay = SharedCore.getPauseDelay(); // 20s
 
-                    //and another person tries to unpause and the delay hasn't passed dont change the state
                     if(whoChanged != this.whoChanged && System.currentTimeMillis() - lastChangedTime < delay) return;
                 }
             }
+
+            scheduleNextTick();
         }
 
         this.lastChangedTime = System.currentTimeMillis();
@@ -108,10 +113,10 @@ public class ServerGameManager implements TimeResolver {
     }
 
     private void clear() {
-        speed = 1;
         timeTicks = 0;
         lastUpdate = System.nanoTime();
         timeHook.clear();
+        setSpeed(1);
     }
 
     public void tickTime() {
@@ -131,7 +136,7 @@ public class ServerGameManager implements TimeResolver {
         });
 
         new ArrayList<>(Server.getInstance().getTroopManager().getTraining()).forEach(troop -> {
-            double availablePop = Server.getInstance().getCountryManager().removePopulationCheck(troop.getFinalStack().getPop(), troop.getFinalStack().getController());
+            double availablePop = Server.getInstance().getCountryManager().removePopulationCheck(troop.getFinalStack().getManpower(), troop.getFinalStack().getController());
             if(troop.canTrainServer(Server.getInstance().getServerSocket(),Server.getInstance().getSendTool(), availablePop) && !(troop.getExpIfDeployedNow(timeTicks) >= 100))
                 if (timeTicks >= troop.getEndTick()) {
                     Server.getInstance().getTroopManager().removeTrainEntry(troop.getUuid(), true);
@@ -140,12 +145,11 @@ public class ServerGameManager implements TimeResolver {
         });
 
         //TODO for every troop update them and add equipment and population, whatever they miss and you have
-
         if (timeTicks % (60 * 24) == 0) {
             Server.getInstance().getCountryManager().getCountries().forEach(c -> {
                 try {
-                    c.newDay(Server.getInstance().getServerSocket(), Server.getInstance().getSendTool());
-                    Server.getInstance().getCountryManager().addPop(/*0.125f later do liek in hoi4 with percentage based on core pop etc*/125, c);
+                    c.newDay(Server.getInstance().getServerSocket(), Server.getInstance().getSendTool(), c.getDailyManpower(Server.getInstance().getCountryManager().getTotalPopulation(c)));
+                    Server.getInstance().getCountryManager().addPopPercent(/*0.125f later do liek in hoi4 with percentage based on core pop etc*/.125F, c);
                 } catch (Exception ex) { ex.printStackTrace(); }
             });
             /*if (timeTicks % (60 * 12) == 0)*/
@@ -174,6 +178,8 @@ public class ServerGameManager implements TimeResolver {
     public void setSpeed(int speed) {
         this.speed = Math.clamp(speed, 1, 5);
 
+        if(Server.getInstance().getTroopManager() != null) Server.getInstance().getTroopManager().rescheduleAllTroopMovements();
+
         rescheduleNextTick();
         broadcastTimeSync();
     }
@@ -183,6 +189,8 @@ public class ServerGameManager implements TimeResolver {
     }
 
     public void reload() {
+        if(!begun) begin();
+
         clear();
         rescheduleNextTick();
         broadcastTimeSync();

@@ -48,15 +48,17 @@ public class Country /*implements Comparable<Country>*/{
 
     private final Set<Modifier> modifiers;
 
+    private Conscription conscription = Conscription.LIMITED_CONSCRIPTION;
+
     public Map<String, Consumer<Modifier>> modifierAddListeners = new HashMap<>();
     public Map<String, Consumer<Modifier>> modifierRemoveListeners = new HashMap<>();
 
     private Ideology rulingIdeology;
     private Ideology startIdeology;
     private Map<Ideology,Float> availableIdeologies = new HashMap<>(); //used for parties
-    private double manpower;
+    private long manpower;
 
-    public Country(String abbreviation, String name, Color color, boolean major, boolean selectScreen, String overlord, Set<Modifier> modifiers) {
+    public Country(String abbreviation,String name, Color color, boolean major, boolean selectScreen, String overlord, Set<Modifier> modifiers) {
         this.abbreviation = abbreviation;
         this.name = name;
         this.color = color;
@@ -174,6 +176,7 @@ public class Country /*implements Comparable<Country>*/{
         util.putUtf(abbreviation);
 
         Color c = color;
+        buffer.putLong(manpower);
         buffer.put((byte) c.getRed());
         buffer.put((byte) c.getGreen());
         buffer.put((byte) c.getBlue());
@@ -194,6 +197,7 @@ public class Country /*implements Comparable<Country>*/{
         for (Modifier mod : modifiers) util.putUtf(mod.getId());
 
         util.putBoolean(isCapitulated());
+        util.putUtf(conscription.name().toUpperCase());
         util.putUtf(rulingIdeology == null ? "" : rulingIdeology.abbreviation());
         util.putUtf(startIdeology == null ? "" : startIdeology.abbreviation());
 
@@ -213,6 +217,8 @@ public class Country /*implements Comparable<Country>*/{
 
         String name = util.getUtf();
         String abbreviation = util.getUtf();
+
+        long manpower = buffer.getLong();
 
         Color color = new Color(buffer.get() & 0xFF, buffer.get() & 0xFF, buffer.get() & 0xFF);
 
@@ -234,12 +240,15 @@ public class Country /*implements Comparable<Country>*/{
 
         Country country = new Country(abbreviation, name, color, major, selectScreen, overlord, mods);
 
+        country.setManpower(manpower);
         country.setPlayer(Player.of(uuid));
         country.setPuppetTile(puppetTile);
         country.setPuppetProgress(puppetProgress);
         country.setCapitulated(util.getBoolean());
+        Conscription conscription = Conscription.valueOf(util.getUtf());
         Ideology ideology1 = r.byAbbreviation(util.getUtf());
         Ideology ideology2 = r.byAbbreviation(util.getUtf());
+        country.setConscription(conscription);
 
         int milAccessSize = buffer.getInt();
         for (int i = 0; i < milAccessSize; i++) country.addMilAccess(util.getUtf());
@@ -257,6 +266,16 @@ public class Country /*implements Comparable<Country>*/{
         country.setDefaultIdeologySimple(ideology2);
 
         return country;
+    }
+
+    public void setConscription(Conscription conscription) {
+        this.conscription = conscription;
+    }
+
+    public void setConscriptionServer(SharedCore c, ChannelResolver r, Conscription conscription) {
+        this.conscription = conscription;
+
+        c.getTool().broadcast(r.channels(), new ReplyPacket(Type.COUNTRY_UPDATE, "id=" + this.abbreviation + ";" + "conscription=" + conscription.name().toUpperCase()));
     }
 
     public Set<String> getMilAccess() {
@@ -404,8 +423,10 @@ public class Country /*implements Comparable<Country>*/{
     }
 
     //called on a new dawn (hihi sosand)
-    public void newDay(ChannelResolver r, SendTool t) {
+    public void newDay(ChannelResolver r, SendTool t, long dailyMP) {
         this.politicalPower += getDailyPP();
+
+        addManpowerServer(t,r, dailyMP);
 
         t.broadcast(r.channels(), new ReplyPacket(Type.PP_UPDATE, this.abbreviation + ";" + politicalPower));
     }
@@ -483,9 +504,7 @@ public class Country /*implements Comparable<Country>*/{
             return;
         }
 
-        r.addTimeHook("modifier-" + UUID.randomUUID(), modifier.getLasts(), integer -> {
-            removeModifier(modifier);
-        });
+        r.addTimeHook("modifier-" + UUID.randomUUID(), modifier.getLasts(), integer -> removeModifier(modifier));
 
         this.modifiers.add(modifier);
 
@@ -537,23 +556,35 @@ public class Country /*implements Comparable<Country>*/{
         this.rulingIdeology = c.rulingIdeology;
         this.startIdeology = c.startIdeology; //in civil wars start Ideology gets set to whatever start IDeology they have
         this.states = c.states;
+        this.manpower = c.manpower;
     }
+
 
     public Country uniqueCopy(String abbreviation) {
         return new Country(this,abbreviation);
     }
 
-    public void setManpowerServer(SendTool sendTool, ChannelResolver r, double sum) {
+    public void setManpowerServer(SendTool t, ChannelResolver r, long sum) {
+        this.manpower = sum;
+        t.broadcast(r.channels(),new ReplyPacket(Type.COUNTRY_UPDATE, "id=" + this.abbreviation + ";" + "manpower=" + sum));
     }
 
-    public void addManpowerServer(SendTool sendTool, ChannelResolver r, double sum) {
+    public void setMajorServer(SendTool t, ChannelResolver r, boolean b) {
+        this.major = b;
+        t.broadcast(r.channels(),new ReplyPacket(Type.COUNTRY_UPDATE, "id=" + this.abbreviation + ";" + "major=" + b));
     }
 
-    public void setManpowerServer(double sum) {
+    public void addManpowerServer(SendTool t, ChannelResolver r, long d) {
+        long sum = getManpower() + d;
+        this.manpower = sum;
+        t.broadcast(r.channels(), new ReplyPacket(Type.COUNTRY_UPDATE, "id=" + this.abbreviation + ";" + "manpower=" + sum));
+    }
+
+    public void setManpower(long sum) {
         this.manpower = sum;
     }
 
-    public double getManpower() {
+    public long getManpower() {
         return manpower;
     }
 
@@ -561,4 +592,99 @@ public class Country /*implements Comparable<Country>*/{
     //public int compareTo(@NonNull Country o) {
     //    return this.abbreviation.compareTo(o.getAbbreviation());
     //}
+
+    public long getDailyManpower(double totalPop) {
+        if (conscription == null)  {
+            System.out.println("conscription is null");
+            return 0;
+        }
+
+        long extraPop = getModifiers().stream().filter(m -> m.getType().equals(Modifier.Types.DAILY_MANPOWER.getMapping()))
+                .mapToLong(m -> {
+                    try {
+                        return Long.parseLong(m.getModifier());
+                    } catch (NumberFormatException e) {
+                        return 0;
+                    }
+                }).sum();
+
+        double extraPopPerc = getModifiers().stream().filter(m -> m.getType().equals(Modifier.Types.DAILY_MANPOWER_PERCENT.getMapping()))
+                .mapToDouble(m -> {
+                    try {
+                        return Double.parseDouble(m.getModifier());
+                    } catch (NumberFormatException e) {
+                        return 0.0;
+                    }
+                }).sum();
+
+        double recruitable = getRecruitablePop();
+
+        double baseManpower = (totalPop * recruitable) + extraPop;
+        double finalManpower = baseManpower * (1.0 + extraPopPerc);
+
+        return (long) Math.floor(finalManpower);
+    }
+
+    public double getRecruitablePop() {
+        return getModifiers().stream().filter(m -> m.getType().equals(Modifier.Types.RECRUITABLE_POP.getMapping()))
+                .mapToDouble(m -> {
+                    try {
+                        return Double.parseDouble(m.getModifier());
+                    } catch (NumberFormatException e) {return 0.0;}
+                }).sum() + conscription.getRecruitablePopulation();
+    }
+
+    public Conscription getConscription() {
+        return conscription;
+    }
+
+    public enum Conscription {
+        DISARMED_NATION(0.01, 0.0, 0.0, 0.0, 0.0, 0.0),
+        VOLUNTEER_ONLY(0.015, 0.0, 0.0, 0.0, 0.0, 0.0),
+        LIMITED_CONSCRIPTION(0.025, 0.0, 0.0, 0.0, 0.0, 0.0),
+        EXTENSIVE_CONSCRIPTION(0.05, 0.0, 0.10, 0.0, 0.0, 0.0),
+        SERVICE_BY_REQUIREMENT(0.10, 0.0, 0.20, -0.10, -0.10, -0.10),
+        ALL_ADULTS_SERVE(0.20, 0.0, 0.30, -0.30, -0.30, -0.30),
+        SCRAPPING_THE_BARREL(0.25, 0.0, 0.50, -0.40, -0.40, -0.40);
+
+        private final double recruitablePopulation;
+        private final double mobilizationSpeed;
+        private final double trainingTime;
+        private final double factoryOutput;
+        private final double dockyardOutput;
+        private final double constructionSpeed;
+
+        Conscription(double recruitablePopulation, double mobilizationSpeed, double trainingTime, double factoryOutput, double dockyardOutput, double constructionSpeed) {
+            this.recruitablePopulation = recruitablePopulation;
+            this.mobilizationSpeed = mobilizationSpeed;
+            this.trainingTime = trainingTime;
+            this.factoryOutput = factoryOutput;
+            this.dockyardOutput = dockyardOutput;
+            this.constructionSpeed = constructionSpeed;
+        }
+
+        public double getRecruitablePopulation() {
+            return recruitablePopulation;
+        }
+
+        public double getMobilizationSpeed() {
+            return mobilizationSpeed;
+        }
+
+        public double getTrainingTime() {
+            return trainingTime;
+        }
+
+        public double getFactoryOutput() {
+            return factoryOutput;
+        }
+
+        public double getDockyardOutput() {
+            return dockyardOutput;
+        }
+
+        public double getConstructionSpeed() {
+            return constructionSpeed;
+        }
+    }
 }

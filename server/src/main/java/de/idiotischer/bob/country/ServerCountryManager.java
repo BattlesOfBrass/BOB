@@ -44,6 +44,7 @@ public class ServerCountryManager implements CountryResolver {
 
                 boolean majorAtStart = false;
                 boolean selectScreen = false;
+                Country.Conscription conscription = Country.Conscription.LIMITED_CONSCRIPTION;
 
                 Ideology rulingIdeology = null;
                 Set<Ideology> availableIdeologies = new HashSet<>();
@@ -75,12 +76,26 @@ public class ServerCountryManager implements CountryResolver {
                 if(countryElement.has("selectScreen") && !countryElement.get("selectScreen").isJsonNull())
                     selectScreen = countryElement.get("selectScreen").getAsBoolean();
 
+                long manpower = 0;
+                if(countryElement.has("manpower") && !countryElement.get("manpower").isJsonNull())
+                    manpower = countryElement.get("manpower").getAsLong();
+
+                if(countryElement.has("conscription") && !countryElement.get("conscription").isJsonNull()) {
+                    try {
+                        conscription = Country.Conscription.valueOf(countryElement.get("conscription").getAsString().toUpperCase());
+                    } catch (EnumConstantNotPresentException e) {
+                        conscription = Country.Conscription.LIMITED_CONSCRIPTION;
+                    }
+                }
+
                 String[] colorStrings = countryElement.get("color").getAsString().split("[;,]");
 
                 Color color = new Color(Integer.parseInt(colorStrings[0]), Integer.parseInt(colorStrings[1]), Integer.parseInt(colorStrings[2]));
 
                 Country country = new Country(countryAbbreviation.toUpperCase(), name, color, majorAtStart, selectScreen,overlord == null ? "" : overlord.getAbbreviation(), mods);
 
+                country.setManpower(manpower);
+                country.setConscription(conscription);
                 country.setStartIdeologySimple(rulingIdeology);
                 country.setRulingIdeologySimple(rulingIdeology);
                 availableIdeologies.forEach(country::addAvailableIdeologiesSimple);
@@ -158,6 +173,16 @@ public class ServerCountryManager implements CountryResolver {
 
             tile.setPopulationServer(Server.getInstance().getSendTool(), Server.getInstance().getServerSocket(), tile.getPopulation() - amount);
         }
+
+        return actualRemoval;
+    }
+
+    public long removeManpowerCheck(double manpower, Country country) {
+        if (manpower <= 0) return 0;
+
+        long actualRemoval = (long) Math.min(manpower, country.getManpower());
+
+        country.setManpowerServer(Server.getInstance().getSendTool(), Server.getInstance().getServerSocket(), country.getManpower() - actualRemoval);
 
         return actualRemoval;
     }
@@ -349,7 +374,7 @@ public class ServerCountryManager implements CountryResolver {
         for(Country country : getCountries()) {
             List<Tile> tiles = getAllTiles(country);
 
-            double sum = tiles.stream().mapToDouble(Tile::getPopulation).sum();
+            long sum = (long) (tiles.stream().mapToDouble(Tile::getPopulation).sum() * country.getRecruitablePop());
 
             country.setManpowerServer(Server.getInstance().getSendTool(), Server.getInstance().getServerSocket(), sum);
         }

@@ -154,7 +154,7 @@ public class PacketListener implements ListenerAdapter {
                     String s1 = strings[1];
 
                     if(s1.startsWith("pop")) {
-                        long full = Long.parseLong(s1.replace("pop=",""));
+                        double full = Double.parseDouble(s1.replace("pop=",""));
 
                         e.setPop(full);
                     }
@@ -270,6 +270,12 @@ public class PacketListener implements ListenerAdapter {
                         BOB.getInstance().getFocusManager().cancelFocus(cancel,id,treeId);
                     }
                 }
+                case TIME_RESTART -> {
+                    long timestamp = Long.parseLong(pack.getMessage());
+                    java.util.Date s = timestamp == -1L ? null : new Date(timestamp);
+
+                    if (s != null) BOB.getInstance().getTimeManager().reload(s);
+                }
                 case COUNTRY_UPDATE -> {
                     String[] strings = pack.getMessage().split(";");
 
@@ -285,6 +291,15 @@ public class PacketListener implements ListenerAdapter {
                         String ov = s1.replace("overlord=","");
 
                         c.setOverlord(ov);
+                    } else if(s1.startsWith("manpower")) {
+                        long manpower = Long.parseLong(s1.replace("manpower=",""));
+                        c.setManpower(manpower);
+                    } else if(s1.startsWith("major")) {
+                        boolean major = Boolean.parseBoolean(s1.replace("major=",""));
+                        c.setMajor(major);
+                    } else if(s1.startsWith("conscription")) {
+                        Country.Conscription conscription = Country.Conscription.valueOf(s1.replace("conscription=",""));
+                        c.setConscription(conscription);
                     }
                 }
                 case MODIFIER_UPDATE -> {

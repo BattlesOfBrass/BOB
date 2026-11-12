@@ -14,7 +14,6 @@ import de.idiotischer.bob.networking.packet.impl.pp.Type;
 import de.idiotischer.bob.tile.Tile;
 import de.idiotischer.bob.tile.TileResolver;
 import de.idiotischer.bob.util.UUIDUtil;
-import it.unimi.dsi.fastutil.BigArrays;
 
 import java.nio.file.Files;
 import java.util.*;
@@ -114,7 +113,7 @@ public class ServerTroopManager implements TroopResolver{
         usedIds.add(uuid);
 
         //TODO: check for enough pop
-        double availablePop = Server.getInstance().getCountryManager().removePopulationCheck(troop.getPop(), troop.getController());
+        long availablePop = Server.getInstance().getCountryManager().removeManpowerCheck(troop.getManpower(), troop.getController());
 
         long t = Server.getInstance().getGameManager().getTimeTicks();
         addTrainEntry(new TrainEntry(t, 0, uuid, availablePop, troop.getTrainDays(), troop));
