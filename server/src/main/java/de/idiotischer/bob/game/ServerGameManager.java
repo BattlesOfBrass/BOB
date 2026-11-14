@@ -133,6 +133,8 @@ public class ServerGameManager implements TimeResolver {
 
         timeTicks++;
 
+        broadcastTimeSync(); //now it works but at what cost? i need it to sync every day but than the client speeds away? now you may ask: "Idiotischer, why?" i dont
+
         new ArrayList<>(timeHook.entrySet()).forEach(e -> {
             if (timeTicks >= e.getValue().key()) {
                 timeHook.remove(e.getKey());
