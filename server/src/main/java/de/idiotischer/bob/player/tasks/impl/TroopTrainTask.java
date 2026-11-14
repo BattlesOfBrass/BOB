@@ -18,9 +18,9 @@ public class TroopTrainTask implements Task {
     private static final long COOLDOWN_AT_PEACE = 14 * TPD;
     private static final long COOLDOWN_AT_WAR = 3 * TPD;
 
-    private static final double GOAL_PER_TILE_PEACE = 0.5;
-    private static final double GOAL_PER_TILE_WAR = 2;
-    private static final int MIN = 2;
+    private static final double GOAL_PER_TILE_PEACE = 0.2;
+    private static final double GOAL_PER_TILE_WAR = 0.75;
+    private static final int MIN = 1;
 
     private static final String DEFAULT_NAME = "Infantry";
     private static final String DEFAULT_TEMPLATE = "";

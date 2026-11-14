@@ -80,20 +80,11 @@ public class TrainEntry {
     }
 
     public boolean canTrain() {
-        //blabla
+        boolean grew = availablePop > lastAvailablePop;
+        lastAvailablePop = availablePop;
 
-        boolean result = true;
-
-        if(availablePop >= finalStack.getManpower()) result = true;
-
-        double lastAvailablePopStamp = lastAvailablePop;
-
-        this.lastAvailablePop = availablePop;
-
-        if(lastAvailablePopStamp >= availablePop) result = false;
-
-        if(!result) extra++;
-
+        boolean result = isFullyPaid() || grew;
+        if (!result) extra++;
         return result;
     }
 
