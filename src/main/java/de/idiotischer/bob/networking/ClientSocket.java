@@ -194,10 +194,24 @@ public class ClientSocket {
                 attachment.flip();
 
                 while (attachment.hasRemaining()) {
-
                     attachment.mark();
 
-                    Packet packet = BOB.getInstance().getSharedCore().getRegistry().getDecoder().code(attachment, channel);
+                    Packet packet;
+                    try {
+                        packet = BOB.getInstance().getSharedCore().getRegistry().getDecoder().code(attachment, channel);
+                    } catch (Throwable t) {
+                        System.err.println("[ClientSocket] a packet failed to decode/handle, skipping it:");
+                        t.printStackTrace();
+
+                        try {
+                            attachment.reset();
+                            int length = attachment.getInt();
+                            attachment.position(Math.min(attachment.limit(), attachment.position() + length));
+                        } catch (Throwable ignored) {
+                            attachment.position(attachment.limit());
+                        }
+                        continue;
+                    }
 
                     if (packet == null) {
                         attachment.reset();

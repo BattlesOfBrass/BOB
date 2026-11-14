@@ -55,16 +55,14 @@ public class ServerGameManager implements TimeResolver {
 
         Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().channels(),new ReplyPacket(Type.TIME_RESTART, getDate() != null ? getDate().getTime() : -1L));
     }
-
-    private void scheduleNextTick() {
+    private synchronized void scheduleNextTick() {
         if (timeService.isShutdown()) return;
+        if (nextTick != null) nextTick.cancel(false);
 
         nextTick = timeService.schedule(() -> {
             try {
                 tickTime();
-            } finally {
-                scheduleNextTick();
-            }
+            } finally { scheduleNextTick(); }
         }, SharedCore.getTickDelay(speed), TimeUnit.NANOSECONDS);
     }
 
