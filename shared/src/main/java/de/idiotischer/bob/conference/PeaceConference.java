@@ -17,7 +17,6 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class PeaceConference {
@@ -206,7 +205,7 @@ public class PeaceConference {
                     tile.getOwner().setRulingIdeology(core,r,tile.getOwner().getStartIdeology());
                 } else if(status.type() == TakeTileType.PUPPET) {
                     tile.getOwner().setOverlordServer(status.country().getAbbreviation(), core.getTool(), r);
-                    tile.getOwner().setPuppetTile(PuppetState.PUPPET);
+                    tile.getOwner().setPuppetState(PuppetState.PUPPET, core.getTool(), r);
                     tile.getOwner().setRulingIdeology(core,r,status.country.getRulingIdeology());
                 }
             }
@@ -232,7 +231,7 @@ public class PeaceConference {
     }
 
 
-    public List<Tile> getTakableTiles() {
+    public List<Tile> getTakeableTiles() {
         return defeated.stream().flatMap(c -> {
             List<Tile> tiles = new ArrayList<>(resolver.getOwned(c));
             tiles.removeIf(t -> resolver.anyAlliedWith(winners, t.getOwner()));
@@ -246,7 +245,7 @@ public class PeaceConference {
         getTilesToReinstate().forEach(t -> t.setControllerForAll(r.channels(), t.getOwner()));
     }
 
-    public List<Tile> getTakableTiles(CountryResolver resolver) {
+    public List<Tile> getTakeableTiles(CountryResolver resolver) {
         return defeated.stream().flatMap(c -> resolver.getOwned(c).stream()).filter(tile -> !finalizedAnnexations.containsKey(tile)).toList();
     }
 

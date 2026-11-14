@@ -7,6 +7,7 @@ import de.idiotischer.bob.BOB;
 import de.idiotischer.bob.conference.PeaceConference;
 import de.idiotischer.bob.country.Country;
 import de.idiotischer.bob.country.CountryResolver;
+import de.idiotischer.bob.country.PuppetState;
 import de.idiotischer.bob.faction.Faction;
 import de.idiotischer.bob.focus.Focus;
 import de.idiotischer.bob.focus.FocusTree;
@@ -17,6 +18,7 @@ import de.idiotischer.bob.networking.packet.PacketRegistry;
 import de.idiotischer.bob.networking.packet.impl.*;
 import de.idiotischer.bob.networking.packet.impl.pp.ReplyPacket;
 import de.idiotischer.bob.player.Player;
+import de.idiotischer.bob.player.persona.AIPersonality;
 import de.idiotischer.bob.scenario.Scenario;
 import de.idiotischer.bob.scenario.ScenarioManager;
 import de.idiotischer.bob.state.State;
@@ -300,6 +302,21 @@ public class PacketListener implements ListenerAdapter {
                     } else if(s1.startsWith("conscription")) {
                         Country.Conscription conscription = Country.Conscription.valueOf(s1.replace("conscription=",""));
                         c.setConscription(conscription);
+                    } else if(s1.startsWith("puppetState")) {
+                        String state = s1.replace("puppetState=","");
+
+                        try {
+                            PuppetState puppetState = PuppetState.valueOf(state);
+                            c.setPuppetState(puppetState);
+                        } catch (IllegalArgumentException ignored) {}
+                    } else if(s1.startsWith("personality")) {
+                        String personalityString = s1.replace("personality=","");
+
+                        AIPersonality pers = AIPersonality.fromDataString(personalityString);
+
+                        if(pers == null) pers = new AIPersonality(1,1,1,1);
+
+                        c.setPersonality(pers);
                     }
                 }
                 case MODIFIER_UPDATE -> {

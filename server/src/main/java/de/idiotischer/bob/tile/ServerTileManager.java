@@ -29,6 +29,7 @@ public class ServerTileManager implements TileResolver {
 
     private final ExecutorService cacheExecutor = Executors.newVirtualThreadPerTaskExecutor();
 
+    private final Map<Tile, Set<Tile>> neighborCache = new ConcurrentHashMap<>();
 
     public ServerTileManager() {
         //reload();
@@ -37,6 +38,7 @@ public class ServerTileManager implements TileResolver {
     public void reload() {
         tileSet.clear();
         cache.clear();
+        neighborCache.clear();
 
         try (JsonReader reader = new JsonReader(Files.newBufferedReader(Server.getInstance().getScenarioSceneLoader().getCurrentScenario().getTilesConfig()))) {
 
@@ -62,7 +64,7 @@ public class ServerTileManager implements TileResolver {
                 JsonElement victoryPointsElement = tileElement.get("victoryPoints");
                 if (victoryPointsElement != null && !victoryPointsElement.isJsonNull()) victoryPoints = victoryPointsElement.getAsInt();
 
-                int population = 100; //defaultly 100 so i dfont need to config erverything, just set it explicitly to 0 if needed
+                int population = 100000; //defaultly 100 so i dfont need to config erverything, just set it explicitly to 0 if needed
                 JsonElement populationElement = tileElement.get("population");
                 if (populationElement != null && !populationElement.isJsonNull()) population = populationElement.getAsInt();
 
@@ -265,10 +267,12 @@ public class ServerTileManager implements TileResolver {
 
     public Tile registerTile(Tile tile) {
         cache.remove(tile);
+        neighborCache.clear();
+
         tileSet.remove(tile);
         tileSet.add(tile);
 
-        if(Server.getInstance().getConfig().isCacheOnRegister()) cache(tile, tile.getPoints());
+        if (Server.getInstance().getConfig().isCacheOnRegister()) cache(tile, tile.getPoints());
 
         return tile;
     }
@@ -379,7 +383,12 @@ public class ServerTileManager implements TileResolver {
     }
 
     public Set<Tile> findNeighbors(Tile tile) {
+        return neighborCache.computeIfAbsent(tile, this::calculateNeighbors);
+    }
+
+    private Set<Tile> calculateNeighbors(Tile tile) {
         Set<Point> pixels = cache.get(tile);
+
         if (pixels == null) {
             cache(tile, tile.getPoints());
             return Set.of();
@@ -390,7 +399,7 @@ public class ServerTileManager implements TileResolver {
         int width = map.getWidth();
         int height = map.getHeight();
 
-        int maxBorderThickness = 1; //TODO: make this configurable in a map config
+        int maxBorderThickness = 1;
 
         Set<Integer> borderColors = Server.getInstance().getScenarioSceneLoader().getBorderColors().stream().map(Color::getRGB).collect(Collectors.toSet());
 
@@ -399,19 +408,17 @@ public class ServerTileManager implements TileResolver {
         int[][] dirs = {{-1, 0}, {-1, 1}, {0, 1}, {1, 1}, {1, 0}, {1, -1}, {0, -1}, {-1, -1}};
 
         for (Point p : pixels) {
-
             for (int[] dir : dirs) {
-
                 boolean enteredBorder = false;
 
-                for (int distance = 1; distance <= maxBorderThickness + 1/*without +1 it doesnt work for some reason but with it this is great*/ /*+ 20*/; distance++) {
+                for (int distance = 1;
+                     distance <= maxBorderThickness + 1;
+                     distance++) {
 
                     int x = p.x + dir[0] * distance;
                     int y = p.y + dir[1] * distance;
 
-                    if (x < 0 || y < 0 || x >= width || y >= height) {
-                        break;
-                    }
+                    if (x < 0 || y < 0 || x >= width || y >= height) break;
 
                     int rgb = map.getRGB(x, y);
 
@@ -422,24 +429,54 @@ public class ServerTileManager implements TileResolver {
 
                     Tile other = getTileAt(x, y);
 
-                    if (other == null) {
-                        break;
-                    }
+                    if (other == null || other == tile) break;
 
-                    if (other == tile) {
-                        break;
-                    }
-
-                    if (enteredBorder) {
-                        neighbors.add(other);
-                    }
+                    if (enteredBorder) neighbors.add(other);
 
                     break;
                 }
             }
         }
 
-        return neighbors;
+        return Collections.unmodifiableSet(neighbors);
+    }
+
+    public Map<String, Set<Tile>> getNeighbors(String country) {
+        Map<String, Set<Tile>> neighborsByCountry = new HashMap<>();
+
+        Set<Tile> ownTiles = new HashSet<>(Server.getInstance().getCountryManager().getControlled(country));
+
+        for (Tile ownTile : ownTiles) {
+            for (Tile neighbor : findNeighbors(ownTile)) {
+                String neighborCountry = neighbor.getController().getAbbreviation();
+
+                if (neighborCountry == null || neighborCountry.equals(country)) continue;
+
+                neighborsByCountry.computeIfAbsent(neighborCountry, k -> new HashSet<>()).add(neighbor);
+            }
+        }
+
+        return neighborsByCountry;
+    }
+
+    public Map<String, Set<Tile>> getNeighborsOwn(String country) {
+        Map<String, Set<Tile>> neighborsByCountry = new HashMap<>();
+
+        Set<Tile> ownTiles = new HashSet<>(Server.getInstance().getCountryManager().getControlled(country));
+
+        for (Tile ownTile : ownTiles) {
+            for (Tile neighbor : findNeighbors(ownTile)) {
+                if (neighbor.getController() == null) continue;
+
+                String neighborCountry = neighbor.getController().getAbbreviation();
+
+                if (neighborCountry.equals(country)) continue;
+
+                neighborsByCountry.computeIfAbsent(neighborCountry, k -> new HashSet<>()).add(ownTile);
+            }
+        }
+
+        return neighborsByCountry;
     }
 
     public Map<Country, Set<Tile>> getNeighbors(Country country) {
@@ -461,17 +498,19 @@ public class ServerTileManager implements TileResolver {
     }
 
     public List<String> getTilesControlled(Country country) {
-        return tileSet.stream().filter(t -> Objects.equals(t.getController().getAbbreviation(), country.getAbbreviation())).map(Tile::getName).collect(Collectors.toList());
+        return new ArrayList<>(tileSet).stream().filter(t -> Objects.equals(t.getController().getAbbreviation(), country.getAbbreviation())).map(Tile::getName).collect(Collectors.toList());
     }
+
     public List<String> getTilesOwned(Country country) {
-        return tileSet.stream().filter(t -> Objects.equals(t.getOwner().getAbbreviation(), country.getAbbreviation())).map(Tile::getName).collect(Collectors.toList());
+        return new ArrayList<>(tileSet).stream().filter(t -> Objects.equals(t.getOwner().getAbbreviation(), country.getAbbreviation())).map(Tile::getName).collect(Collectors.toList());
     }
 
     public List<Tile> getTilesControlledDirectly(Country country) {
-        return tileSet.stream().filter(t -> Objects.equals(t.getController().getAbbreviation(), country.getAbbreviation())).collect(Collectors.toList());
+        return new ArrayList<>(tileSet).stream().filter(t -> Objects.equals(t.getController().getAbbreviation(), country.getAbbreviation())).collect(Collectors.toList());
     }
+
     public List<Tile> getTilesOwnedDirectly(Country country) {
-        return tileSet.stream().filter(t -> Objects.equals(t.getOwner().getAbbreviation(), country.getAbbreviation())).collect(Collectors.toList());
+        return new ArrayList<>(tileSet).stream().filter(t -> Objects.equals(t.getOwner().getAbbreviation(), country.getAbbreviation())).collect(Collectors.toList());
     }
 
     public List<String> getTiles() {
@@ -554,5 +593,7 @@ public class ServerTileManager implements TileResolver {
 
     public void clearTiles() {
         tileSet.clear();
+        cache.clear();
+        neighborCache.clear();
     }
 }

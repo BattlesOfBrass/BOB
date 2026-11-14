@@ -125,7 +125,7 @@ public class ServerPacketListener implements ListenerAdapter {
                         Server.getInstance().getGameManager().setSpeed(speed);
                 }
                 case DEPLOY_TROOP -> {
-                    Server.getInstance().getTroopManager().deployNow(UUID.fromString(pack.getMessage()));
+                    if(player != null) Server.getInstance().getTroopManager().deployNow(UUID.fromString(pack.getMessage()));
                 }
                 case SEND_DEMANDS -> {
                     PeaceConference.Demands demands = Server.getInstance().getConferenceManager().readDemands(Server.getInstance().getCountryManager(), Server.getInstance().getTileManager(), pack.getMessage());
@@ -156,7 +156,7 @@ public class ServerPacketListener implements ListenerAdapter {
 
                     if(tile == null || owner == null) return;
 
-                    TroopStack stack = new TroopStack("Troop", tile,owner,owner,count, "none");
+                    TroopStack stack = new TroopStack("Troop", tile,owner,owner,1 /*make it not use this, you need to train in pairs of 1*/, "none");
 
                     Server.getInstance().getTroopManager().addTroopTraining(stack);
                 }

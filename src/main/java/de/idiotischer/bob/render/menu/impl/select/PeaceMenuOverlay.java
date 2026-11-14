@@ -1,11 +1,9 @@
 package de.idiotischer.bob.render.menu.impl.select;
 
 import de.idiotischer.bob.BOB;
-import de.idiotischer.bob.SharedCore;
 import de.idiotischer.bob.conference.PeaceConference;
 import de.idiotischer.bob.conference.TakeTileType;
 import de.idiotischer.bob.country.Country;
-import de.idiotischer.bob.country.CountryManager;
 import de.idiotischer.bob.render.menu.components.ModernScrollBarUI;
 import de.idiotischer.bob.render.menu.components.button.BOBButton;
 import de.idiotischer.bob.tile.Tile;
@@ -14,7 +12,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -172,7 +169,7 @@ public class PeaceMenuOverlay extends JPanel {
             tilePanel.setAlignmentX(Component.LEFT_ALIGNMENT);
             tilePanel.setVisible(false);
 
-            java.util.List<Tile> countryTiles = conf.getTakableTiles().stream().filter(t -> t.getOwner().getAbbreviation().equals(country.getAbbreviation())).toList();
+            java.util.List<Tile> countryTiles = conf.getTakeableTiles().stream().filter(t -> t.getOwner().getAbbreviation().equals(country.getAbbreviation())).toList();
 
             List<BOBButton> tileButtons = new ArrayList<>();
 
@@ -199,11 +196,8 @@ public class PeaceMenuOverlay extends JPanel {
                         tileBtn.setToggled(selectAll);
                         tileBtn.setText(tile.getVictoryPoints() + " | " + tile.getName() + (selectAll ? " x" : "  "));
 
-                        if (selectAll) {
-                            selectedTiles.add(tile);
-                        } else {
-                            selectedTiles.remove(tile);
-                        }
+                        if (selectAll) selectedTiles.add(tile);
+                        else selectedTiles.remove(tile);
                     }
                 });
 

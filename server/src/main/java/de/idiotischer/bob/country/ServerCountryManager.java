@@ -9,6 +9,9 @@ import de.idiotischer.bob.SharedCore;
 import de.idiotischer.bob.ideology.Ideology;
 import de.idiotischer.bob.modifiers.Modifier;
 import de.idiotischer.bob.networking.packet.impl.CountrySyncPacket;
+import de.idiotischer.bob.player.ArtificalPlayer;
+import de.idiotischer.bob.player.persona.AIPersonality;
+import de.idiotischer.bob.tile.ServerTileManager;
 import de.idiotischer.bob.tile.Tile;
 
 import java.awt.*;
@@ -88,11 +91,26 @@ public class ServerCountryManager implements CountryResolver {
                     }
                 }
 
+                AIPersonality personality = new AIPersonality(1, 1, 1, 1);
+
+                //didnt want to write a separate manager for this, maybe i will in the future, maybe not
+                if (countryElement.has("personality") && !countryElement.get("personality").isJsonNull()) {
+
+                    JsonObject personalityObj = countryElement.getAsJsonObject("personality");
+
+                    double aggression = personalityObj.has("aggression") ? personalityObj.get("aggression").getAsDouble() : 1.0;
+                    double diplomacy = personalityObj.has("diplomacy") ? personalityObj.get("diplomacy").getAsDouble() : 1.0;
+                    double economy = personalityObj.has("economy") ? personalityObj.get("economy").getAsDouble() : 1.0;
+                    double research = personalityObj.has("research") ? personalityObj.get("research").getAsDouble() : 1.0;
+
+                    personality = new AIPersonality(aggression, diplomacy, economy, research);
+                }
+
                 String[] colorStrings = countryElement.get("color").getAsString().split("[;,]");
 
                 Color color = new Color(Integer.parseInt(colorStrings[0]), Integer.parseInt(colorStrings[1]), Integer.parseInt(colorStrings[2]));
 
-                Country country = new Country(countryAbbreviation.toUpperCase(), name, color, majorAtStart, selectScreen,overlord == null ? "" : overlord.getAbbreviation(), mods);
+                Country country = new Country(countryAbbreviation.toUpperCase(), name, personality, color, majorAtStart, selectScreen,overlord == null ? "" : overlord.getAbbreviation(), mods);
 
                 country.setManpower(manpower);
                 country.setConscription(conscription);
@@ -101,6 +119,8 @@ public class ServerCountryManager implements CountryResolver {
                 availableIdeologies.forEach(country::addAvailableIdeologiesSimple);
 
                 registerCountry(country);
+
+                new ArtificalPlayer(this).country(countryAbbreviation);
 
                 if(Server.getInstance().isDebug()) System.out.println("registered country: " + countryAbbreviation + " with name: " + name + " and color: " + color);
             });
@@ -177,12 +197,15 @@ public class ServerCountryManager implements CountryResolver {
         return actualRemoval;
     }
 
-    public long removeManpowerCheck(double manpower, Country country) {
+    public long removeManpowerCheck(long manpower, Country country) {
         if (manpower <= 0) return 0;
 
-        long actualRemoval = (long) Math.min(manpower, country.getManpower());
+        long currentManpower = country.getManpower();
+        long actualRemoval = Math.min((long) Math.ceil(manpower), currentManpower);
 
-        country.setManpowerServer(Server.getInstance().getSendTool(), Server.getInstance().getServerSocket(), country.getManpower() - actualRemoval);
+        if (actualRemoval <= 0) return 0;
+
+        country.setManpowerServer(Server.getInstance().getSendTool(), Server.getInstance().getServerSocket(), currentManpower - actualRemoval);
 
         return actualRemoval;
     }
@@ -371,12 +394,12 @@ public class ServerCountryManager implements CountryResolver {
     }
 
     public void defaultManpowerNow() {
-        for(Country country : getCountries()) {
-            List<Tile> tiles = getAllTiles(country);
+        //for(Country country : getCountries()) {
+        //    List<Tile> tiles = getAllTiles(country);
 
-            long sum = (long) (tiles.stream().mapToDouble(Tile::getPopulation).sum() * country.getRecruitablePop());
+        //    long sum = (long) (tiles.stream().mapToDouble(Tile::getPopulation).sum() * country.getRecruitablePop());
 
-            country.setManpowerServer(Server.getInstance().getSendTool(), Server.getInstance().getServerSocket(), sum);
-        }
+        //    country.setManpowerServer(Server.getInstance().getSendTool(), Server.getInstance().getServerSocket(), sum);
+        //}
     }
 }

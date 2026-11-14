@@ -36,8 +36,16 @@ public class WarManager implements WarResolver {
         return awaitingFuture;
     }
 
+    public Set<WarStatus> getWars(String c) {
+        return activeWars.getOrDefault(c, Collections.emptySet());
+    }
     public Set<WarStatus> getWars(Country c) {
         return activeWars.getOrDefault(c.getAbbreviation(), Collections.emptySet());
+    }
+
+    public boolean isAtWar(Country country) {
+        if (country == null) return false;
+        return !getWars(country).isEmpty();
     }
 
     public boolean isAtWar(Country a, Country b) {
@@ -45,8 +53,14 @@ public class WarManager implements WarResolver {
         return !Collections.disjoint(getWars(a), getWars(b));
     }
 
-    private boolean isCountry(Collection<Country> countries, Country country) {
-        return countries.stream().anyMatch(c -> c.getAbbreviation().equals(country.getAbbreviation()));
+    public boolean isAtWar(String country) {
+        if (country == null) return false;
+        return !getWars(country).isEmpty();
+    }
+
+    public boolean isAtWar(String a, String b) {
+        if(Objects.equals(a, b)) return false;
+        return !Collections.disjoint(getWars(a), getWars(b));
     }
 
     //TODO instead of doing || make a method for getting the side directly yk
@@ -54,13 +68,14 @@ public class WarManager implements WarResolver {
         return getWars(one).stream().anyMatch(w -> w.getDefenders().stream().anyMatch(ally -> ally.getAbbreviation().equals(two.getAbbreviation())) || w.getAttackers().stream().anyMatch(ally -> ally.getAbbreviation().equals(two.getAbbreviation())));
     }
 
-    private Set<WarStatus> getOrCreateWars(Country c) {
+    public Set<WarStatus> getOrCreateWars(Country c) {
         return activeWars.computeIfAbsent(c.getAbbreviation(), k -> ConcurrentHashMap.newKeySet());
     }
 
     public boolean isEnemy(Country a, Country b) {
         return getWars(a).stream().anyMatch(w -> w.getAttackers().stream().anyMatch(ally -> ally.getAbbreviation().equals(b.getAbbreviation())) || w.getDefenders().stream().anyMatch(ally -> ally.getAbbreviation().equals(b.getAbbreviation())));
     }
+
     public void finishReload(String message) {
         deserializeWars(message);
 

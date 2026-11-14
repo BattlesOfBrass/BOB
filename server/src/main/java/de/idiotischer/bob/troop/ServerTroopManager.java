@@ -11,6 +11,7 @@ import de.idiotischer.bob.game.GameState;
 import de.idiotischer.bob.networking.packet.impl.TroopStackSyncPacket;
 import de.idiotischer.bob.networking.packet.impl.pp.ReplyPacket;
 import de.idiotischer.bob.networking.packet.impl.pp.Type;
+import de.idiotischer.bob.player.Player;
 import de.idiotischer.bob.tile.Tile;
 import de.idiotischer.bob.tile.TileResolver;
 import de.idiotischer.bob.util.UUIDUtil;
@@ -32,13 +33,14 @@ public class ServerTroopManager implements TroopResolver{
 
     private final Map<TroopStack, List<Tile>> activePathfindings = new ConcurrentHashMap<>();
     private final Map<TroopStack, Integer> pausedMovementIndex = new ConcurrentHashMap<>();
-    private Set<TrainEntry> training = new HashSet<>();
+    private final Set<TrainEntry> training = ConcurrentHashMap.newKeySet();
 
     public void reload() {
         troopStacks.clear();
         pausedMovementIndex.clear();
         activePathfindings.clear();
         usedIds.clear();
+        training.clear();
 
         try (JsonReader reader = new JsonReader(Files.newBufferedReader(Server.getInstance().getScenarioSceneLoader().getCurrentScenario().getTroopConfig()))) {
             JsonElement root = SharedCore.GSON.fromJson(reader, JsonElement.class);
@@ -122,11 +124,18 @@ public class ServerTroopManager implements TroopResolver{
     }
 
     public void deployNow(UUID uuid) {
+        deployNow(uuid,null);
+    }
+
+    public void deployNow(UUID uuid, Player player) {
         TrainEntry entry = training.stream().filter(trainEntry ->  trainEntry.getUuid().equals(uuid)).findFirst().orElse(null);
 
         if(entry == null) return;
 
         if(!training.remove(entry)) return;
+
+        if(player != null) if(entry.getFinalStack().getController().getAbbreviation().equals(player.country() == null ? "" : player.country().getAbbreviation()));
+
 
         addTroopStack(entry.getFinalStack(),entry.getUuid());
         entry.getFinalStack().setExpServer(Server.getInstance().getServerSocket(), Server.getInstance().getSendTool(), entry.getUuid(), entry.getExpIfDeployedNow(Server.getInstance().getGameManager().getTimeTicks()));
@@ -505,5 +514,10 @@ public class ServerTroopManager implements TroopResolver{
 
         Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new ReplyPacket(Type.TROOP_TP, reply));
 
+    }
+
+    public void finishTraining(TrainEntry entry) {
+        if (!training.remove(entry)) return;
+        addTroopStack(entry.getFinalStack(), entry.getUuid());
     }
 }

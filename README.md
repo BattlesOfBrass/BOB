@@ -53,4 +53,6 @@ A game inspired by [Spirits of Steel](https://gavgrub.itch.io/sos), made in java
 - [ ] Add world tention for AI etc
 - [ ] Visualize focus exlusive with another one (+ what was taken of those)
 - [x] add population
+- [x] add puppeting
+- [ ] add puppet functionality
 - [ ] make troops create manpower and not remove pop, also make it cap at a specific value than

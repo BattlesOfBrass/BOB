@@ -28,11 +28,13 @@ public class ServerPlayerManager implements PlayerResolver {
 
         if(addresses.contains(address)) return resolve(address);
 
-        Set<UUID> used = players.stream()
-                .map(Player::uuid)
-                .collect(Collectors.toSet());
+        Set<UUID> used = players.stream().map(Player::uuid).collect(Collectors.toSet());
 
-        return new ServerPlayer(address,null, UUIDUtil.getUnused(used), Server.getInstance().getCountryManager(), channel);
+        return new ServerPlayer(address,null, UUIDUtil.getUnused(used), Server.getInstance().getCountryManager(), channel,country -> {
+            if(country == null) return;
+            ArtificalPlayer p = new ArtificalPlayer(Server.getInstance().getCountryManager());
+            p.country(country.getAbbreviation());
+        });
     }
 
     public Player createPlayer(AsynchronousSocketChannel channel, UUID uuid, InetSocketAddress address) {
@@ -40,7 +42,11 @@ public class ServerPlayerManager implements PlayerResolver {
 
         if(addresses.contains(address)) return resolve(address);
 
-        return new ServerPlayer(address,null, uuid, Server.getInstance().getCountryManager(), channel);
+        return new ServerPlayer(address,null, uuid, Server.getInstance().getCountryManager(), channel, country -> {
+            if(country == null) return;
+            ArtificalPlayer p = new ArtificalPlayer(Server.getInstance().getCountryManager());
+            p.country(country.getAbbreviation());
+        });
     }
 
     public void changeCountry(UUID uuid, Country country) {
@@ -50,9 +56,7 @@ public class ServerPlayerManager implements PlayerResolver {
     }
 
     public void resetCountries() {
-        players.forEach(p -> {
-            changeCountry(p,null);
-        });
+        players.forEach(p -> changeCountry(p,null));
     }
 
     public void changeCountry(Player player, Country country) {

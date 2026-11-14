@@ -52,6 +52,11 @@ public class ServerWarManager implements WarResolver {
         }
     }
 
+    public boolean joinWars(WarStatus... status) {
+        //COMBINE THE WARS, not make countries join the war
+        return true;
+    }
+
     public Set<WarStatus> getWars(Country c) {
         return activeWars.getOrDefault(c.getAbbreviation(), Collections.emptySet());
     }
@@ -86,7 +91,7 @@ public class ServerWarManager implements WarResolver {
         return getWars(one).stream().anyMatch(w -> w.getDefenders().stream().anyMatch(ally -> ally.getAbbreviation().equals(two.getAbbreviation())) || w.getAttackers().stream().anyMatch(ally -> ally.getAbbreviation().equals(two.getAbbreviation())));
     }
 
-    private Set<WarStatus> getOrCreateWars(Country c) {
+    public Set<WarStatus> getOrCreateWars(Country c) {
         return activeWars.computeIfAbsent(c.getAbbreviation(), k -> ConcurrentHashMap.newKeySet());
     }
 

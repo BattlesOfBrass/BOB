@@ -100,28 +100,28 @@ public class TrainEntry {
     private void addAvailablePop(long availablePop) {
         this.availablePop += availablePop;
     }
+    public double getMissingPop() {
+        return Math.max(0, finalStack.getManpower() - availablePop);
+    }
 
-    public boolean canTrainServer(ChannelResolver r, SendTool t, double availablePop) {
-        //blabla
-        boolean result = true;
-        //for some reason percentage still goes up but on server its correct
+    public boolean isFullyPaid() {
+        return availablePop >= finalStack.getManpower();
+    }
 
-        if(availablePop >= finalStack.getManpower()) result = true;
+    public boolean canTrainServer(ChannelResolver r, SendTool t, double drawn) {
+        if (drawn > 0) addAvailablePopServer(r, t, drawn);
 
-        if(availablePop >= 0) result = false;
+        boolean result = isFullyPaid() || drawn > 0;
 
-        //TODO: add a conscription cap etc so you cant just conscript all POP and pop aint just taken away but instead manpower is created
-        addAvailablePopServer(r,t,availablePop);
-
-        if(!result) extra++;
+        if (!result) extra++;
 
         return result;
     }
 
-    private void addAvailablePopServer(ChannelResolver r, SendTool t, double availablePop) {
-        this.availablePop += availablePop;
-        finalStack.setPopulation(availablePop);
-        t.broadcast(r.channels(), new ReplyPacket(Type.TROOP_TRAIN_UPDATE, "id=" + this.uuid.toString() + ";pop=" + this.availablePop));
+    private void addAvailablePopServer(ChannelResolver r, SendTool t, double drawn) {
+        this.availablePop += drawn;
+        finalStack.setPopulation(this.availablePop);
+        t.broadcast(r.channels(), new ReplyPacket(Type.TROOP_TRAIN_UPDATE, "id=" + this.uuid + ";pop=" + this.availablePop));
     }
 
     public double getEndTick() {

@@ -5,6 +5,7 @@ import de.idiotischer.bob.auth.Credentials;
 import de.idiotischer.bob.country.Country;
 import de.idiotischer.bob.country.CountryResolver;
 import de.idiotischer.bob.troop.Troop;
+import it.unimi.dsi.fastutil.Pair;
 import org.jetbrains.annotations.Nullable;
 
 import java.net.InetSocketAddress;
@@ -12,18 +13,21 @@ import java.nio.channels.AsynchronousSocketChannel;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 public class ServerPlayer implements Player {
 
     private final InetSocketAddress address;
     private final CountryResolver r;
+    private final Consumer<Country> callback;
     private boolean authorized;
     private UUID uuid;
     private String country;
     private final AsynchronousSocketChannel clientChannel;
     private String name;
 
-    public ServerPlayer(InetSocketAddress address, String country, UUID uuid, CountryResolver r, AsynchronousSocketChannel clientChannel) {
+
+    public ServerPlayer(InetSocketAddress address, String country, UUID uuid, CountryResolver r, AsynchronousSocketChannel clientChannel, Consumer<Country> callback) {
         this.name = "";
         this.country = country;
         this.address = address;
@@ -31,6 +35,7 @@ public class ServerPlayer implements Player {
         this.uuid = uuid;
         this.clientChannel = clientChannel;
         this.r = r;
+        this.callback = callback;
     }
 
     @Override
@@ -61,10 +66,15 @@ public class ServerPlayer implements Player {
 
     @Override
     public void country(String country) {
+        String old = this.country;
         this.country = country;
 
         Country c = country();
-        if(c != null) c.setPlayer(this);
+        Country cOld = r.byAbbreviation(old);
+        if(c != null) {
+            callback.accept(cOld);
+            c.setPlayer(this);
+        }
     }
 
     @Override

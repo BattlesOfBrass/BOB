@@ -21,7 +21,8 @@ public class ServerConferenceManager {
         PeaceConference conf = PeaceConference.fromWar(Server.getInstance().getSharedCore(), UUIDUtil.getUnused(conferences.stream().map(PeaceConference::getUUID).collect(Collectors.toSet())), Server.getInstance().getServerSocket(), Server.getInstance().getCountryManager(), status);
 
         if(conf == null) return;
-        Server.getInstance().getGameManager().setState(GameState.PAUSED);
+        Server.getInstance().getGameManager().setCanChangeState(false);
+        Server.getInstance().getGameManager().setState(GameState.PAUSED, true);
 
         conf.getDefeated().forEach(c -> {
             Server.getInstance().getTroopManager().getForController(c).forEach(con -> Server.getInstance().getTroopManager().removePathfinding(con));
@@ -33,6 +34,7 @@ public class ServerConferenceManager {
         });
 
         conf.setEndHook(() -> {
+            Server.getInstance().getGameManager().setCanChangeState(true);
             Server.getInstance().getGameManager().setState(GameState.INGAME);
 
             remove(conf);

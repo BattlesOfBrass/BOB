@@ -7,6 +7,7 @@ import com.google.gson.stream.JsonReader;
 import de.idiotischer.bob.Server;
 import de.idiotischer.bob.SharedCore;
 import de.idiotischer.bob.country.Country;
+import de.idiotischer.bob.country.PuppetState;
 import de.idiotischer.bob.executable.Effect;
 import de.idiotischer.bob.executable.Requirements;
 import de.idiotischer.bob.modifiers.Modifier;
@@ -290,8 +291,28 @@ public class ServerFocusManager implements FocusResolver {
         Requirements requirements = foc.getRequirements();
 
         if (requirements != null) {
+            Country cou = Server.getInstance().getCountryManager().getCountry(country);
 
             if (!requirements.isDateLessOrMore().isEmpty() && !requirements.fulfillsDateCheck(Server.getInstance().getGameManager().getDate())) return;
+
+            if(cou != null) {
+                boolean isPuppet = !cou.getPuppetState().equals(PuppetState.NONE);
+
+                if(!requirements.fulfillsPuppetCheck(isPuppet)) return;
+            }
+
+            if (!requirements.hasPuppets().entrySet().stream().allMatch(k -> {
+                String c = k.getKey();
+                Set<String> requiredPuppets = k.getValue();
+
+                Country countryObj = Server.getInstance().getCountryManager().getCountry(c);
+
+                if (countryObj == null) return false;
+
+                Set<String> actualPuppets = Server.getInstance().getCountryManager().getCountries().stream().filter(other -> other.getPuppetState() != PuppetState.NONE).filter(other -> other.getOverlord(Server.getInstance().getCountryManager()).getAbbreviation().equals(c)).map(Country::getAbbreviation).collect(Collectors.toSet());
+
+                return actualPuppets.containsAll(requiredPuppets);
+            })) return;
 
             if (!requirements.moreOrLessTroops().isEmpty() && !requirements.fulfillsTroopsCheck(country, Server.getInstance().getTroopManager().getForController(country).size())) return;
 

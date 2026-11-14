@@ -3,7 +3,13 @@ package de.idiotischer.bob.player;
 import de.idiotischer.bob.Server;
 import de.idiotischer.bob.country.Country;
 import de.idiotischer.bob.country.CountryResolver;
+import de.idiotischer.bob.game.GameState;
+import de.idiotischer.bob.player.brain.BrainI;
+import de.idiotischer.bob.player.brain.impl.BasicBrain;
+import de.idiotischer.bob.player.tasks.impl.TroopStationTask;
+import de.idiotischer.bob.player.tasks.impl.TroopTrainTask;
 
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -11,47 +17,27 @@ import java.util.concurrent.TimeUnit;
 
 // TODO: implement brain AND make it use the game speed in the period for the scheduler
 public class ArtificalPlayer implements Player {
+
     private final CountryResolver r;
 
     private String country;
 
-    private final ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
+    private BrainI brain = new BasicBrain();
 
     public ArtificalPlayer(CountryResolver r) {
         this.r = r;
+
+        brain.registerTask(new TroopStationTask());
+        brain.registerTask(new TroopTrainTask());
     }
 
-    private void think() {
+    public void think() {
         if(this.country == null) return;
+        if(Server.getInstance().getGameManager().getState() == GameState.PAUSED || Server.getInstance().getGameManager().getState() == GameState.LOBBY) return;
 
-        if(Server.getInstance().getWarManager().isAtWar(country())) doWarLogic();
-        else doPassiveDefense();
+        brain.setCountry(country);
 
-
-        doTrainAndDeploy();
-        doBuildIndustry();
-        doFocuses();
-        doDiplomacy();
-    }
-
-    private void doDiplomacy() {
-    }
-
-    private void doFocuses() {
-    }
-
-    private void doBuildIndustry() {
-    }
-
-    private void doTrainAndDeploy() {
-    }
-
-    private void doPassiveDefense() {
-        //TODO: get neighboring countries andf mvoe all troops there and some to the beaches
-    }
-
-    private void doWarLogic() {
-        //TODO: move troops to the enemy, but try to keep some at other borders
+        brain.tick();
     }
 
     @Override
@@ -72,15 +58,19 @@ public class ArtificalPlayer implements Player {
         this.country = country;
 
         Country c = country();
-
-        if (c != null) {
-            service.scheduleAtFixedRate(this::think, 0, 2, TimeUnit.SECONDS);
-            c.setPlayer(this);
-        } else service.shutdownNow();
+        if (c != null) c.setPlayer(this);
     }
 
     @Override
     public boolean hasOP() {
         return false;
+    }
+
+    public BrainI getBrain() {
+        return brain;
+    }
+
+    public void setBrain(BrainI brain) {
+        this.brain = brain;
     }
 }

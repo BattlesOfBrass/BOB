@@ -1,6 +1,7 @@
 package de.idiotischer.bob.render.menu.impl;
 
 import de.idiotischer.bob.BOB;
+import de.idiotischer.bob.game.GameState;
 import de.idiotischer.bob.render.menu.components.button.BOBButton;
 
 import javax.swing.*;
@@ -27,6 +28,14 @@ public class ESCMenu extends JPanel {
         this.add(continueBtn, gbc);
         this.add(settingsBtn, gbc);
         this.add(menuBtn, gbc);
+    }
+
+    @Override
+    public void setVisible(boolean aFlag) {
+        if(aFlag) BOB.getInstance().getGameManager().setGameState(GameState.PAUSED);
+        //or maybe also unpause when out of esc?
+
+        super.setVisible(aFlag);
     }
 
     private JButton createButton(String text) {

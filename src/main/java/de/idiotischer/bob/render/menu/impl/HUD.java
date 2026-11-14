@@ -1,6 +1,7 @@
 package de.idiotischer.bob.render.menu.impl;
 
 import de.idiotischer.bob.BOB;
+import de.idiotischer.bob.country.Country;
 import de.idiotischer.bob.networking.packet.impl.pp.RequestPacket;
 import de.idiotischer.bob.networking.packet.impl.pp.Type;
 import de.idiotischer.bob.render.menu.components.*;
@@ -18,10 +19,8 @@ import javax.swing.plaf.basic.BasicProgressBarUI;
 import javax.swing.text.DefaultFormatter;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.util.*;
 import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class HUD extends JPanel {
@@ -402,7 +401,11 @@ public class HUD extends JPanel {
 
         if (trainingList == null) return;
 
-        Set<TrainEntry> entries = BOB.getInstance().getTroopManager().getTraining();
+        Set<TrainEntry> entries;
+
+        synchronized (BOB.getInstance().getTroopManager().getTraining()) {entries = new HashSet<>(BOB.getInstance().getTroopManager().getTraining());}
+
+        entries = entries.stream().filter(entry -> entry.getFinalStack() != null).filter(entry -> entry.getFinalStack().getController() != null).filter(entry -> Objects.equals(entry.getFinalStack().getController().getAbbreviation(), BOB.getInstance().getPlayer().country().getAbbreviation())).collect(Collectors.toSet());
 
         if (entries == null) return;
 
@@ -583,6 +586,19 @@ public class HUD extends JPanel {
         countryName.setHorizontalAlignment(SwingConstants.CENTER);
         countryName.setFocusable(false);
 
+        Country over = currentTile.getController().getOverlord(BOB.getInstance().getCountryManager());
+        String ov = over == null ? "" : over.getAbbreviation();
+        String pAbbr = BOB.getInstance().getPlayer().country() == null ? "" : BOB.getInstance().getPlayer().country().getAbbreviation();
+        boolean b = ov.equals(pAbbr);
+
+        JLabel puppetStatus = new JLabel(currentTile == null || currentTile.getController() == null ? "Overlord: None" : (b ? "Overlord: " + pAbbr : "None"));
+
+        puppetStatus.setForeground(Color.LIGHT_GRAY);
+        puppetStatus.setFont(puppetStatus.getFont().deriveFont(Font.BOLD, 14f));
+        puppetStatus.setAlignmentX(Component.CENTER_ALIGNMENT);
+        puppetStatus.setHorizontalAlignment(SwingConstants.CENTER);
+        puppetStatus.setFocusable(false);
+
         JPanel namePanel = new JPanel();
         namePanel.setOpaque(false);
         namePanel.setLayout(new BoxLayout(namePanel, BoxLayout.X_AXIS));
@@ -630,7 +646,6 @@ public class HUD extends JPanel {
                 return;
             }
 
-
             RequestPacket pack = new RequestPacket(Type.MIL_ACCESS, currentTile.getController().getAbbreviation());
 
             BOB.getInstance().getSendTool().send(BOB.getInstance().getClient().getChannel(), pack);
@@ -669,6 +684,8 @@ public class HUD extends JPanel {
         panel.add(flagPanel);
         panel.add(Box.createVerticalStrut(5));
         panel.add(namePanel);
+        panel.add(Box.createVerticalStrut(8));
+        panel.add(puppetStatus);
         panel.add(Box.createVerticalStrut(8));
         panel.add(ideology);
 

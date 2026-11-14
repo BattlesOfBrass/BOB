@@ -1,6 +1,7 @@
 package de.idiotischer.bob.render.menu.impl.select;
 
 import de.idiotischer.bob.BOB;
+import de.idiotischer.bob.Server;
 import de.idiotischer.bob.render.MenuPanel;
 import de.idiotischer.bob.render.menu.components.ModernScrollBarUI;
 import de.idiotischer.bob.render.menu.components.button.BOBButton;
@@ -69,7 +70,7 @@ public class ScenarioSelectMenu extends JPanel {
                 }, (menu) -> {
                     if (menu.getSelectedCountry() != null) {
                         BOB.getInstance().getScenarioSceneLoader().requestScenarioLoad(menu.getScenario());
-                        BOB.getInstance().getPlayer().country(menu.getSelectedCountry());
+                        BOB.getInstance().getPlayerManager().changeCountry(BOB.getInstance().getPlayer(), BOB.getInstance().getCountryManager().byAbbreviation(menu.getSelectedCountry()));
                     }
                 }));
             }

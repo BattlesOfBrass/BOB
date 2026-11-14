@@ -10,7 +10,7 @@ import java.lang.reflect.Type;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public record Requirements(Map<String, Set<String>> atWarWith, Map<String, Set<String>> hasModifier, Map<String, Set<String>> hasNotModifier, Map<String, Set<String>> atPeaceWith, Map<String, Set<String>> controlsTiles, Map<String, Set<String>> ownsTiles, Map<String, Set<String>> needsIdeology, Set<String> isDateLessOrMore, Map<String, Set<String>> moreOrLessTroops) {
+public record Requirements(Map<String, Set<String>> atWarWith, Map<String, Set<String>> atPeaceWith, Map<String, Set<String>> controlsTiles, Map<String, Set<String>> ownsTiles, Map<String, Set<String>> needsIdeology, Map<String, Set<String>> hasModifier, Map<String, Set<String>> hasNotModifier, Set<String> isDateLessOrMore, Map<String, Set<String>> moreOrLessTroops, boolean shouldBePuppet, boolean shouldNotBePuppet, Map<String, Set<String>> hasPuppets) {
 
     public static Requirements fromJson(JsonObject obj) {
         Type mapStringSetType = new TypeToken<Map<String, Set<String>>>() {}.getType();
@@ -74,7 +74,12 @@ public record Requirements(Map<String, Set<String>> atWarWith, Map<String, Set<S
             if (el != null) hasNotModifier = SharedCore.GSON.fromJson(el, mapStringSetType);
         }
 
-        return new Requirements(atWarWith, atPeaceWith, controlsTiles, ownsTiles, needsIdeology, hasModifier, hasNotModifier, isDateLessOrMore, moreOrLessTroops);
+        boolean shouldBePuppet = obj.has("shouldBePuppet") && obj.get("shouldBePuppet").getAsBoolean();
+        boolean shouldNotBePuppet = obj.has("shouldNotBePuppet") && obj.get("shouldNotBePuppet").getAsBoolean();
+
+        Map<String, Set<String>> hasPuppets = new HashMap<>();
+
+        return new Requirements(atWarWith, atPeaceWith, controlsTiles, ownsTiles, needsIdeology, hasModifier, hasNotModifier, isDateLessOrMore, moreOrLessTroops,shouldBePuppet, shouldNotBePuppet, hasPuppets);
     }
 
     public String toDataString() {
@@ -87,6 +92,7 @@ public record Requirements(Map<String, Set<String>> atWarWith, Map<String, Set<S
         StringBuilder troopsBuilder = new StringBuilder();
         StringBuilder hasModifierBuilder = new StringBuilder();
         StringBuilder hasNotModifierBuilder = new StringBuilder();
+        StringBuilder hasPuppetsBuilder = new StringBuilder();
 
         for (var entry : atWarWith.entrySet()) {
             if (!atWarBuilder.isEmpty()) atWarBuilder.append(",");
@@ -133,7 +139,12 @@ public record Requirements(Map<String, Set<String>> atWarWith, Map<String, Set<S
             hasNotModifierBuilder.append(entry.getKey()).append(":").append(String.join("|", entry.getValue()));
         }
 
-        return atWarBuilder + "#" + atPeaceBuilder + "#" + controlsTilesBuilder + "#" + ownsTilesBuilder + "#" + ideologyBuilder + "#" + dateBuilder + "#" + troopsBuilder + "#" + hasModifierBuilder + "#" + hasNotModifierBuilder;
+        for (var entry : hasPuppets.entrySet()) {
+            if (!hasPuppetsBuilder.isEmpty()) hasPuppetsBuilder.append(",");
+            hasPuppetsBuilder.append(entry.getKey()).append(":").append(String.join("|", entry.getValue()));
+        }
+
+        return atWarBuilder + "#" + atPeaceBuilder + "#" + controlsTilesBuilder + "#" + ownsTilesBuilder + "#" + ideologyBuilder + "#" + dateBuilder + "#" + troopsBuilder + "#" + hasModifierBuilder + "#" + hasNotModifierBuilder + "#" + shouldBePuppet + "#" + shouldNotBePuppet + "#" + hasPuppetsBuilder;
     }
 
     public String formatRequirements() {
@@ -154,9 +165,21 @@ public record Requirements(Map<String, Set<String>> atWarWith, Map<String, Set<S
             for (String requirement : this.isDateLessOrMore()) sb.append("  • ").append(requirement).append("\n");
         }
 
+        if (shouldBePuppet) sb.append("Must be a puppet.\n");
+
+        if (shouldNotBePuppet) sb.append("Must not be a puppet.\n");
+
+        append(sb, "Has puppets", this.hasPuppets());
+
         if (sb.isEmpty()) return "No requirements.";
 
         return sb.toString().trim();
+    }
+
+    public boolean fulfillsPuppetCheck(boolean isPuppet) {
+        if (shouldBePuppet && !isPuppet) return false;
+
+        return !shouldNotBePuppet || !isPuppet;
     }
 
     private void append(StringBuilder sb, String title, Map<String, Set<String>> requirements) {
@@ -176,7 +199,7 @@ public record Requirements(Map<String, Set<String>> atWarWith, Map<String, Set<S
     public static Requirements fromDataString(String data) {
         String[] strings = data.split("#", -1);
 
-        if (strings.length != 9) return null;
+        if (strings.length != 9 && strings.length != 12) return null;
 
         Map<String, Set<String>> atWarWith = parseMap(strings[0]);
         Map<String, Set<String>> atPeaceWith = parseMap(strings[1]);
@@ -190,7 +213,17 @@ public record Requirements(Map<String, Set<String>> atWarWith, Map<String, Set<S
         Map<String, Set<String>> hasModifier = parseMap(strings[7]);
         Map<String, Set<String>> hasNotModifier = parseMap(strings[8]);
 
-        return new Requirements(atWarWith, atPeaceWith, controlsTiles, ownsTiles, needsIdeology, hasModifier, hasNotModifier, isDateLessOrMore, moreOrLessTroops);
+        boolean shouldBePuppet = false;
+        boolean shouldNotBePuppet = false;
+        Map<String, Set<String>> hasPuppets = new HashMap<>();
+
+        if (strings.length == 12) {
+            shouldBePuppet = Boolean.parseBoolean(strings[9]);
+            shouldNotBePuppet = Boolean.parseBoolean(strings[10]);
+            hasPuppets = parseMap(strings[11]);
+        }
+
+        return new Requirements(atWarWith, atPeaceWith, controlsTiles, ownsTiles, needsIdeology, hasModifier, hasNotModifier, isDateLessOrMore, moreOrLessTroops, shouldBePuppet, shouldNotBePuppet, hasPuppets);
     }
 
     private static Map<String, Set<String>> parseMap(String data) {

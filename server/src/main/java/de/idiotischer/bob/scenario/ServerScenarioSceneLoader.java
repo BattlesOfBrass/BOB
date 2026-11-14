@@ -45,11 +45,7 @@ public class ServerScenarioSceneLoader {
         currentScenario = scenario;
 
         //this is intended
-        Server.getInstance().getGameManager().setState(GameState.LOBBY);
-
-        //this is the intended behaviour till i add a real Lobby overlay xD
-        //TODO: later only set it ingame when the game started and someone unpaused!
-        Server.getInstance().getGameManager().setState(GameState.INGAME);
+        Server.getInstance().getGameManager().setState(GameState.LOBBY,true);
 
         Server.getInstance().getModifierManager().reload();
         Server.getInstance().getGameManager().reload();

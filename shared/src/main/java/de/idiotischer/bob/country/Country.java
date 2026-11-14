@@ -11,13 +11,12 @@ import de.idiotischer.bob.networking.communication.SendTool;
 import de.idiotischer.bob.networking.packet.impl.pp.ReplyPacket;
 import de.idiotischer.bob.networking.packet.impl.pp.Type;
 import de.idiotischer.bob.player.Player;
-import de.idiotischer.bob.player.ServerPlayer;
+import de.idiotischer.bob.player.persona.AIPersonality;
 import de.idiotischer.bob.scenario.Scenario;
 import de.idiotischer.bob.state.State;
 import de.idiotischer.bob.time.TimeResolver;
 import de.idiotischer.bob.util.FileUtil;
 import it.unimi.dsi.fastutil.Pair;
-import org.jspecify.annotations.NonNull;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -36,6 +35,7 @@ public class Country /*implements Comparable<Country>*/{
     private final Color color;
     private final String abbreviation;
     private final boolean selectScreen;
+    private AIPersonality personality;
     private boolean major;
     private Player player = null;
     private PuppetState puppetState;
@@ -58,9 +58,10 @@ public class Country /*implements Comparable<Country>*/{
     private Map<Ideology,Float> availableIdeologies = new HashMap<>(); //used for parties
     private long manpower;
 
-    public Country(String abbreviation,String name, Color color, boolean major, boolean selectScreen, String overlord, Set<Modifier> modifiers) {
+    public Country(String abbreviation, String name, AIPersonality personality, Color color, boolean major, boolean selectScreen, String overlord, Set<Modifier> modifiers) {
         this.abbreviation = abbreviation;
         this.name = name;
+        this.personality = personality;
         this.color = color;
         this.major = major;
         this.selectScreen = selectScreen;
@@ -162,8 +163,14 @@ public class Country /*implements Comparable<Country>*/{
         t.broadcast(r.channels(), new ReplyPacket(Type.COUNTRY_UPDATE, "id=" + abbreviation + ";" + "overlord=" + overlord));
     }
 
-    public void setPuppetTile(PuppetState tile) {
-        this.puppetState = tile;
+    public void setPuppetState(PuppetState state, SendTool t, ChannelResolver r) {
+        this.puppetState = state;
+
+        t.broadcast(r.channels(), new ReplyPacket(Type.COUNTRY_UPDATE, "id=" + abbreviation + ";" + "puppetState=" + puppetState.name()));
+    }
+
+    public void setPuppetState(PuppetState state) {
+        this.puppetState = state;
     }
 
     public void setPuppetProgress(int progress) {
@@ -195,6 +202,7 @@ public class Country /*implements Comparable<Country>*/{
 
         buffer.putInt(modifiers.size());
         for (Modifier mod : modifiers) util.putUtf(mod.getId());
+        util.putUtf(personality.toDataString());
 
         util.putBoolean(isCapitulated());
         util.putUtf(conscription.name().toUpperCase());
@@ -237,12 +245,15 @@ public class Country /*implements Comparable<Country>*/{
         Set<Modifier> mods = new HashSet<>();
         int modsSize = buffer.getInt();
         for (int i = 0; i < modsSize; i++) mods.add(mr.by(util.getUtf()));
+        AIPersonality pers = AIPersonality.fromDataString(util.getUtf());
 
-        Country country = new Country(abbreviation, name, color, major, selectScreen, overlord, mods);
+        if(pers == null) pers = new AIPersonality(1,1,1,1);
+
+        Country country = new Country(abbreviation, name, pers, color, major, selectScreen, overlord, mods);
 
         country.setManpower(manpower);
         country.setPlayer(Player.of(uuid));
-        country.setPuppetTile(puppetTile);
+        country.setPuppetState(puppetTile);
         country.setPuppetProgress(puppetProgress);
         country.setCapitulated(util.getBoolean());
         Conscription conscription = Conscription.valueOf(util.getUtf());
@@ -423,10 +434,10 @@ public class Country /*implements Comparable<Country>*/{
     }
 
     //called on a new dawn (hihi sosand)
-    public void newDay(ChannelResolver r, SendTool t, long dailyMP) {
+    public void newDay(ChannelResolver r, SendTool t, long dailyMP,long totalPop) {
         this.politicalPower += getDailyPP();
 
-        addManpowerServer(t,r, dailyMP);
+        addManpowerServer(t,r, dailyMP, totalPop);
 
         t.broadcast(r.channels(), new ReplyPacket(Type.PP_UPDATE, this.abbreviation + ";" + politicalPower));
     }
@@ -564,9 +575,14 @@ public class Country /*implements Comparable<Country>*/{
         return new Country(this,abbreviation);
     }
 
+    public void updatePersonalityServer(SendTool t, ChannelResolver r, AIPersonality pers) {
+        this.personality = pers;
+        t.broadcast(r.channels(),new ReplyPacket(Type.COUNTRY_UPDATE, "id=" + this.abbreviation + ";" + "personality=" + pers.toDataString()));
+    }
+
     public void setManpowerServer(SendTool t, ChannelResolver r, long sum) {
         this.manpower = sum;
-        t.broadcast(r.channels(),new ReplyPacket(Type.COUNTRY_UPDATE, "id=" + this.abbreviation + ";" + "manpower=" + sum));
+        t.broadcast(r.channels(),new ReplyPacket(Type.COUNTRY_UPDATE, "id=" + this.abbreviation + ";" + "manpower=" + manpower));
     }
 
     public void setMajorServer(SendTool t, ChannelResolver r, boolean b) {
@@ -574,10 +590,15 @@ public class Country /*implements Comparable<Country>*/{
         t.broadcast(r.channels(),new ReplyPacket(Type.COUNTRY_UPDATE, "id=" + this.abbreviation + ";" + "major=" + b));
     }
 
-    public void addManpowerServer(SendTool t, ChannelResolver r, long d) {
+    public void addManpowerServer(SendTool t, ChannelResolver r, long d, long pop) {
         long sum = getManpower() + d;
-        this.manpower = sum;
-        t.broadcast(r.channels(), new ReplyPacket(Type.COUNTRY_UPDATE, "id=" + this.abbreviation + ";" + "manpower=" + sum));
+        this.manpower = Math.clamp(sum,0,getMaxManpower(pop));
+
+        t.broadcast(r.channels(), new ReplyPacket(Type.COUNTRY_UPDATE, "id=" + this.abbreviation + ";" + "manpower=" + manpower));
+    }
+
+    public long getMaxManpower(long totalPop) {
+        return (long) Math.floor(totalPop * getRecruitablePop());
     }
 
     public void setManpower(long sum) {
@@ -594,10 +615,7 @@ public class Country /*implements Comparable<Country>*/{
     //}
 
     public long getDailyManpower(double totalPop) {
-        if (conscription == null)  {
-            System.out.println("conscription is null");
-            return 0;
-        }
+        if (conscription == null) return 0;
 
         long extraPop = getModifiers().stream().filter(m -> m.getType().equals(Modifier.Types.DAILY_MANPOWER.getMapping()))
                 .mapToLong(m -> {
@@ -618,8 +636,7 @@ public class Country /*implements Comparable<Country>*/{
                 }).sum();
 
         double recruitable = getRecruitablePop();
-
-        double baseManpower = (totalPop * recruitable) + extraPop;
+        double baseManpower = (totalPop * recruitable * 0.01) + extraPop;
         double finalManpower = baseManpower * (1.0 + extraPopPerc);
 
         return (long) Math.floor(finalManpower);
@@ -634,8 +651,18 @@ public class Country /*implements Comparable<Country>*/{
                 }).sum() + conscription.getRecruitablePopulation();
     }
 
+
+
+    public AIPersonality getPersonality() {
+        return personality;
+    }
+
     public Conscription getConscription() {
         return conscription;
+    }
+
+    public void setPersonality(AIPersonality pers) {
+        this.personality = pers;
     }
 
     public enum Conscription {

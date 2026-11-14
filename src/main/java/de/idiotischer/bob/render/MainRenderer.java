@@ -230,7 +230,6 @@ public class MainRenderer extends Thread {
                             }
 
                         } else if(inMenu) handleMenuClick(e, x, y);
-
                     }
 
                     @Override

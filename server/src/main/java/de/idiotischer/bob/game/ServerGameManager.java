@@ -6,8 +6,10 @@ import de.idiotischer.bob.SharedCore;
 import de.idiotischer.bob.networking.packet.impl.TimeCheckAndCorrectPacket;
 import de.idiotischer.bob.networking.packet.impl.pp.ReplyPacket;
 import de.idiotischer.bob.networking.packet.impl.pp.Type;
+import de.idiotischer.bob.player.ArtificalPlayer;
 import de.idiotischer.bob.player.Player;
 import de.idiotischer.bob.time.TimeResolver;
+import de.idiotischer.bob.troop.ServerTroopManager;
 import it.unimi.dsi.fastutil.Pair;
 
 import java.nio.channels.AsynchronousSocketChannel;
@@ -41,6 +43,7 @@ public class ServerGameManager implements TimeResolver {
     private final Map<String, Pair<Long, Consumer<Long>>> timeHook = new HashMap<>();
 
     public boolean begun = false;
+    private boolean canChangeState = true;
 
     public void begin() {
         clear();
@@ -76,10 +79,15 @@ public class ServerGameManager implements TimeResolver {
     }
 
     public void setState(GameState state) {
-        this.setState(state,null);
+        this.setState(state,null, false);
     }
 
-    public void setState(GameState state, Player whoChanged) {
+    public void setState(GameState state, boolean bypassChange) {
+        this.setState(state,null, bypassChange);
+    }
+
+    public void setState(GameState state, Player whoChanged, boolean bypassChange) {
+        if(!bypassChange && !canChangeState) return;
         if(state != GameState.INGAME && state != GameState.PAUSED) clear();
 
         if(state == GameState.INGAME) {
@@ -135,26 +143,32 @@ public class ServerGameManager implements TimeResolver {
             }
         });
 
-        new ArrayList<>(Server.getInstance().getTroopManager().getTraining()).forEach(troop -> {
-            double availablePop = Server.getInstance().getCountryManager().removePopulationCheck(troop.getFinalStack().getManpower(), troop.getFinalStack().getController());
-            if(troop.canTrainServer(Server.getInstance().getServerSocket(),Server.getInstance().getSendTool(), availablePop) && !(troop.getExpIfDeployedNow(timeTicks) >= 100))
-                if (timeTicks >= troop.getEndTick()) {
-                    Server.getInstance().getTroopManager().removeTrainEntry(troop.getUuid(), true);
-                    Server.getInstance().getTroopManager().addTroopStack(troop.getFinalStack(), troop.getUuid());
-                }
+        ServerTroopManager tm = Server.getInstance().getTroopManager();
+
+        new ArrayList<>(tm.getTraining()).forEach(entry -> {
+            double missing = entry.getMissingPop();
+
+            double drawn = missing > 0 ? Server.getInstance().getCountryManager().removePopulationCheck(missing, entry.getFinalStack().getController()) : 0;
+
+            if (entry.canTrainServer(Server.getInstance().getServerSocket(), Server.getInstance().getSendTool(), drawn) && entry.isFullyPaid() && timeTicks >= entry.getEndTick()) tm.finishTraining(entry);
         });
 
         //TODO for every troop update them and add equipment and population, whatever they miss and you have
-        if (timeTicks % (60 * 24) == 0) {
-            Server.getInstance().getCountryManager().getCountries().forEach(c -> {
+
+        Server.getInstance().getCountryManager().getCountries().forEach(c -> {
+            if (timeTicks % (60 * 24) == 0) {
                 try {
-                    c.newDay(Server.getInstance().getServerSocket(), Server.getInstance().getSendTool(), c.getDailyManpower(Server.getInstance().getCountryManager().getTotalPopulation(c)));
-                    Server.getInstance().getCountryManager().addPopPercent(/*0.125f later do liek in hoi4 with percentage based on core pop etc*/.125F, c);
-                } catch (Exception ex) { ex.printStackTrace(); }
-            });
+                    double total = Server.getInstance().getCountryManager().getTotalPopulation(c);
+                    c.newDay(Server.getInstance().getServerSocket(), Server.getInstance().getSendTool(), c.getDailyManpower(total), (long) total);
+                    Server.getInstance().getCountryManager().addPopPercent(0.0041F /*like hoi4*/, c);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
             /*if (timeTicks % (60 * 12) == 0)*/
-            broadcastTimeSync();
-        }
+                broadcastTimeSync();
+            }
+            if(c.getPlayer() instanceof ArtificalPlayer pl) pl.think();
+        });
     }
 
     public void broadcastTimeSync() {
@@ -212,5 +226,9 @@ public class ServerGameManager implements TimeResolver {
 
     public Map<String, Pair<Long, Consumer<Long>>> getTimeHook() {
         return timeHook;
+    }
+
+    public void setCanChangeState(boolean b) {
+        this.canChangeState = b;
     }
 }

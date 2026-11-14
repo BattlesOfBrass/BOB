@@ -15,6 +15,7 @@ import java.net.InetSocketAddress;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class PlayerManager implements PlayerResolver {
@@ -28,7 +29,7 @@ public class PlayerManager implements PlayerResolver {
 
         Set<UUID> used = players.stream().map(Player::uuid).collect(Collectors.toSet());
 
-        return new ServerPlayer(address,null, UUIDUtil.getUnused(used), BOB.getInstance().getCountryManager(), channel);
+        return new ServerPlayer(address, null, UUIDUtil.getUnused(used), BOB.getInstance().getCountryManager(), channel, country -> {});
     }
 
     public Player createPlayer(AsynchronousSocketChannel channel, UUID uuid, InetSocketAddress address) {
@@ -36,7 +37,7 @@ public class PlayerManager implements PlayerResolver {
 
         if(addresses.contains(address)) return resolve(address);
 
-        return new ServerPlayer(address,null, uuid, BOB.getInstance().getCountryManager(), channel);
+        return new ServerPlayer(address,null, uuid, BOB.getInstance().getCountryManager(), channel, country -> {});
     }
 
     public void changeCountry(UUID uuid, Country country) {

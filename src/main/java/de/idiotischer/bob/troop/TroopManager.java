@@ -109,23 +109,13 @@ public class TroopManager implements TroopResolver{
         Country fromController = from.getController();
         Country toController = to.getController();
 
-        if(!Objects.equals(toController.getAbbreviation(), troopController.getAbbreviation())) {
-            if (!BOB.getInstance().getWarManager().isAtWar(troopController, toController)) return MoveStatus.FAILURE;
+        if(!Objects.equals(toController.getAbbreviation(), troopController.getAbbreviation())) if (!BOB.getInstance().getWarManager().isAtWar(troopController, toController)) return MoveStatus.FAILURE;
+
+        if(BOB.getInstance().getWarManager().fightsTogetherWith(troopController, fromController) || BOB.getInstance().getWarManager().isAtWar(fromController, toController)) {
+            if(!Objects.equals(fromController.getAbbreviation(), toController.getAbbreviation()) && !Objects.equals(fromController.getAbbreviation(), troopController.getAbbreviation())) return MoveStatus.FAILURE;
         }
 
-        if(BOB.getInstance().getWarManager().fightsTogetherWith(troopController, fromController) ||
-                BOB.getInstance().getWarManager().isAtWar(fromController, toController)) {
-            if(!Objects.equals(fromController.getAbbreviation(), toController.getAbbreviation()) &&
-                    !Objects.equals(fromController.getAbbreviation(), troopController.getAbbreviation())) {
-                return MoveStatus.FAILURE;
-            }
-        }
-
-        if(hasStack(to)) {
-            if(BOB.getInstance().getWarManager().isEnemy(troopController, toController)) {
-                return MoveStatus.FAILURE_FIGHT;
-            }
-        }
+        if(hasStack(to)) if(BOB.getInstance().getWarManager().isEnemy(troopController, toController)) return MoveStatus.FAILURE_FIGHT;
 
         return MoveStatus.SUCCESS;
     }
@@ -225,6 +215,8 @@ public class TroopManager implements TroopResolver{
 
     public Map<UUID, TroopStack> getVisible(Country country) {
         //TODO: only show ones on border tiles and yeah
+        //if(hasAttacheWith(xyz) than all of em are visible, add them to the map
+        //neighboringtilesFor(Tilemanager.getBordertiles(country)).foreach(t -> Troopmanager.getTroopAt(t)) //maybe only when you have a troop bordering that
         return troops;
     }
 
@@ -242,12 +234,14 @@ public class TroopManager implements TroopResolver{
 
     public void addTrainEntry(TrainEntry trainEntry) {
         this.training.add(trainEntry);
+        BOB.getInstance().getMainRenderer().getGamePanel().getHud().refreshTrainingList();
     }
 
     //these params bc i made the timehook with em
     public void removeTrainEntry(UUID uuid, boolean willUseUUID) {
         training.removeIf(entry -> entry.getUuid().equals(uuid));
         if(!willUseUUID) usedIds.remove(uuid);
+        BOB.getInstance().getMainRenderer().getGamePanel().getHud().refreshTrainingList();
     }
 
     public Set<TrainEntry> getTraining() {
