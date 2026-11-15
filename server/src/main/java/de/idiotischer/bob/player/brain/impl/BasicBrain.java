@@ -8,12 +8,14 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class BasicBrain extends BrainI {
 
     private final List<Task> tasks = new ArrayList<>();
+    private final ReentrantLock lock = new ReentrantLock();
 
-    private Task currentTask;
+    private volatile Task currentTask;
 
     public void registerTask(Task task) {
         tasks.add(task);
@@ -36,23 +38,31 @@ public class BasicBrain extends BrainI {
 
     @Override
     public void tick() {
-        Task bestTask = getNextTask();
+        if (!lock.tryLock()) return;
 
-        if (bestTask != currentTask) {
-            if (currentTask != null) currentTask.onStop(country);
+        try {
+            Task bestTask = getNextTask();
 
-            currentTask = bestTask;
+            if (bestTask != currentTask) {
+                if (currentTask != null) currentTask.onStop(country);
 
-            if (currentTask != null) currentTask.onStart(country);
-        }
+                currentTask = bestTask;
 
-        if (currentTask != null) {
-            currentTask.tick(country);
-
-            if (currentTask.finished(country)) {
-                currentTask.onStop(country);
-                currentTask = null;
+                if (currentTask != null) currentTask.onStart(country);
             }
+
+            Task task = currentTask;
+
+            if (task != null) {
+                task.tick(country);
+
+                if (task.finished(country)) {
+                    task.onStop(country);
+                    currentTask = null;
+                }
+            }
+        } finally {
+            lock.unlock();
         }
     }
 }

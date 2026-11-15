@@ -68,7 +68,7 @@ public class PacketDecoder implements Coder<Packet, ByteBuffer> {
 
         PacketRegistry.PacketReceiveEvent event = new PacketRegistry.PacketReceiveEvent(packet, channel);
 
-        registry.getCore().getListenerRegistry().call(event);
+        registry.getCore().getListenerRegistry().call(event); //TODO: this event call takes forever
 
         if (event.isCancelled()) return packet;
 

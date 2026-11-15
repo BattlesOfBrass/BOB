@@ -14,6 +14,7 @@ import de.idiotischer.bob.tile.Tile;
 import java.awt.*;
 import java.nio.file.Files;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -246,5 +247,19 @@ public class ServerWarManager implements WarResolver {
         }
 
         return sb.toString();
+    }
+
+    public void remove(WarStatus status) {
+        if (status == null) return;
+
+        List<Country> involved = new ArrayList<>(status.getAttackers());
+        involved.addAll(status.getDefenders());
+
+        for (Country c : involved) {
+            activeWars.computeIfPresent(c.getAbbreviation(), (k, wars) -> {
+                wars.remove(status);
+                return wars.isEmpty() ? null : wars;
+            });
+        }
     }
 }

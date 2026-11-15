@@ -258,7 +258,6 @@ public class HUD extends JPanel {
                 tabbedPane.addTab("Deployment", createDeploymentPanel());
             }
             case FOREIGN -> tabbedPane.addTab("Diplomacy", createForeignOverviewPanel());
-
             case NONE -> {}
         }
 
@@ -320,13 +319,6 @@ public class HUD extends JPanel {
             if (selected != null) selectedLabel.setText("Selected: " + selected.value());
         });
 
-        JSpinner divisionSpinner = new JSpinner(new SpinnerNumberModel(1, 1, 5, 1));
-
-        divisionSpinner.setMaximumSize(new Dimension(80, 30));
-        divisionSpinner.setAlignmentX(Component.CENTER_ALIGNMENT);
-        divisionSpinner.setUI(new ModernSpinnerUI());
-        divisionSpinner.setFocusable(false);
-
         JButton spawnButton = new BOBButton("Train", BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().textColor(), BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().bgColor(), BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().borderColor(), BOB.getInstance().getScenarioSceneLoader().getCurrentScenario().getTheme().button().borderColorHover(), 16, 5);
 
         spawnButton.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -337,16 +329,12 @@ public class HUD extends JPanel {
 
             if (selected == null) return;
 
-            int divisions = (Integer) divisionSpinner.getValue();
-
-            RequestPacket packet = new RequestPacket(Type.TRAIN_TROOP, selected.key() + ";" + BOB.getInstance().getPlayer().country().getAbbreviation() + ";" + divisions);
+            RequestPacket packet = new RequestPacket(Type.TRAIN_TROOP, selected.key() + ";" + BOB.getInstance().getPlayer().country().getAbbreviation() + ";" + 1);
 
             BOB.getInstance().getSendTool().send(BOB.getInstance().getClient().getChannel(), packet);
         });
 
         panel.add(recruitTitle);
-        panel.add(Box.createVerticalStrut(10));
-        panel.add(divisionSpinner);
         panel.add(Box.createVerticalStrut(10));
         panel.add(selectedLabel);
         panel.add(Box.createVerticalStrut(10));
@@ -715,9 +703,7 @@ public class HUD extends JPanel {
                 warLabel.setFont(warLabel.getFont().deriveFont(Font.BOLD, 16f));
                 warLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
                 panel.add(warLabel);
-            } else {
-                panel.add(declareWarButton);
-            }
+            } else panel.add(declareWarButton);
 
             if(hasMilitaryAccess) {
                 panel.add(Box.createVerticalStrut(15));

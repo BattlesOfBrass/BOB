@@ -1,4 +1,3 @@
-
 package de.idiotischer.bob.game;
 
 import de.idiotischer.bob.Server;
@@ -17,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -26,6 +26,7 @@ import java.util.function.Consumer;
 public class ServerGameManager implements TimeResolver {
 
     private final ScheduledExecutorService timeService = Executors.newSingleThreadScheduledExecutor();
+    private final ExecutorService exec = Executors.newVirtualThreadPerTaskExecutor();
 
     private GameState state = GameState.PAUSED;
     private int speed = 1;
@@ -34,6 +35,8 @@ public class ServerGameManager implements TimeResolver {
     private long timeTicks; // in minutes
 
     private ScheduledFuture<?> nextTick;
+    private volatile long generation;
+    private long nextDeadline;
 
     private static final long SYNC_INTERVAL = 10; //we sync every day so why even bother xd
 
@@ -47,29 +50,44 @@ public class ServerGameManager implements TimeResolver {
 
     public void begin() {
         clear();
-        scheduleNextTick();
+        restartChain();
 
-        timeService.scheduleAtFixedRate(() -> {
-            if (state == GameState.INGAME) broadcastTimeSync();
-        }, SYNC_INTERVAL, SYNC_INTERVAL, TimeUnit.SECONDS);
+        if (!begun) {
+            begun = true;
+
+            timeService.scheduleAtFixedRate(() -> {
+                if (state == GameState.INGAME) broadcastTimeSync();
+            }, SYNC_INTERVAL, SYNC_INTERVAL, TimeUnit.SECONDS);
+        }
 
         Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().channels(),new ReplyPacket(Type.TIME_RESTART, getDate() != null ? getDate().getTime() : -1L));
     }
-    private synchronized void scheduleNextTick() {
-        if (timeService.isShutdown()) return;
+
+    private synchronized void restartChain() {
         if (nextTick != null) nextTick.cancel(false);
 
-        nextTick = timeService.schedule(() -> {
-            try {
-                tickTime();
-            } finally { scheduleNextTick(); }
-        }, SharedCore.getTickDelay(speed), TimeUnit.NANOSECONDS);
+        generation++;
+        nextDeadline = System.nanoTime();
+
+        scheduleNext(generation);
     }
 
-    private void rescheduleNextTick() {
-        if (nextTick != null) nextTick.cancel(false);
+    private synchronized void scheduleNext(long gen) {
+        if (timeService.isShutdown() || gen != generation) return;
 
-        scheduleNextTick();
+        long now = System.nanoTime();
+        nextDeadline += SharedCore.getTickDelay(speed);
+        if (nextDeadline < now - TimeUnit.SECONDS.toNanos(1)) nextDeadline = now;
+
+        nextTick = timeService.schedule(() -> {
+            if (gen != generation) return;
+
+            try {
+                tickTime();
+            } catch (Throwable t) {
+                t.printStackTrace();
+            } finally { scheduleNext(gen); }
+        }, Math.max(0, nextDeadline - now), TimeUnit.NANOSECONDS);
     }
 
     public GameState getState() {
@@ -96,15 +114,13 @@ public class ServerGameManager implements TimeResolver {
                     if(whoChanged != this.whoChanged && System.currentTimeMillis() - lastChangedTime < delay) return;
                 }
             }
-
-            scheduleNextTick();
         }
 
         this.lastChangedTime = System.currentTimeMillis();
         this.whoChanged = whoChanged;
 
         this.state = state;
-        rescheduleNextTick();
+        restartChain();
 
         broadcastTimeSync();
         broadcastStateChange();
@@ -133,42 +149,48 @@ public class ServerGameManager implements TimeResolver {
 
         timeTicks++;
 
-        broadcastTimeSync(); //now it works but at what cost? i need it to sync every day but than the client speeds away? now you may ask: "Idiotischer, why?" i dont
+        exec.execute(this::process);
+    }
 
-        new ArrayList<>(timeHook.entrySet()).forEach(e -> {
-            if (timeTicks >= e.getValue().key()) {
-                timeHook.remove(e.getKey());
-                try { e.getValue().value().accept(timeTicks); }
-                catch (Exception ex) { ex.printStackTrace(); }
-            }
-        });
-
-        ServerTroopManager tm = Server.getInstance().getTroopManager();
-
-        new ArrayList<>(tm.getTraining()).forEach(entry -> {
-            double missing = entry.getMissingPop();
-
-            double drawn = missing > 0 ? Server.getInstance().getCountryManager().removePopulationCheck(missing, entry.getFinalStack().getController()) : 0;
-
-            if (entry.canTrainServer(Server.getInstance().getServerSocket(), Server.getInstance().getSendTool(), drawn) && entry.isFullyPaid() && timeTicks >= entry.getEndTick()) tm.finishTraining(entry);
-        });
-
-        //TODO for every troop update them and add equipment and population, whatever they miss and you have
-
-        Server.getInstance().getCountryManager().getCountries().forEach(c -> {
-            if (timeTicks % (60 * 24) == 0) {
-                try {
-                    double total = Server.getInstance().getCountryManager().getTotalPopulation(c);
-                    c.newDay(Server.getInstance().getServerSocket(), Server.getInstance().getSendTool(), c.getDailyManpower(total), (long) total);
-                    Server.getInstance().getCountryManager().addPopPercent(0.0041F /*like hoi4*/, c);
-                } catch (Exception ex) {
-                    ex.printStackTrace();
+    private void process() {
+        try {
+            new ArrayList<>(timeHook.entrySet()).forEach(e -> {
+                if (timeTicks >= e.getValue().key()) {
+                    timeHook.remove(e.getKey());
+                    try { e.getValue().value().accept(timeTicks); }
+                    catch (Exception ex) { ex.printStackTrace(); }
                 }
-            /*if (timeTicks % (60 * 12) == 0)*/
-                broadcastTimeSync();
-            }
-            if(c.getPlayer() instanceof ArtificalPlayer pl) pl.think();
-        });
+            });
+
+            ServerTroopManager tm = Server.getInstance().getTroopManager();
+
+            new ArrayList<>(tm.getTraining()).forEach(entry -> {
+                double missing = entry.getMissingPop();
+
+                double drawn = missing > 0 ? Server.getInstance().getCountryManager().removePopulationCheck(missing, entry.getFinalStack().getController()) : 0;
+
+                if (entry.canTrainServer(Server.getInstance().getServerSocket(), Server.getInstance().getSendTool(), drawn) && entry.isFullyPaid() && timeTicks >= entry.getEndTick()) tm.finishTraining(entry);
+            });
+
+            //TODO for every troop update them and add equipment and population, whatever they miss and you have
+
+            Server.getInstance().getCountryManager().getCountries().forEach(c -> {
+                if (timeTicks % (60 * 24) == 0) {
+                    try {
+                        double total = Server.getInstance().getCountryManager().getTotalPopulation(c);
+                        c.newDay(Server.getInstance().getServerSocket(), Server.getInstance().getSendTool(), c.getDailyManpower(total), (long) total);
+                        Server.getInstance().getCountryManager().addPopPercent(0.0041F /*like hoi4*/, c);
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                    /*if (timeTicks % (60 * 12) == 0)*/
+                    broadcastTimeSync();
+                }
+                if(c.getPlayer() instanceof ArtificalPlayer pl) pl.think();
+            });
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
     }
 
     public void broadcastTimeSync() {
@@ -194,7 +216,7 @@ public class ServerGameManager implements TimeResolver {
 
         if(Server.getInstance().getTroopManager() != null) Server.getInstance().getTroopManager().rescheduleAllTroopMovements();
 
-        rescheduleNextTick();
+        restartChain();
         broadcastTimeSync();
     }
 
@@ -206,7 +228,7 @@ public class ServerGameManager implements TimeResolver {
         if(!begun) begin();
 
         clear();
-        rescheduleNextTick();
+        restartChain();
         broadcastTimeSync();
     }
 

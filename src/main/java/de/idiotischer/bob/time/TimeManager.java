@@ -25,48 +25,58 @@ public class TimeManager implements TimeResolver {
 
     private Date scenarioStartDate;
     private ScheduledFuture<?> nextTick;
+    private volatile long generation;
+    private long nextDeadline;
     private Map<String, Pair<Long,Consumer<Long>>> timeHook = new HashMap<>();
-
-    public TimeManager() {
-    }
 
     public void begin(Date scenarioStartDate) {
         this.scenarioStartDate = new Date(scenarioStartDate.getTime());
         if(BOB.getInstance().isDebug()) System.out.println("beginning ticking");
-        scheduleNextTick();
+        restartChain();
     }
 
-    private void scheduleNextTick() {
-        if (timeService.isShutdown()) return;
-
-        nextTick = timeService.schedule(() -> {
-            try {
-                tickTime();
-            } finally {
-                scheduleNextTick();
-            }
-        }, SharedCore.getTickDelay(speed), TimeUnit.NANOSECONDS);
-    }
-
-    private void rescheduleNextTick() {
+    private synchronized void restartChain() {
         if (nextTick != null) nextTick.cancel(false);
 
-        scheduleNextTick();
+        generation++;
+        nextDeadline = System.nanoTime();
+
+        scheduleNext(generation);
+    }
+
+    private synchronized void scheduleNext(long gen) {
+        if (timeService.isShutdown() || gen != generation) return;
+
+        long now = System.nanoTime();
+        nextDeadline += SharedCore.getTickDelay(speed);
+        if (nextDeadline < now - TimeUnit.SECONDS.toNanos(1)) nextDeadline = now;
+
+        nextTick = timeService.schedule(() -> {
+            if (gen != generation) return;
+
+            try {
+                tickTime();
+            } catch (Throwable t) {
+                t.printStackTrace();
+            } finally {
+                scheduleNext(gen);
+            }
+        }, Math.max(0, nextDeadline - now), TimeUnit.NANOSECONDS);
     }
 
     private void tickTime() {
         if (BOB.getInstance().getGameManager().getGameState() != GameState.INGAME) return;
         BOB.getInstance().getMainRenderer().getGamePanel().getHud().refreshTrainingList();
 
-        new ArrayList<>(BOB.getInstance().getTroopManager().getTraining()).forEach(troop -> {
-            new ArrayList<>(timeHook.entrySet()).forEach(e -> {
-                if (timeTicks >= e.getValue().key()) {
-                    timeHook.remove(e.getKey());
-                    try { e.getValue().value().accept(timeTicks); }
-                    catch (Exception ex) { ex.printStackTrace(); }
-                }
-            });
+        new ArrayList<>(timeHook.entrySet()).forEach(e -> {
+            if (timeTicks >= e.getValue().key()) {
+                timeHook.remove(e.getKey());
+                try { e.getValue().value().accept(timeTicks); }
+                catch (Exception ex) { ex.printStackTrace(); }
+            }
+        });
 
+        new ArrayList<>(BOB.getInstance().getTroopManager().getTraining()).forEach(troop -> {
             if(troop.canTrain())
                 if (timeTicks >= troop.getEndTick()) {
                     BOB.getInstance().getTroopManager().removeTrainEntry(troop.getUuid(), true);
@@ -79,10 +89,15 @@ public class TimeManager implements TimeResolver {
 
     public void sync(Date startDate, long timeTicks, int speed) {
         this.scenarioStartDate = startDate;
-        this.timeTicks = Math.max(0, timeTicks);
-        this.speed = Math.clamp(speed, 1, 5);
 
-        rescheduleNextTick();
+        int newSpeed = Math.clamp(speed, 1, 5);
+        boolean speedChanged = this.speed != newSpeed;
+        long newTicks = Math.max(0, timeTicks);
+
+        if (Math.abs(newTicks - this.timeTicks) > 1) this.timeTicks = newTicks;
+        this.speed = newSpeed;
+
+        if (speedChanged) restartChain();
     }
 
     public int getSpeed() {
@@ -112,7 +127,7 @@ public class TimeManager implements TimeResolver {
         this.timeTicks = 0;
         this.speed = 1;
 
-        rescheduleNextTick();
+        restartChain();
     }
 
     public void shutdown() {

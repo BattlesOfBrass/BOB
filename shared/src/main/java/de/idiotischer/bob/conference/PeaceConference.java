@@ -69,10 +69,10 @@ public class PeaceConference {
     }
 
     public boolean nextTurn() {
-        Set<String> finishedAbbreviations = finished.stream().map(Country::getAbbreviation).collect(Collectors.toSet());
-        boolean allFinished = winners.stream().map(Country::getAbbreviation).allMatch(finishedAbbreviations::contains);
+        //Set<String> finishedAbbreviations = finished.stream().map(Country::getAbbreviation).collect(Collectors.toSet());
+        //boolean allFinished = winners.stream().map(Country::getAbbreviation).allMatch(finishedAbbreviations::contains);
 
-        if (!allFinished) return false;
+        if (!allDone(finished)) return false;
 
         if (winners.isEmpty()) {
             endConference();
@@ -101,7 +101,10 @@ public class PeaceConference {
         int cost = calculateTileCost(tile);
         int available = currentVP.getOrDefault(country, 0);
 
-        //if (available < cost) return false; //TODO: it doesnt get through this check, why is the vp not working?
+        if (available < cost) {
+            System.out.println("VP check failed: country=" + country.getAbbreviation() + " available=" + available + " cost=" + cost + " tile=" + tile.getAbbreviation() + " vp=" + currentVP.entrySet().stream().map(e -> e.getKey().getAbbreviation() + "=" + e.getValue()).collect(Collectors.joining(",")));
+            return false;
+        }
         //System.out.println("proposed tile got through check 3");
 
         currentVP.put(country, available - cost);
@@ -115,7 +118,7 @@ public class PeaceConference {
 
         finished.add(c);
 
-        if(new HashSet<>(finished.stream().map(Country::getPlayer).toList()).containsAll(winners.stream().map(Country::getPlayer).toList())) nextTurn();
+        if(allDone(finished)) nextTurn();
         else core.getTool().broadcast(r.channels(), new ReplyPacket(Type.ROUND_UPDATE, this.serializeUpdate()));
 
         return true;
@@ -126,10 +129,15 @@ public class PeaceConference {
 
         ended.add(c);
 
-        if(new HashSet<>(ended.stream().map(Country::getPlayer).toList()).containsAll(winners.stream().map(Country::getPlayer).toList())) endConference();
+        if(allDone(ended)) endConference();
         else core.getTool().broadcast(r.channels(), new ReplyPacket(Type.ROUND_UPDATE, this.serializeUpdate()));
 
         return true;
+    }
+
+    private boolean allDone(List<Country> done) {
+        Set<String> d = done.stream().map(Country::getAbbreviation).collect(Collectors.toSet());
+        return winners.stream().filter(w -> w.getPlayer() != null).map(Country::getAbbreviation).allMatch(d::contains);
     }
 
     public boolean hasDispute(Country country) {

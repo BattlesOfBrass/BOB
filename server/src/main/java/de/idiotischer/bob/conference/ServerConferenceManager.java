@@ -19,6 +19,7 @@ public class ServerConferenceManager {
 
     public void start(WarStatus status) {
         PeaceConference conf = PeaceConference.fromWar(Server.getInstance().getSharedCore(), UUIDUtil.getUnused(conferences.stream().map(PeaceConference::getUUID).collect(Collectors.toSet())), Server.getInstance().getServerSocket(), Server.getInstance().getCountryManager(), status);
+        Server.getInstance().getWarManager().remove(status);
 
         if(conf == null) return;
         Server.getInstance().getGameManager().setCanChangeState(false);
