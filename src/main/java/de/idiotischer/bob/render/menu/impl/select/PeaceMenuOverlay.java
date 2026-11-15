@@ -371,20 +371,26 @@ public class PeaceMenuOverlay extends JPanel {
 
         PeaceConference conf = BOB.getInstance().getPeaceHelper().getBy(peace);
         quitConferenceBtn.addActionListener(e -> BOB.getInstance().getPeaceHelper().quitConference(peace));
+
         sendDemandsBtn.addActionListener(e -> {
             if (waiting) return;
 
             if (selectedButton == null) return;
             if (selectedWinnerCountry == null) return;
 
-            if (conf.hasDispute(BOB.getInstance().getPlayer().country())) addDisputedPopup();
-            else BOB.getInstance().getPeaceHelper().sendDemands(peace, TakeTileType.valueOf(selectedButton.getId()), selectedTiles, selectedWinnerCountry);
+            if (conf.hasDispute(BOB.getInstance().getPlayer().country())) {
+                addDisputedPopup();
+                return;
+            }
 
-            addWaitingPopup();
+            TakeTileType type = TakeTileType.valueOf(selectedButton.getId());
+            Set<Tile> tiles = new java.util.HashSet<>(selectedTiles);
+            Country winner = selectedWinnerCountry;
 
             waiting = true;
+            addWaitingPopup();
 
-            start();
+            BOB.getInstance().getPeaceHelper().sendDemands(peace, type, tiles, winner);
         });
 
     }

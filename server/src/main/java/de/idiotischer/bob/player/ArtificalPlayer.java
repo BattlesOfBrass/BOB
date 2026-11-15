@@ -54,6 +54,9 @@ public class ArtificalPlayer implements Player {
     }
 
     @Override
+    public boolean isAI() {return true;}
+
+    @Override
     public void country(String country) {
         this.country = country;
 

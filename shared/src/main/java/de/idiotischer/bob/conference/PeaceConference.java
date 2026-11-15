@@ -137,7 +137,8 @@ public class PeaceConference {
 
     private boolean allDone(List<Country> done) {
         Set<String> d = done.stream().map(Country::getAbbreviation).collect(Collectors.toSet());
-        return winners.stream().filter(w -> w.getPlayer() != null).map(Country::getAbbreviation).allMatch(d::contains);
+
+        return winners.stream().map(Country::getAbbreviation).allMatch(d::contains);
     }
 
     public boolean hasDispute(Country country) {

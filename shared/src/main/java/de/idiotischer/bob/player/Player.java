@@ -41,4 +41,8 @@ public interface Player {
     default boolean authorize(Credentials credentials) {return true;}
 
     boolean hasOP();
+
+    default boolean isAI() {
+        return false;
+    }
 }

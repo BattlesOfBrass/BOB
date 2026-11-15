@@ -60,8 +60,14 @@ public class PeaceHelper {
         BOB.getInstance().getMainRenderer().getGamePanel().removePeaceOverlay(true);
     }
 
-    public void nextRound() {
-        PeaceMenuOverlay.setWaiting(false);
-        PeaceMenuOverlay.removeWaitingPopup();
+    public void nextRound(UUID uuid) {
+        javax.swing.SwingUtilities.invokeLater(() -> {
+            PeaceMenuOverlay.setWaiting(false);
+            PeaceMenuOverlay.removeWaitingPopup();
+
+            if (BOB.getInstance().getMainRenderer() == null) return;
+
+            BOB.getInstance().getMainRenderer().getGamePanel().setPeace(uuid);
+        });
     }
 }

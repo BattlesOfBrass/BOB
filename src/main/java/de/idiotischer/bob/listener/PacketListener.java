@@ -479,7 +479,7 @@ public class PacketListener implements ListenerAdapter {
 
                     conf.deserializeUpdate(BOB.getInstance().getTileManager(), pack.getMessage());
 
-                    BOB.getInstance().getPeaceHelper().nextRound();
+                    BOB.getInstance().getPeaceHelper().nextRound(conf.getUUID());
                 }
                 case ROUND_UPDATE -> {
                     PeaceConference conf = BOB.getInstance().getPeaceHelper().getBy(PeaceConference.getUUID(pack.getMessage()));
