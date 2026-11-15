@@ -154,6 +154,14 @@ public class ServerTroopManager implements TroopResolver{
     public void addTroopStack(TroopStack troop, UUID uuid) {
         troopStacks.putIfAbsent(uuid, troop);
 
+        var tiles = Server.getInstance().getTileManager().getTilesOwned(troop.getController());
+
+        if(!tiles.contains(troop.getTile().getAbbreviation())) {
+            String newTile = tiles.get(ThreadLocalRandom.current().nextInt(tiles.size()));
+            Tile t =  Server.getInstance().getTileManager().byAbbreviation(newTile);
+            if(t != null) troop.setTile(t);
+        }
+
         Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().channels(), new ReplyPacket(Type.TROOP_TRAIN_END, String.valueOf(uuid)));
 
         Server.getInstance().getSendTool().broadcast(Server.getInstance().getServerSocket().getClients(), new TroopStackSyncPacket(uuid, troop));

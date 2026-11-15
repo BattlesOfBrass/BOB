@@ -12,7 +12,7 @@ import java.util.*;
 public class TroopTrainTask implements Task {
 
     private static final int SIZE = 1;
-    private static final int MAX_QUEUE = 2;
+    private static final int MAX_QUEUE = 8;
 
     private static final long TPD = 1440L;
     private static final long COOLDOWN_AT_PEACE = 14 * TPD;
