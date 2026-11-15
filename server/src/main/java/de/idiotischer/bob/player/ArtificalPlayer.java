@@ -6,6 +6,7 @@ import de.idiotischer.bob.country.CountryResolver;
 import de.idiotischer.bob.game.GameState;
 import de.idiotischer.bob.player.brain.BrainI;
 import de.idiotischer.bob.player.brain.impl.BasicBrain;
+import de.idiotischer.bob.player.tasks.impl.AttackTask;
 import de.idiotischer.bob.player.tasks.impl.TroopStationTask;
 import de.idiotischer.bob.player.tasks.impl.TroopTrainTask;
 
@@ -29,6 +30,7 @@ public class ArtificalPlayer implements Player {
 
         brain.registerTask(new TroopStationTask());
         brain.registerTask(new TroopTrainTask());
+        brain.registerTask(new AttackTask());
     }
 
     public void think() {

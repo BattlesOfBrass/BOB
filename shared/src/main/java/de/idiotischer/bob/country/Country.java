@@ -154,7 +154,11 @@ public class Country /*implements Comparable<Country>*/{
     }
 
     public void setOverlord(String country) {
+        this.removeMilAccess(this.overlord);
+
         this.overlord = country;
+
+        this.addMilAccess(this.overlord);
     }
 
     public void setOverlordServer(String country, SendTool t, ChannelResolver r) {

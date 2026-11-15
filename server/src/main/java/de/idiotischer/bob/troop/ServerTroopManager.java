@@ -520,4 +520,8 @@ public class ServerTroopManager implements TroopResolver{
         if (!training.remove(entry)) return;
         addTroopStack(entry.getFinalStack(), entry.getUuid());
     }
+
+    public boolean isMoving(TroopStack troop) {
+        return activePathfindings.containsKey(troop);
+    }
 }

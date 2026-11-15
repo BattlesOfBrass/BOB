@@ -101,10 +101,8 @@ public class PeaceConference {
         int cost = calculateTileCost(tile);
         int available = currentVP.getOrDefault(country, 0);
 
-        if (available < cost) {
-            System.out.println("VP check failed: country=" + country.getAbbreviation() + " available=" + available + " cost=" + cost + " tile=" + tile.getAbbreviation() + " vp=" + currentVP.entrySet().stream().map(e -> e.getKey().getAbbreviation() + "=" + e.getValue()).collect(Collectors.joining(",")));
-            return false;
-        }
+        if (available < cost) return false;
+
         //System.out.println("proposed tile got through check 3");
 
         currentVP.put(country, available - cost);
@@ -213,6 +211,7 @@ public class PeaceConference {
                 } else if(status.type() == TakeTileType.LIBERATE) {
                     tile.getOwner().setRulingIdeology(core,r,tile.getOwner().getStartIdeology());
                 } else if(status.type() == TakeTileType.PUPPET) {
+                    //later puppet the specific state or smth depending on what you selected (puppet shoudl not list only loosers but also smaller states etc like in hoi4
                     tile.getOwner().setOverlordServer(status.country().getAbbreviation(), core.getTool(), r);
                     tile.getOwner().setPuppetState(PuppetState.PUPPET, core.getTool(), r);
                     tile.getOwner().setRulingIdeology(core,r,status.country.getRulingIdeology());

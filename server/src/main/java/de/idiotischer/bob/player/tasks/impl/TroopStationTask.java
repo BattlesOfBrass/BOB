@@ -1,7 +1,7 @@
+
 package de.idiotischer.bob.player.tasks.impl;
 
 import de.idiotischer.bob.Server;
-import de.idiotischer.bob.country.Country;
 import de.idiotischer.bob.player.tasks.Task;
 import de.idiotischer.bob.tile.Tile;
 import de.idiotischer.bob.troop.TroopStack;
@@ -9,6 +9,8 @@ import de.idiotischer.bob.troop.TroopStack;
 import java.util.*;
 
 public class TroopStationTask implements Task {
+
+    private static final double DEFENSIVE_SHARE = 0.5;
 
     @Override
     public boolean canExecute(String country) {
@@ -29,9 +31,9 @@ public class TroopStationTask implements Task {
         if (borderTiles.isEmpty()) return;
         List<TroopStack> troops = Server.getInstance().getTroopManager().getForController(country);
 
-        int maxDefenseTroops = (int) Math.floor(troops.size()/* * 0.75*/); //later make ai unstack etc
+        int maxDefenseTroops = (int) Math.ceil(troops.size() * DEFENSIVE_SHARE); //later make ai unstack etc
 
-        List<TroopStack> availableTroops = troops.stream().filter(t -> !borderTiles.contains(t.getTile())).toList();
+        List<TroopStack> availableTroops = troops.stream().filter(t -> !borderTiles.contains(t.getTile()) && !Server.getInstance().getTroopManager().isMoving(t) && !Server.getInstance().getCombatManager().isInCombat(t)).toList();
 
         long alreadyDefending = troops.stream().filter(t -> borderTiles.contains(t.getTile())).count();
 

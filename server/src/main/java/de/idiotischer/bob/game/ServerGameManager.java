@@ -172,7 +172,7 @@ public class ServerGameManager implements TimeResolver {
                 if (entry.canTrainServer(Server.getInstance().getServerSocket(), Server.getInstance().getSendTool(), drawn) && entry.isFullyPaid() && timeTicks >= entry.getEndTick()) tm.finishTraining(entry);
             });
 
-            //TODO for every troop update them and add equipment and population, whatever they miss and you have
+            //TODO for every troop update them and add equipment and population, whatever they miss and you have like health etc too ig allthoguh that comes with manpower ig
 
             Server.getInstance().getCountryManager().getCountries().forEach(c -> {
                 if (timeTicks % (60 * 24) == 0) {
