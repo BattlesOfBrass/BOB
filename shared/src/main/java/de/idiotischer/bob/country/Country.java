@@ -598,6 +598,8 @@ public class Country /*implements Comparable<Country>*/{
         long sum = getManpower() + d;
         this.manpower = Math.clamp(sum,0,getMaxManpower(pop));
 
+        //if(Objects.equals(abbreviation, "FRA")) System.out.println(manpower);
+
         t.broadcast(r.channels(), new ReplyPacket(Type.COUNTRY_UPDATE, "id=" + this.abbreviation + ";" + "manpower=" + manpower));
     }
 
@@ -607,6 +609,7 @@ public class Country /*implements Comparable<Country>*/{
 
     public void setManpower(long sum) {
         this.manpower = sum;
+        //System.out.println(sum);
     }
 
     public long getManpower() {

@@ -6,29 +6,39 @@ import de.craftsblock.craftscore.event.ListenerAdapter;
 import de.idiotischer.bob.BOB;
 import de.idiotischer.bob.conference.PeaceConference;
 import de.idiotischer.bob.country.Country;
+import de.idiotischer.bob.country.CountryManager;
 import de.idiotischer.bob.country.CountryResolver;
 import de.idiotischer.bob.country.PuppetState;
 import de.idiotischer.bob.faction.Faction;
+import de.idiotischer.bob.faction.FactionManager;
 import de.idiotischer.bob.focus.Focus;
+import de.idiotischer.bob.focus.FocusManager;
 import de.idiotischer.bob.focus.FocusTree;
 import de.idiotischer.bob.game.GameState;
 import de.idiotischer.bob.ideology.Ideology;
+import de.idiotischer.bob.ideology.IdeologyManager;
+import de.idiotischer.bob.modifier.ModifierManager;
 import de.idiotischer.bob.modifiers.Modifier;
 import de.idiotischer.bob.networking.packet.PacketRegistry;
 import de.idiotischer.bob.networking.packet.impl.*;
 import de.idiotischer.bob.networking.packet.impl.pp.ReplyPacket;
 import de.idiotischer.bob.player.Player;
+import de.idiotischer.bob.player.PlayerManager;
 import de.idiotischer.bob.player.persona.AIPersonality;
+import de.idiotischer.bob.render.RenderPanel;
 import de.idiotischer.bob.scenario.Scenario;
 import de.idiotischer.bob.scenario.ScenarioManager;
 import de.idiotischer.bob.state.State;
+import de.idiotischer.bob.state.StateManager;
 import de.idiotischer.bob.tile.Tile;
 import de.idiotischer.bob.tile.TileManager;
 import de.idiotischer.bob.tile.event.TileChangedEvent;
 import de.idiotischer.bob.troop.MoveStatus;
 import de.idiotischer.bob.troop.TrainEntry;
+import de.idiotischer.bob.troop.TroopManager;
 import de.idiotischer.bob.troop.TroopStack;
 import de.idiotischer.bob.util.AddressUtil;
+import de.idiotischer.bob.war.WarManager;
 import de.idiotischer.bob.war.WarStatus;
 import it.unimi.dsi.fastutil.Pair;
 
@@ -37,758 +47,761 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 public class PacketListener implements ListenerAdapter {
 
+    private static final MoveStatus[] MOVE_STATUSES = MoveStatus.values(); //micro optimization type shiiii
+    private static final Color ACCEPTED_COLOR = new Color(80, 235, 75);
+
+    private final Map<Class<?>, BiConsumer<Object, PacketRegistry.PacketReceiveEvent>> handlers = new HashMap<>();
+
+    public PacketListener() {
+        register(PongPacket.class, this::onPong);
+        register(ScenariosSyncPacket.class, this::onScenariosSync);
+        register(ScenarioSyncPacket.class, this::onScenarioSync);
+        register(CountriesSyncPacket.class, this::onCountriesSync);
+        register(CountrySyncPacket.class, this::onCountrySync);
+        register(TilesSyncPacket.class, this::onTilesSync);
+        register(TileSyncPacket.class, this::onTileSync);
+        register(IdeologiesSyncPacket.class, this::onIdeologiesSync);
+        register(IdeologySyncPacket.class, this::onIdeologySync);
+        register(StatesSyncPacket.class, this::onStatesSync);
+        register(ReplyPacket.class, this::onReply);
+        register(PlayerAuthUpdatePacket.class, this::onPlayerAuthUpdate);
+        register(PlayerJoinPacket.class, this::onPlayerJoin);
+        register(PlayerQuitPacket.class, this::onPlayerQuit);
+        register(PlayerChangedCountryPacket.class, this::onPlayerChangedCountry);
+        register(TroopStackSyncPacket.class, this::onTroopStackSync);
+        register(TroopStacksSyncPacket.class, this::onTroopStacksSync);
+        register(CombatSyncPacket.class, this::onCombatSync);
+        register(CombatsSyncPacket.class, this::onCombatsSync);
+        register(TimeCheckAndCorrectPacket.class, this::onTimeCheck);
+        register(FactionSyncPacket.class, this::onFactionSync);
+        register(FactionsSyncPacket.class, this::onFactionsSync);
+        register(FactionRuleSyncPacket.class, this::onFactionRuleSync);
+        register(FactionRulesSyncPacket.class, this::onFactionRulesSync);
+        register(ModifierSyncPacket.class, this::onModifierSync);
+        register(ModifiersSyncPacket.class, this::onModifiersSync);
+        register(FocusTreeSyncPacket.class, this::onFocusTreeSync);
+        register(FocusTreesSyncPacket.class, this::onFocusTreesSync);
+    }
+
+    private <T> void register(Class<T> type, BiConsumer<T, PacketRegistry.PacketReceiveEvent> handler) {
+        handlers.put(type, (packet, event) -> handler.accept(type.cast(packet), event));
+    }
+
     @EventHandler(priority = EventPriority.LOWEST, ignoreWhenCancelled = true)
     public void onPacketReceive(PacketRegistry.PacketReceiveEvent event) {
-        if(event.getPacket() instanceof PongPacket) {
-            System.out.println("Pong received and cancelled at: " + System.nanoTime());
-            //event.setCancelled(true);
-        } else if(event.getPacket() instanceof ScenariosSyncPacket pack) {
-            ScenarioManager manager = BOB.getInstance().getScenarioManager();
+        var handle = handlers.get(event.getPacket().getClass());
+        if (handle == null) return;
 
-            if(manager == null) return;
-
-            List<Scenario> scenarios = new ArrayList<>();
-
-            pack.getScenarioPackets().forEach(scenarioPacket -> {
-                Path scenarioDir = scenarioPacket.applyToDisk2(scenarioPacket.getAbbreviation());
-                boolean server = false;
-
-                Path baseScenarioDir = Paths.get(scenarioPacket.getAbbreviation());
-                if(scenarioPacket.resolveFallbackScenarioDir(baseScenarioDir) == scenarioDir) server = true;
-
-                Scenario scenario = new Scenario(server, scenarioPacket.getAbbreviation(), scenarioPacket.getName(), scenarioDir);
-
-                if(scenarioPacket.getTheme() == null) scenario.setTheme(BOB.getInstance().getSettingsTheme());
-
-                scenarios.add(scenario);
-            });
-
-            manager.refresh(scenarios);
-        } else if(event.getPacket() instanceof ScenarioSyncPacket packet) {
-            packet.applyToDisk();
-
-            ScenarioManager manager = BOB.getInstance().getScenarioManager();
-
-            if(manager == null) return;
-
-            Scenario scenario = manager.getScenario(packet.getAbbreviation());
-
-            if(scenario != null) manager.refreshAddNew(scenario); //hier stand vorher == null, maybe sollte das so, ich glaube es war n bug
-
-            if(packet.getTheme() == null) if (scenario != null) scenario.setTheme(BOB.getInstance().getSettingsTheme());
-
-            BOB.getInstance().getScenarioSceneLoader().completeSync(scenario);
-
-            BOB.getInstance().getScenarioSceneLoader().load(scenario, false);
-        } else if(event.getPacket() instanceof CountriesSyncPacket packet) {
-            Set<Country> countries = packet.getPackets().stream().map(csp -> csp.getCountry(BOB.getInstance().getModifierManager(), BOB.getInstance().getIdeologyManager())).collect(Collectors.toSet());
-
-            countries.forEach(c -> BOB.getInstance().getCountryManager().registerCountry(c));
-
-            BOB.getInstance().getCountryManager().finishReload();
-        } else if(event.getPacket() instanceof TilesSyncPacket packet) {
-
-            if(BOB.getInstance().getTileManager().getAwaitingFuture() == null || BOB.getInstance().getTileManager().getAwaitingFuture().isCancelled() || BOB.getInstance().getTileManager().getAwaitingFuture().isDone()) return;
-
-            List<TileSyncPacket> packs = packet.getPackets();
-
-            packs.forEach(s -> s.reconstruct(BOB.getInstance().getSharedCore(), BOB.getInstance().getCountryManager()));
-
-            Set<Tile> tiles = packs.stream().map(TileSyncPacket::getTile).collect(Collectors.toSet());
-
-            tiles.forEach(s -> {
-                BOB.getInstance().getTileManager().registerTile(s);
-            });
-
-            BOB.getInstance().getTileManager().finishReload();
-        } else if(event.getPacket() instanceof IdeologiesSyncPacket packet) {
-            if(BOB.getInstance().getIdeologyManager().getAwaitingFuture() == null || BOB.getInstance().getIdeologyManager().getAwaitingFuture().isCancelled() || BOB.getInstance().getIdeologyManager().getAwaitingFuture().isDone()) return;
-
-            List<IdeologySyncPacket> packs = packet.getPackets();
-
-            Set<Ideology> ideologies = packs.stream().map(IdeologySyncPacket::getIdeology).collect(Collectors.toSet());
-
-            BOB.getInstance().getIdeologyManager().getIdeologies().addAll(ideologies);
-
-            BOB.getInstance().getIdeologyManager().finishReload();
+        try {
+            handle.accept(event.getPacket(), event);
+        } catch (Exception e) {
+            System.err.println("Failed to handle packet " + event.getPacket().getClass().getSimpleName());
+            e.printStackTrace();
         }
-        else if(event.getPacket() instanceof IdeologySyncPacket packet) BOB.getInstance().getIdeologyManager().getIdeologies().add(packet.getIdeology());
-        else if(event.getPacket() instanceof StatesSyncPacket packet) {
-            if(BOB.getInstance().getStateManager().getAwaitingFuture() == null || BOB.getInstance().getStateManager().getAwaitingFuture().isCancelled() || BOB.getInstance().getStateManager().getAwaitingFuture().isDone()) return;
+    }
 
-            List<StateSyncPacket> packs = packet.getPackets();
+    private void onPong(PongPacket pack, PacketRegistry.PacketReceiveEvent event) {
+        System.out.println("Pong received and cancelled at: " + System.nanoTime());
+        //event.setCancelled(true);
+    }
 
-            Set<State> states = packs.stream().map(s -> s.getState(BOB.getInstance().getCountryManager(), BOB.getInstance().getTileManager())).collect(Collectors.toSet());
+    private void onScenariosSync(ScenariosSyncPacket pack, PacketRegistry.PacketReceiveEvent event) {
+        ScenarioManager manager = BOB.getInstance().getScenarioManager();
+        if (manager == null) return;
 
-            states.forEach(s -> {
-                BOB.getInstance().getStateManager().registerState(s);
-            });
+        List<Scenario> scenarios = new ArrayList<>();
 
-            BOB.getInstance().getStateManager().finishReload(true);
-        } else if(event.getPacket() instanceof CountrySyncPacket packet) {
-            Country country = packet.getCountry(BOB.getInstance().getModifierManager(), BOB.getInstance().getIdeologyManager());
+        pack.getScenarioPackets().forEach(scenarioPacket -> {
+            Path scenarioDir = scenarioPacket.applyToDisk2(scenarioPacket.getAbbreviation());
 
-            if(BOB.getInstance().getCountryManager().has(country)) return;
+            Path baseScenarioDir = Paths.get(scenarioPacket.getAbbreviation());
+            boolean server = scenarioPacket.resolveFallbackScenarioDir(baseScenarioDir) == scenarioDir;
 
-            BOB.getInstance().getCountryManager().registerCountry(country);
+            Scenario scenario = new Scenario(server, scenarioPacket.getAbbreviation(), scenarioPacket.getName(), scenarioDir);
 
-        } else if(event.getPacket() instanceof TileSyncPacket packet) {
-            Tile tile = packet.getTile();
+            if (scenarioPacket.getTheme() == null) scenario.setTheme(BOB.getInstance().getSettingsTheme());
 
-            if(BOB.getInstance().getTileManager().has(tile)) return;
+            scenarios.add(scenario);
+        });
 
-            BOB.getInstance().getTileManager().registerTile(tile);
-        } else if(event.getPacket() instanceof ReplyPacket pack) {
-            switch (pack.getReplyType()) {
-                case TROOP_TRAIN_UPDATE -> {
-                    String[] strings = pack.getMessage().split(";");
+        manager.refresh(scenarios);
+    }
 
-                    UUID id = UUID.fromString(strings[0].replace("id=",""));
+    private void onScenarioSync(ScenarioSyncPacket packet, PacketRegistry.PacketReceiveEvent event) {
+        packet.applyToDisk();
 
-                    TrainEntry e = BOB.getInstance().getTroopManager().getTraining().stream().filter(te -> te.getUuid().equals(id)).findFirst().orElse(null);
+        ScenarioManager manager = BOB.getInstance().getScenarioManager();
+        if (manager == null) return;
 
-                    if(e == null) return;
+        Scenario scenario = manager.getScenario(packet.getAbbreviation());
+        if (scenario == null) return;
 
-                    String s1 = strings[1];
+        manager.refreshAddNew(scenario); //hier stand vorher == null, maybe sollte das so, ich glaube es war n bug
 
-                    if(s1.startsWith("pop")) {
-                        double full = Double.parseDouble(s1.replace("pop=",""));
+        if (packet.getTheme() == null) scenario.setTheme(BOB.getInstance().getSettingsTheme());
 
-                        e.setPop(full);
-                    }
-                }
-                case TROOP_UPDATE -> {
-                    String[] strings = pack.getMessage().split(";");
+        BOB.getInstance().getScenarioSceneLoader().completeSync(scenario);
+        BOB.getInstance().getScenarioSceneLoader().load(scenario, false);
+    }
 
-                    UUID id = UUID.fromString(strings[0].replace("id=",""));
+    private void onCountriesSync(CountriesSyncPacket packet, PacketRegistry.PacketReceiveEvent event) {
+        ModifierManager modifiers = BOB.getInstance().getModifierManager();  //fuck it we ball, i gotta optimize so im doing it correctly
+        IdeologyManager ideologies = BOB.getInstance().getIdeologyManager();  //fuck it we ball, i gotta optimize so im doing it correctly
+        CountryManager countryManager = BOB.getInstance().getCountryManager();  //fuck it we ball, i gotta optimize so im doing it correctly
 
-                    TroopStack troopStack = BOB.getInstance().getTroopManager().getTroop(id);
+        Set<Country> countries = packet.getPackets().stream().map(csp -> csp.getCountry(modifiers, ideologies)).collect(Collectors.toSet());
 
-                    if(troopStack == null) return;
+        countries.forEach(countryManager::registerCountry);
+        countryManager.finishReload();
+    }
 
-                    String s1 = strings[1];
+    private void onCountrySync(CountrySyncPacket packet, PacketRegistry.PacketReceiveEvent event) {
+        Country country = packet.getCountry(BOB.getInstance().getModifierManager(), BOB.getInstance().getIdeologyManager());
 
-                    if(s1.startsWith("exp")) {
-                        int exp = Integer.parseInt(s1.replace("exp=",""));
+        if (BOB.getInstance().getCountryManager().has(country)) return;
 
-                        troopStack.setExp(exp);
-                    } else if(s1.startsWith("template")) {
-                        String template = s1.replace("template=","");
+        BOB.getInstance().getCountryManager().registerCountry(country);
+    }
 
-                        troopStack.setTemplate(template);
-                    } else if(s1.startsWith("controller")) {
-                        String controller = s1.replace("controller=","");
+    private void onTilesSync(TilesSyncPacket packet, PacketRegistry.PacketReceiveEvent event) {
+        TileManager tileManager = BOB.getInstance().getTileManager();
+        CompletableFuture<Void> future = tileManager.getAwaitingFuture();
 
-                        Country c = BOB.getInstance().getCountryManager().getCountry(controller);
+        if (future == null || future.isCancelled() || future.isDone()) return;
 
-                        if(c == null) return;
+        List<TileSyncPacket> packs = packet.getPackets();
 
-                        troopStack.setController(c);
-                    } else if(s1.startsWith("owner")) {
-                        String owner = s1.replace("owner=","");
+        packs.forEach(s -> s.reconstruct(BOB.getInstance().getSharedCore(), BOB.getInstance().getCountryManager()));
 
-                        Country c = BOB.getInstance().getCountryManager().getCountry(owner);
+        Set<Tile> tiles = packs.stream().map(TileSyncPacket::getTile).collect(Collectors.toSet());
 
-                        if(c == null) return;
+        tiles.forEach(tileManager::registerTile);
 
-                        troopStack.setOwner(c);
-                    } else if(s1.startsWith("pop")) {
-                        long pop = Long.parseLong(s1.replace("pop=",""));
+        tileManager.finishReload();
+    }
 
-                       troopStack.setPopulation(pop);
-                    }
-                }
-                case TROOP_TRAIN_START -> {
-                    //uuid + ";" + troop.getName() + ";" + troop.getTemplate() + ";" + troop.getTrainDays()
-                    String[] strings = pack.getMessage().split("#");
-                    int troopTrainDays = Integer.parseInt(strings[0]);
-                    String troopS = strings[1];
-                    Pair<UUID, TroopStack> troop = TroopStack.deserialize(troopS, BOB.getInstance().getCountryManager(), BOB.getInstance().getTileManager());
-                    int startTime = Integer.parseInt(strings[2]);
-                    long availablePop = Long.parseLong(strings[3]);
+    private void onTileSync(TileSyncPacket packet, PacketRegistry.PacketReceiveEvent event) {
+        Tile tile = packet.getTile();
 
-                    BOB.getInstance().getTroopManager().addTrainEntry(new TrainEntry(startTime, 0, troop.key(), availablePop, troopTrainDays, troop.value()));
-                }
-                case TROOP_TRAIN_END -> {
-                    String[] strings = pack.getMessage().split(";");
+        if (BOB.getInstance().getTileManager().has(tile)) return;
 
-                    UUID uuid = UUID.fromString(strings[0]);
+        BOB.getInstance().getTileManager().registerTile(tile);
+    }
 
-                    BOB.getInstance().getTroopManager().removeTrainEntry(uuid, false);
-                }
-                case FOCUSTREE_REMOVE -> BOB.getInstance().getFocusManager().remove(pack.getMessage());
-                case MODIFIERS_UPDATE -> {
-                    String[] strings = pack.getMessage().split(";");
+    private void onIdeologiesSync(IdeologiesSyncPacket packet, PacketRegistry.PacketReceiveEvent event) {
+        IdeologyManager manager = BOB.getInstance().getIdeologyManager();  //fuck it we ball, i gotta optimize so im doing it correctly
+        CompletableFuture<Void> future = manager.getAwaitingFuture();
 
-                    String id = strings[0].replace("id=","");
+        if (future == null || future.isCancelled() || future.isDone()) return;
 
-                    Country c = BOB.getInstance().getCountryManager().byAbbreviation(id);
+        Set<Ideology> ideologies = packet.getPackets().stream().map(IdeologySyncPacket::getIdeology).collect(Collectors.toSet());
 
-                    if(c == null) return;
+        manager.getIdeologies().addAll(ideologies);
+        manager.finishReload();
+    }
 
-                    String s1 = strings[1];
+    private void onIdeologySync(IdeologySyncPacket packet, PacketRegistry.PacketReceiveEvent event) {
+        BOB.getInstance().getIdeologyManager().getIdeologies().add(packet.getIdeology());
+    }
 
-                    if(s1.startsWith("add")) {
-                        String add = s1.replace("add=","");
+    private void onStatesSync(StatesSyncPacket packet, PacketRegistry.PacketReceiveEvent event) {
+        StateManager manager = BOB.getInstance().getStateManager();
+        CompletableFuture<Void> future = manager.getAwaitingFuture();
 
-                        Modifier mod = BOB.getInstance().getModifierManager().by(add);
+        if (future == null || future.isCancelled() || future.isDone()) return;
 
-                        c.addModifier(mod,BOB.getInstance().getTimeManager());
-                    } else if(s1.startsWith("remove")) {
-                        String remove = s1.replace("remove=","");
+        Set<State> states = packet.getPackets().stream().map(s -> s.getState(BOB.getInstance().getCountryManager(), BOB.getInstance().getTileManager())).collect(Collectors.toSet());
 
-                        Modifier mod = BOB.getInstance().getModifierManager().by(remove);
+        states.forEach(manager::registerState);
 
-                        c.removeModifier(mod);
-                    }
-                }
-                case FOCUS_UPDATE -> {
-                    String[] strings = pack.getMessage().split(";");
+        manager.finishReload(true);
+    }
 
-                    String id = strings[0].replace("id=", "");
-                    String treeId = strings[1].replace("treeId=", "");
+    private void onPlayerAuthUpdate(PlayerAuthUpdatePacket pack, PacketRegistry.PacketReceiveEvent event) {
+        if (!pack.isAuthed()) return;
 
-                    Focus c = BOB.getInstance().getFocusManager().focusBy(treeId, id);
+        BOB.getInstance().setPlayer(pack.getUuid());
+        BOB.getInstance().getPlayerManager().addPlayer(BOB.getInstance().getPlayer());
+    }
 
-                    if(c == null) return;
+    private void onPlayerJoin(PlayerJoinPacket pack, PacketRegistry.PacketReceiveEvent event) {
+        PlayerManager players = BOB.getInstance().getPlayerManager(); //fuck it we ball, i gotta optimize so im doing it correctly
 
-                    String s1 = strings[2];
+        if (Objects.equals(pack.getAddress(), AddressUtil.getThisAddress(event.getChannel()))) players.getPlayer(pack.getAddress()).uuid(pack.getUuid());
 
-                    if(s1.startsWith("start")) {
-                        String start = s1.replace("start=","");
-
-                        BOB.getInstance().getFocusManager().startFocus(start,id,treeId);
-                    } else if(s1.startsWith("end")) {
-                        String end = s1.replace("end=","");
-
-                        BOB.getInstance().getFocusManager().endFocus(end,id,treeId);
-                    } else if(s1.startsWith("cancel")) {
-                        String cancel = s1.replace("cancel=","");
-
-                        BOB.getInstance().getFocusManager().cancelFocus(cancel,id,treeId);
-                    }
-                }
-                case TIME_RESTART -> {
-                    long timestamp = Long.parseLong(pack.getMessage());
-                    java.util.Date s = timestamp == -1L ? null : new Date(timestamp);
-
-                    if (s != null) BOB.getInstance().getTimeManager().reload(s);
-                }
-                case COUNTRY_UPDATE -> {
-                    String[] strings = pack.getMessage().split(";");
-
-                    String id = strings[0].replace("id=","");
-
-                    Country c = BOB.getInstance().getCountryManager().byAbbreviation(id);
-
-                    if(c == null) return;
-
-                    String s1 = strings[1];
-
-                    if(s1.startsWith("overlord")) {
-                        String ov = s1.replace("overlord=","");
-
-                        c.setOverlord(ov);
-                    } else if(s1.startsWith("manpower")) {
-                        long manpower = Long.parseLong(s1.replace("manpower=",""));
-                        c.setManpower(manpower);
-                    } else if(s1.startsWith("major")) {
-                        boolean major = Boolean.parseBoolean(s1.replace("major=",""));
-                        c.setMajor(major);
-                    } else if(s1.startsWith("conscription")) {
-                        Country.Conscription conscription = Country.Conscription.valueOf(s1.replace("conscription=",""));
-                        c.setConscription(conscription);
-                    } else if(s1.startsWith("puppetState")) {
-                        String state = s1.replace("puppetState=","");
-
-                        try {
-                            PuppetState puppetState = PuppetState.valueOf(state);
-                            c.setPuppetState(puppetState);
-                        } catch (IllegalArgumentException ignored) {}
-                    } else if(s1.startsWith("personality")) {
-                        String personalityString = s1.replace("personality=","");
-
-                        AIPersonality pers = AIPersonality.fromDataString(personalityString);
-
-                        if(pers == null) pers = new AIPersonality(1,1,1,1);
-
-                        c.setPersonality(pers);
-                    }
-                }
-                case MODIFIER_UPDATE -> {
-                    String[] strings = pack.getMessage().split(";");
-
-                    String id = strings[0].replace("id=","");
-
-                    Modifier modifier = BOB.getInstance().getModifierManager().by(id);
-
-                    if(modifier == null) return;
-
-                    String s1 = strings[1];
-
-                    if(s1.startsWith("displayName")) {
-                        String displayName = s1.replace("displayName=","");
-
-                        modifier.setDisplayName(displayName);
-                    } else if (s1.startsWith("modifier")) {
-                        String modifierS = s1.replace("modifier=","");
-
-                        modifier.setModifier(modifierS);
-                    } else if(s1.startsWith("specificallyFor")) {
-                        String specificFor = s1.replace("specificallyFor=","");
-
-                        modifier.setSpecificallyFor(specificFor);
-                    } else if(s1.startsWith("type")) {
-                        String type = s1.replace("type=","");
-
-                        modifier.setType(type);
-                    }
-                }
-                case FACTION_UPDATE -> {
-                    String[] strings = pack.getMessage().split(";");
-
-                    String id = strings[0].replace("id=","");
-
-                    Faction faction = BOB.getInstance().getFactionManager().factionBy(id);
-
-                    if(faction == null) return;
-
-                    String s1 = strings[1];
-
-                    if(s1.startsWith("addMember")) {
-                        String country = s1.replace("addMember=","");
-
-                        faction.addMember(country);
-                    } else if (s1.startsWith("removeMember")) {
-                        String country = s1.replace("removeMember=","");
-
-                        faction.rmMember(country);
-                    } else if(s1.startsWith("changeName")) {
-                        String newName = s1.replace("changeName=","");
-
-                        faction.setName(newName);
-                    }
-                }
-                case PP_UPDATE -> {
-                    String[] strings = pack.getMessage().split(";");
-
-                    double pp = Double.parseDouble(strings[1]);
-
-                    Country c = BOB.getInstance().getCountryManager().byAbbreviation(strings[0]);
-
-                    if(c == null) return;
-
-                    c.setPoliticalPower(pp,BOB.getInstance().getPlayer().country());
-                }
-                case GAMESTATE_SYNC -> {
-                    if(pack.getMessage() == null) return;
-
-                    try {
-                        GameState s = GameState.valueOf(pack.getMessage());
-                        BOB.getInstance().getGameManager().setGameState(s);
-                    } catch (IllegalArgumentException e) {
-                        if(BOB.getInstance().isDebug()) System.out.println("couldn't find gamestate named: " + pack.getMessage());
-                    }
-                }
-                case IDEOLOGY_UPDATE -> {
-                    CountryResolver r = BOB.getInstance().getCountryManager();
-
-                    String data = pack.getMessage();
-
-                    String[] parts = data.split("=", 2);
-                    if (parts.length != 2) return;
-
-                    String action = parts[0];
-
-                    String[] values = parts[1].split(";", 2);
-                    if (values.length != 2) return;
-
-                    String countryAbbreviation = values[0];
-                    String ideologyAbbreviation = values[1];
-
-                    Country country = r.byAbbreviation(countryAbbreviation);
-                    Ideology ideology = BOB.getInstance().getIdeologyManager().byAbbreviation(ideologyAbbreviation);
-
-                    if (country == null || ideology == null) return;
-
-                    switch (action) {
-                        case "start" -> country.setStartIdeologySimple(ideology);
-                        case "add" -> country.addAvailableIdeologiesSimple(ideology);
-                        case "remove" -> country.rmAvailableIdeologiesSimple(ideology);
-                        case "ruling" -> country.setRulingIdeologySimple(ideology);
-                    }
-                }
-                case MIL_ACCESS -> {
-                    var pair = Country.getAccessUpdate(pack.getMessage());
-
-                    Country c1 = BOB.getInstance().getCountryManager().byAbbreviation(pair.key());
-                    Country c2 = BOB.getInstance().getCountryManager().byAbbreviation(pair.value().key());
-                    boolean added = pair.value().value();
-
-                    if(c1 == null) return;
-                    if(c2 == null) return;
-
-                    if(added) {
-                        BOB.getInstance().getMainRenderer().getGamePanel().showGenericPopup("MILITARY ACCESS GRANTED!", "granted military access to", c1, c2, 5000,new Color(80, 235, 75));
-                        c1.addMilAccess(c2.getAbbreviation());
-                        BOB.getInstance().getMainRenderer().getGamePanel().getHud().updateTabsFr();
-                    } else {
-                        BOB.getInstance().getMainRenderer().getGamePanel().showGenericPopup("MILITARY ACCESS DENIED!", "denied military access to", c1, c2, 5000);
-                        c1.removeMilAccess(c2.getAbbreviation());
-                        BOB.getInstance().getMainRenderer().getGamePanel().getHud().updateTabsFr();
-                    }
-
-                }
-                case TILE_CONNECTION_CHANGE -> {
-                    if(pack.getMessage().startsWith("broken=")) {
-                        var pair = Tile.TileConnection.deserializeBroken(pack.getMessage());
-                        BOB.getInstance().getTileManager().getConnection(pair.value()).setBrokenSimple(pair.key());
-                    } else if(pack.getMessage().startsWith("type=")) {
-                        var pair = Tile.TileConnection.deserializeType(pack.getMessage());
-                        BOB.getInstance().getTileManager().getConnection(pair.value()).setTypeSimple(pair.key());
-                    }
-                }
-                case CONFERENCE_STARTED -> {
-                    PeaceConference conference = PeaceConference.deserialize(BOB.getInstance().getSharedCore(), BOB.getInstance().getCountryManager(), BOB.getInstance().getTileManager(), pack.getMessage());
-
-                    BOB.getInstance().getPeaceHelper().addPeaces(conference);
-                }
-                case END_CONFERENCE -> {
-                    String uuidString = pack.getMessage();
-
-                    UUID uuid;
-
-                    try {
-                        uuid = UUID.fromString(uuidString);
-                    } catch (IllegalArgumentException e) {
-                        return;
-                    }
-
-                    PeaceConference c = BOB.getInstance().getPeaceHelper().getBy(uuid);
-                    if(c != null)
-                        BOB.getInstance().getMainRenderer().getGamePanel().showGenericPopup("PEACE ACHIEVED!","achieved peace with", c.getWinners().getFirst(), c.getDefeated().getFirst(), 5000, new Color(80, 235, 75));
-
-                    BOB.getInstance().getPeaceHelper().removePeaces(uuid);
-                }
-                case ROUND_ENDED -> {
-                    PeaceConference conf = BOB.getInstance().getPeaceHelper().getBy(PeaceConference.getUUID(pack.getMessage()));
-
-                    conf.deserializeUpdate(BOB.getInstance().getTileManager(), pack.getMessage());
-
-                    BOB.getInstance().getPeaceHelper().nextRound(conf.getUUID());
-                }
-                case ROUND_UPDATE -> {
-                    PeaceConference conf = BOB.getInstance().getPeaceHelper().getBy(PeaceConference.getUUID(pack.getMessage()));
-
-                    conf.deserializeUpdate(BOB.getInstance().getTileManager(), pack.getMessage());
-                }
-                case CLEAR_COMBATS -> {
-                    BOB.getInstance().getCombatManager().clear();
-                }
-                case COMBAT_OVER -> {
-                    String uuidString = pack.getMessage();
-
-                    UUID uuid;
-
-                    try {
-                        uuid = UUID.fromString(uuidString);
-                    } catch (IllegalArgumentException e) {
-                        return;
-                    }
-
-                    BOB.getInstance().getCombatManager().remove(uuid);
-                }
-                case TROOP_REMOVE -> {
-                    String uuidString = pack.getMessage();
-
-                    UUID uuid;
-
-                    try {
-                        uuid = UUID.fromString(uuidString);
-                    } catch (IllegalArgumentException e) {
-                        return;
-                    }
-
-                    BOB.getInstance().getTroopManager().removeTroopStack(uuid);
-                }
-                case CAPITULATE_COUNTRY -> {
-                    String[] parts = pack.getMessage().split(";");
-
-                    String countryAbbr = parts[0];
-                    boolean capped = Boolean.parseBoolean(parts[1]);
-
-                    Country country = BOB.getInstance().getCountryManager().byAbbreviation(countryAbbr);
-
-                    if(country == null) return;
-
-                    country.setCapitulated(capped);
-
-                    //TODO: show popup that a country capped (idk since its a bit dumb currentlky since peace starts immediatly)
-                }
-                case END_WAR -> {
-                    WarStatus status = WarStatus.fromString(pack.getMessage(), BOB.getInstance().getCountryManager());
-
-                    status.getAttackers().forEach(c -> BOB.getInstance().getWarManager().endWar(c.getAbbreviation(),status));
-                    status.getDefenders().forEach(c -> BOB.getInstance().getWarManager().endWar(c.getAbbreviation(),status));
-
-                    //TODO: show popup that a war ended and start peace conference (oh gosh i need to code that) (idk since its a bit dumb currentlky since peace starts immediatly)
-                }
-                case START_WAR -> {
-                    WarStatus status = WarStatus.fromString(pack.getMessage(), BOB.getInstance().getCountryManager());
-
-                    status.getAttackers().forEach(c -> {BOB.getInstance().getWarManager().addWar(c.getAbbreviation(), status);});
-                    status.getDefenders().forEach(c -> {BOB.getInstance().getWarManager().addWar(c.getAbbreviation(), status);});
-
-                    BOB.getInstance().getMainRenderer().getGamePanel().showGenericPopup("WAR DECLARED!", "declared war on", status.getAttackers().getFirst(), status.getDefenders().getFirst(), 5000);
-                }
-                case WARS_SYNC -> {
-                    BOB.getInstance().getWarManager().finishReload(pack.getMessage());
-                }
-                case TROOP_TP -> {
-                    String[] parts = pack.getMessage().split(";");
-
-                    String[] troopPart = parts[0].split("=");
-                    String[] tilePart = parts[1].split("=");
-
-                    Tile tile = BOB.getInstance().getTileManager().byAbbreviation(tilePart[1]);
-
-                    if (troopPart[0].equals("troop")) {
-                        UUID uuid = UUID.fromString(troopPart[1]);
-
-                        BOB.getInstance().getTroopManager().tp(uuid, tile);
-                    }
-                }
-                case TROOPS_MOVE -> {
-                    String[] parts = pack.getMessage().split(";");
-
-                    String[] troopPart = parts[0].split("=");
-                    String[] tilePart = parts[1].split("=");
-                    String[] statusPart = parts[2].split("=");
-
-                    Tile tile = BOB.getInstance().getTileManager().byAbbreviation(tilePart[1]);
-
-                    if (troopPart[0].equals("troop")) {
-                        UUID uuid = UUID.fromString(troopPart[1]);
-
-                        MoveStatus status = MoveStatus.values()[Integer.parseInt(statusPart[1])];
-
-                        BOB.getInstance().getTroopManager().finishMove(uuid, tile, status);
-                    } else if (troopPart[0].equals("troops")) {
-                        String[] uuids = troopPart[1].split(",");
-                        String[] statuses = statusPart[1].split(",");
-
-                        Map<UUID, MoveStatus> results = new HashMap<>();
-
-                        for (int i = 0; i < uuids.length; i++) {
-                            UUID uuid = UUID.fromString(uuids[i]);
-                            MoveStatus status = MoveStatus.values()[Integer.parseInt(statuses[i])];
-
-                            results.put(uuid, status);
-                        }
-
-                        BOB.getInstance().getTroopManager().finishMoveAll(results, tile);
-                    }
-                }
-                case TILE_UPDATE -> {
-                    String s = pack.getMessage();
-
-                    if(s.isEmpty()) return;
-
-                    String[] strings = pack.getMessage().split(";");
-
-                    String id = strings[0].replace("id=","");
-
-                    Tile t = BOB.getInstance().getTileManager().byAbbreviation(id);
-
-                    if(t == null) return;
-
-                    String s1 = strings[1];
-
-                    if(s1.startsWith("population")) {
-                        double population = Double.parseDouble(s1.replace("population=",""));
-                        t.setPopulation(population);
-                    } else if(s1.startsWith("addCore")) {
-                        String core = s1.replace("addCore=", "");
-                        t.addCore(core);
-                    } else if(s1.startsWith("removeCore")) {
-                        String core = s1.replace("removeCore=", "");
-                        t.removeCore(core);
-                    } else if(s1.startsWith("addClaim")) {
-                        String core = s1.replace("addClaim=", "");
-                        t.addClaim(core);
-                    } else if(s1.startsWith("removeClaim")) {
-                        String core = s1.replace("removeClaim=", "");
-                        t.removeClaim(core);
-                    }
-                }
-                case TILE_CHANGE -> {
-                    String s = pack.getMessage();
-
-                    if(s.isEmpty()) return;
-
-                    Pair<Tile, Country> pair = Tile.deconstructChange(s, BOB.getInstance().getCountryManager(), BOB.getInstance().getTileManager());
-
-                    Tile tile = pair.key();
-
-                    if(tile == null) return;
-
-                    Country country = pair.value();
-
-                    if(country == null) return;
-
-                    Color c = country.countryColor() == null ? Color.WHITE : country.countryColor() ;
-
-                    TileChangedEvent.Type t = Tile.getChangeType(s);
-                    if(Objects.equals(t, TileChangedEvent.Type.OWNER)) {
-                        tile.setOwner(country);
-                    } else if(Objects.equals(t, TileChangedEvent.Type.CONTROLLER)) {
-                        tile.setController(country);
-                        BOB.getInstance().getTileManager().recolorTile(tile, c);
-
-                        //System.out.println("TILE THAT WAS CHANGED: " + tile.getController().getAbbreviation());
-//
-                        //Pair<Tile, Country> pair1 = Tile.deconstructChange(s, BOB.getInstance().getCountryManager(), BOB.getInstance().getTileManager());
-//
-                        //System.out.println("TILE THAT I GOT NOW: " + pair1.left().getController().getAbbreviation());
-//
-                        //var p = tile.getPoints().getFirst();
-                        //System.out.println("TILE WHEN I GET IT BY POINT NOW: " + BOB.getInstance().getTileManager().getTileAt(p.x,p.y));
-                    }
-                }
-                case PLAYER_CHANGE -> {
-
-                    String[] parts = pack.getMessage().split(";");
-
-                    String uuid = parts[0]; //ig use this over the channel one?!
-                    String abbreviation = parts[1];
-                    String status = parts[2];
-
-                    if(!Boolean.parseBoolean(status)) return;
-
-                    Country country = BOB.getInstance().getCountryManager().byAbbreviation(abbreviation);
-
-                    //if(country == null) return; ALLOW null countries for spectator
-
-                    Player p = BOB.getInstance().getPlayerManager().getPlayer(AddressUtil.getRemoteAddress(event.getChannel()));
-
-                    if(p == null) return;
-
-                    p.country(country == null ? null : country.getAbbreviation());
-                }
-                case ERROR -> {}
-
-            }
-        } else if(event.getPacket() instanceof PlayerAuthUpdatePacket pack) {
-            if(!pack.isAuthed()) return;
-
-            BOB.getInstance().setPlayer(pack.getUuid());
-            BOB.getInstance().getPlayerManager().addPlayer(BOB.getInstance().getPlayer());
+        if (players.hasPlayer(pack.getUuid())) {
+            System.out.println("UUID already good " + players.getPlayer(pack.getAddress()).uuid() + " " + pack.getUuid());
+            return;
         }
-        else if(event.getPacket() instanceof PlayerJoinPacket pack) {
-            //System.out.println(
-            //        "join packet " +
-            //                pack.getAddress() +
-            //                " " +
-            //                pack.getUuid()
-            //);
 
-            if(pack.getAddress() == AddressUtil.getThisAddress(event.getChannel())) {
-                BOB.getInstance().getPlayerManager().getPlayer(pack.getAddress()).uuid(pack.getUuid());
+        if (players.hasPlayer(pack.getAddress())) {
+            //für local sync
+            System.out.println("UUID changed " + players.getPlayer(pack.getAddress()).uuid() + " " + pack.getUuid());
+
+            players.getPlayer(pack.getAddress()).uuid(pack.getUuid());
+        }
+
+        Player p = players.createPlayer(event.getChannel(), pack.getUuid(), pack.getAddress());
+
+        players.addPlayer(p);
+    }
+
+    private void onPlayerQuit(PlayerQuitPacket pack, PacketRegistry.PacketReceiveEvent event) {
+        BOB.getInstance().getPlayerManager().removePlayer(pack.getUuid());
+    }
+
+    private void onPlayerChangedCountry(PlayerChangedCountryPacket pack, PacketRegistry.PacketReceiveEvent event) {
+        Player player = BOB.getInstance().getPlayerManager().getPlayer(pack.getUuid());
+        if (player == null) return;
+
+        Country country = BOB.getInstance().getCountryManager().byAbbreviation(pack.getCountryAbbreviation());
+
+        player.country(country == null ? null : country.getAbbreviation());
+    }
+
+    private void onTroopStackSync(TroopStackSyncPacket pack, PacketRegistry.PacketReceiveEvent event) {
+        var z = pack.getTroopStack(BOB.getInstance().getCountryManager(), BOB.getInstance().getTileManager());
+        BOB.getInstance().getTroopManager().addTroopStack(z.value(), z.key());
+    }
+
+    private void onTroopStacksSync(TroopStacksSyncPacket pack, PacketRegistry.PacketReceiveEvent event) {
+        CountryManager countries = BOB.getInstance().getCountryManager();
+        TileManager tiles = BOB.getInstance().getTileManager();
+
+        Map<UUID, TroopStack> map = pack.getPackets().stream().map(d -> {
+            var pair = d.getTroopStack(countries, tiles);
+            return Map.entry(pair.key(), pair.value());
+        }).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        BOB.getInstance().getTroopManager().finishReload(map, true);
+    }
+
+    private void onCombatSync(CombatSyncPacket pack, PacketRegistry.PacketReceiveEvent event) {
+        BOB.getInstance().getCombatManager().addStatus(pack.getStatus(BOB.getInstance().getTroopManager()));
+    }
+
+    private void onCombatsSync(CombatsSyncPacket pack, PacketRegistry.PacketReceiveEvent event) {
+        TroopManager troops = BOB.getInstance().getTroopManager();  //fuck it we ball, i gotta optimize so im doing it correctly
+
+        BOB.getInstance().getCombatManager().addStatus(pack.getPackets().stream().map(p -> p.getStatus(troops)).toList());
+    }
+
+    private void onTimeCheck(TimeCheckAndCorrectPacket pack, PacketRegistry.PacketReceiveEvent event) {
+        BOB.getInstance().getTimeManager().sync(pack.getStartDate(), pack.getTimeTicks(), pack.getSpeed());
+    }
+
+    private void onFactionSync(FactionSyncPacket pack, PacketRegistry.PacketReceiveEvent event) {
+        BOB.getInstance().getFactionManager().addFaction(pack.getFaction(BOB.getInstance().getFactionManager()));
+    }
+
+    private void onFactionsSync(FactionsSyncPacket packet, PacketRegistry.PacketReceiveEvent event) {
+        FactionManager manager = BOB.getInstance().getFactionManager();  //fuck it we ball, i gotta optimize so im doing it correctly
+
+        packet.getPackets().forEach(pack -> manager.addFaction(pack.getFaction(manager)));
+
+        manager.finishFactionsReload();
+    }
+
+    private void onFactionRuleSync(FactionRuleSyncPacket pack, PacketRegistry.PacketReceiveEvent event) {
+        BOB.getInstance().getFactionManager().addFactionRule(pack.getFactionRule(BOB.getInstance().getModifierManager()));
+    }
+
+    private void onFactionRulesSync(FactionRulesSyncPacket packet, PacketRegistry.PacketReceiveEvent event) {
+        FactionManager manager = BOB.getInstance().getFactionManager();
+        ModifierManager modifiers = BOB.getInstance().getModifierManager();
+
+        packet.getPackets().forEach(pack -> manager.addFactionRule(pack.getFactionRule(modifiers)));
+
+        manager.finishRulesReload();
+    }
+
+    private void onModifierSync(ModifierSyncPacket pack, PacketRegistry.PacketReceiveEvent event) {
+        BOB.getInstance().getModifierManager().addModifier(pack.getModifier());
+    }
+
+    private void onModifiersSync(ModifiersSyncPacket packet, PacketRegistry.PacketReceiveEvent event) {
+        ModifierManager manager = BOB.getInstance().getModifierManager(); //fuck it we ball, i gotta optimize so im doing it correctly
+
+        packet.getPackets().forEach(pack -> manager.addModifier(pack.getModifier()));
+
+        manager.finishReload();
+    }
+
+    private void onFocusTreeSync(FocusTreeSyncPacket pack, PacketRegistry.PacketReceiveEvent event) {
+        FocusTree tree = pack.getTree(BOB.getInstance().getModifierManager());
+        BOB.getInstance().getFocusManager().add(tree);
+    }
+
+    private void onFocusTreesSync(FocusTreesSyncPacket packet, PacketRegistry.PacketReceiveEvent event) {
+        FocusManager manager = BOB.getInstance().getFocusManager();
+        ModifierManager modifiers = BOB.getInstance().getModifierManager();
+
+        packet.getPackets().forEach(pack -> manager.add(pack.getTree(modifiers)));
+
+        manager.finishReload();
+    }
+
+    private void onReply(ReplyPacket pack, PacketRegistry.PacketReceiveEvent event) {
+        switch (pack.getReplyType()) {
+            case TROOP_TRAIN_UPDATE -> onTroopTrainUpdate(pack);
+            case TROOP_UPDATE -> onTroopUpdate(pack);
+            case TROOP_TRAIN_START -> onTroopTrainStart(pack);
+            case TROOP_TRAIN_END -> onTroopTrainEnd(pack);
+            case FOCUSTREE_REMOVE -> BOB.getInstance().getFocusManager().remove(pack.getMessage());
+            case MODIFIERS_UPDATE -> onModifiersUpdate(pack);
+            case FOCUS_UPDATE -> onFocusUpdate(pack);
+            case TIME_RESTART -> onTimeRestart(pack);
+            case COUNTRY_UPDATE -> onCountryUpdate(pack);
+            case MODIFIER_UPDATE -> onModifierUpdate(pack);
+            case FACTION_UPDATE -> onFactionUpdate(pack);
+            case PP_UPDATE -> onPpUpdate(pack);
+            case GAMESTATE_SYNC -> onGameStateSync(pack);
+            case IDEOLOGY_UPDATE -> onIdeologyUpdate(pack);
+            case MIL_ACCESS -> onMilAccess(pack);
+            case TILE_CONNECTION_CHANGE -> onTileConnectionChange(pack);
+            case CONFERENCE_STARTED -> onConferenceStarted(pack);
+            case END_CONFERENCE -> onEndConference(pack);
+            case ROUND_ENDED -> onRoundEnded(pack);
+            case ROUND_UPDATE -> onRoundUpdate(pack);
+            case CLEAR_COMBATS -> BOB.getInstance().getCombatManager().clear();
+            case COMBAT_OVER -> onCombatOver(pack);
+            case TROOP_REMOVE -> onTroopRemove(pack);
+            case CAPITULATE_COUNTRY -> onCapitulateCountry(pack);
+            case END_WAR -> onEndWar(pack);
+            case START_WAR -> onStartWar(pack);
+            case WARS_SYNC -> BOB.getInstance().getWarManager().finishReload(pack.getMessage());
+            case TROOP_TP -> onTroopTp(pack);
+            case TROOPS_MOVE -> onTroopsMove(pack);
+            case TILE_UPDATE -> onTileUpdate(pack);
+            case TILE_CHANGE -> onTileChange(pack);
+            case PLAYER_CHANGE -> onPlayerChange(pack, event);
+            case ERROR -> {}
+        }
+    }
+
+    private void onTroopTrainUpdate(ReplyPacket pack) {
+        String[] strings = pack.getMessage().split(";");
+
+        UUID id = UUID.fromString(valueOf(strings[0], "id"));
+
+        TrainEntry e = BOB.getInstance().getTroopManager().getTraining().stream().filter(te -> te.getUuid().equals(id)).findFirst().orElse(null);
+
+        if (e == null) return;
+
+        String s1 = strings[1];
+
+        if (s1.startsWith("pop")) e.setPop(Double.parseDouble(valueOf(s1, "pop")));
+    }
+
+    private void onTroopUpdate(ReplyPacket pack) {
+        String[] strings = pack.getMessage().split(";");
+
+        UUID id = UUID.fromString(valueOf(strings[0], "id"));
+
+        TroopStack troopStack = BOB.getInstance().getTroopManager().getTroop(id);
+        if (troopStack == null) return;
+
+        String s1 = strings[1];
+
+        if (s1.startsWith("exp")) troopStack.setExp(Integer.parseInt(valueOf(s1, "exp")));
+        else if (s1.startsWith("template")) troopStack.setTemplate(valueOf(s1, "template"));
+        else if (s1.startsWith("controller")) {
+            Country c = BOB.getInstance().getCountryManager().getCountry(valueOf(s1, "controller"));
+            if (c == null) return;
+
+            troopStack.setController(c);
+        } else if (s1.startsWith("owner")) {
+            Country c = BOB.getInstance().getCountryManager().getCountry(valueOf(s1, "owner"));
+            if (c == null) return;
+
+            troopStack.setOwner(c);
+        } else if (s1.startsWith("pop")) troopStack.setPopulation(Long.parseLong(valueOf(s1, "pop")));
+    }
+
+    private void onTroopTrainStart(ReplyPacket pack) {
+        //uuid + ";" + troop.getName() + ";" + troop.getTemplate() + ";" + troop.getTrainDays()
+        String[] strings = pack.getMessage().split("#");
+
+        int troopTrainDays = Integer.parseInt(strings[0]);
+        Pair<UUID, TroopStack> troop = TroopStack.deserialize(strings[1], BOB.getInstance().getCountryManager(), BOB.getInstance().getTileManager());
+        int startTime = Integer.parseInt(strings[2]);
+        long availablePop = Long.parseLong(strings[3]);
+
+        BOB.getInstance().getTroopManager().addTrainEntry(new TrainEntry(startTime, 0, troop.key(), availablePop, troopTrainDays, troop.value()));
+    }
+
+    private void onTroopTrainEnd(ReplyPacket pack) {
+        String[] strings = pack.getMessage().split(";");
+
+        BOB.getInstance().getTroopManager().removeTrainEntry(UUID.fromString(strings[0]), false);
+    }
+
+    private void onTroopRemove(ReplyPacket pack) {
+        UUID uuid = parseUuid(pack.getMessage());
+        if (uuid == null) return;
+
+        BOB.getInstance().getTroopManager().removeTroopStack(uuid);
+    }
+
+    private void onTroopTp(ReplyPacket pack) {
+        String[] parts = pack.getMessage().split(";");
+
+        String[] troopPart = parts[0].split("=");
+        String[] tilePart = parts[1].split("=");
+
+        Tile tile = BOB.getInstance().getTileManager().byAbbreviation(tilePart[1]);
+
+        if (troopPart[0].equals("troop")) BOB.getInstance().getTroopManager().tp(UUID.fromString(troopPart[1]), tile);
+    }
+
+    private void onTroopsMove(ReplyPacket pack) {
+        String[] parts = pack.getMessage().split(";");
+
+        String[] troopPart = parts[0].split("=");
+        String[] tilePart = parts[1].split("=");
+        String[] statusPart = parts[2].split("=");
+
+        Tile tile = BOB.getInstance().getTileManager().byAbbreviation(tilePart[1]);
+
+        if (troopPart[0].equals("troop")) {
+            UUID uuid = UUID.fromString(troopPart[1]);
+            MoveStatus status = MOVE_STATUSES[Integer.parseInt(statusPart[1])]; //micro optimization type shiiii
+
+            BOB.getInstance().getTroopManager().finishMove(uuid, tile, status);
+        } else if (troopPart[0].equals("troops")) {
+            String[] uuids = troopPart[1].split(",");
+            String[] statuses = statusPart[1].split(",");
+
+            Map<UUID, MoveStatus> results = new HashMap<>(uuids.length * 2);
+
+            for (int i = 0; i < uuids.length; i++) {
+                results.put(UUID.fromString(uuids[i]), MOVE_STATUSES[Integer.parseInt(statuses[i])]); //micro optimization type shiiii
             }
 
-            if(BOB.getInstance().getPlayerManager().hasPlayer(pack.getUuid())) {
-                System.out.println("UUID already good " + BOB.getInstance().getPlayerManager().getPlayer(pack.getAddress()).uuid() + " " + pack.getUuid());
-                return;
-            }
+            BOB.getInstance().getTroopManager().finishMoveAll(results, tile);
+        }
+    }
 
-            if(BOB.getInstance().getPlayerManager().hasPlayer(pack.getAddress())) {
-                //für local sync
-                System.out.println("UUID changed " + BOB.getInstance().getPlayerManager().getPlayer(pack.getAddress()).uuid() + " " + pack.getUuid());
+    private void onCombatOver(ReplyPacket pack) {
+        UUID uuid = parseUuid(pack.getMessage());
+        if (uuid == null) return;
 
-                BOB.getInstance().getPlayerManager().getPlayer(pack.getAddress()).uuid(pack.getUuid());
-            }
+        BOB.getInstance().getCombatManager().remove(uuid);
+    }
 
-            Player p = BOB.getInstance().getPlayerManager().createPlayer(event.getChannel(), pack.getUuid(), pack.getAddress());
+    private void onModifiersUpdate(ReplyPacket pack) {
+        String[] strings = pack.getMessage().split(";");
 
-            BOB.getInstance().getPlayerManager().addPlayer(p);
-        } else if(event.getPacket() instanceof PlayerQuitPacket pack) {
-            BOB.getInstance().getPlayerManager().removePlayer(pack.getUuid());
-        } else if (event.getPacket() instanceof PlayerChangedCountryPacket pack) {
-            UUID uuid = pack.getUuid();
-            String abbreviation = pack.getCountryAbbreviation();
+        Country c = BOB.getInstance().getCountryManager().byAbbreviation(valueOf(strings[0], "id"));
+        if (c == null) return;
 
-            Player player = BOB.getInstance().getPlayerManager().getPlayer(uuid);
-            Country country = BOB.getInstance().getCountryManager().byAbbreviation(abbreviation);
+        String s1 = strings[1];
 
-            if(player == null) return;
+        if (s1.startsWith("add")) {
+            Modifier mod = BOB.getInstance().getModifierManager().by(valueOf(s1, "add"));
+            c.addModifier(mod, BOB.getInstance().getTimeManager());
+        } else if (s1.startsWith("remove")) {
+            Modifier mod = BOB.getInstance().getModifierManager().by(valueOf(s1, "remove"));
+            c.removeModifier(mod);
+        }
+    }
 
-            player.country(country == null ? null: country.getAbbreviation());
-        } else if(event.getPacket() instanceof TroopStackSyncPacket pack) {
-            var z = pack.getTroopStack(BOB.getInstance().getCountryManager(), BOB.getInstance().getTileManager());
-            BOB.getInstance().getTroopManager().addTroopStack(z.value(),z.key());
-        } else if(event.getPacket() instanceof TroopStacksSyncPacket pack) {
-            BOB.getInstance().getTroopManager().finishReload(pack.getPackets().stream().map(d -> {
-                var pair = d.getTroopStack(BOB.getInstance().getCountryManager(), BOB.getInstance().getTileManager());
-                return Map.entry(pair.key(), pair.value());
-            }).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)), true);
-        } else if(event.getPacket() instanceof CombatSyncPacket pack) {
-            BOB.getInstance().getCombatManager().addStatus(pack.getStatus(BOB.getInstance().getTroopManager()));
-        } else if(event.getPacket() instanceof CombatsSyncPacket pack) {
-            BOB.getInstance().getCombatManager().addStatus(pack.getPackets().stream().map(p -> p.getStatus(BOB.getInstance().getTroopManager())).toList());
-        } else if (event.getPacket() instanceof TimeCheckAndCorrectPacket pack) {
-            BOB.getInstance().getTimeManager().sync(pack.getStartDate(), pack.getTimeTicks(), pack.getSpeed());
-        } else if(event.getPacket() instanceof FactionSyncPacket pack) {
-            Faction faction = pack.getFaction(BOB.getInstance().getFactionManager());
+    private void onModifierUpdate(ReplyPacket pack) {
+        String[] strings = pack.getMessage().split(";");
 
-            BOB.getInstance().getFactionManager().addFaction(faction);
-        } else if(event.getPacket() instanceof FactionsSyncPacket packet) {
-            packet.getPackets().forEach(pack -> {
-                Faction faction = pack.getFaction(BOB.getInstance().getFactionManager());
+        Modifier modifier = BOB.getInstance().getModifierManager().by(valueOf(strings[0], "id"));
+        if (modifier == null) return;
 
-                BOB.getInstance().getFactionManager().addFaction(faction);
-            });
+        String s1 = strings[1];
 
-            BOB.getInstance().getFactionManager().finishFactionsReload();
-        } else if(event.getPacket() instanceof FactionRuleSyncPacket pack) {
-            Faction.FactionRule faction = pack.getFactionRule(BOB.getInstance().getModifierManager());
+        if (s1.startsWith("displayName")) modifier.setDisplayName(valueOf(s1, "displayName"));
+        else if (s1.startsWith("modifier")) modifier.setModifier(valueOf(s1, "modifier"));
+        else if (s1.startsWith("specificallyFor")) modifier.setSpecificallyFor(valueOf(s1, "specificallyFor"));
+        else if (s1.startsWith("type")) modifier.setType(valueOf(s1, "type"));
+    }
 
-            BOB.getInstance().getFactionManager().addFactionRule(faction);
-        } else if(event.getPacket() instanceof FactionRulesSyncPacket packet) {
-            packet.getPackets().forEach(pack -> {
-                Faction.FactionRule faction = pack.getFactionRule(BOB.getInstance().getModifierManager());
+    private void onFocusUpdate(ReplyPacket pack) {
+        String[] strings = pack.getMessage().split(";");
 
-                BOB.getInstance().getFactionManager().addFactionRule(faction);
-            });
+        String id = valueOf(strings[0], "id");
+        String treeId = valueOf(strings[1], "treeId");
 
-            BOB.getInstance().getFactionManager().finishRulesReload();
-        } else if(event.getPacket() instanceof ModifierSyncPacket pack) {
-            Modifier modifier = pack.getModifier();
+        FocusManager focusManager = BOB.getInstance().getFocusManager();
 
-            BOB.getInstance().getModifierManager().addModifier(modifier);
-        } else if(event.getPacket() instanceof ModifiersSyncPacket packet) {
-            packet.getPackets().forEach(pack -> {
-                Modifier modifier = pack.getModifier();
+        Focus c = focusManager.focusBy(treeId, id);
+        if (c == null) return;
 
-                BOB.getInstance().getModifierManager().addModifier(modifier);
-            });
+        String s1 = strings[2];
 
-            BOB.getInstance().getModifierManager().finishReload();
-        } else if(event.getPacket() instanceof FocusTreeSyncPacket pack) {
-            FocusTree tree = pack.getTree(BOB.getInstance().getModifierManager());
+        if (s1.startsWith("start")) focusManager.startFocus(valueOf(s1, "start"), id, treeId);
+        else if (s1.startsWith("end")) focusManager.endFocus(valueOf(s1, "end"), id, treeId);
+        else if (s1.startsWith("cancel")) focusManager.cancelFocus(valueOf(s1, "cancel"), id, treeId);
+    }
 
-            BOB.getInstance().getFocusManager().add(tree);
-        } else if(event.getPacket() instanceof FocusTreesSyncPacket packet) {
-            packet.getPackets().forEach(pack -> {
-                FocusTree tree = pack.getTree(BOB.getInstance().getModifierManager());
+    private void onTimeRestart(ReplyPacket pack) {
+        long timestamp = Long.parseLong(pack.getMessage());
 
-                BOB.getInstance().getFocusManager().add(tree);
-            });
+        if (timestamp != -1L) BOB.getInstance().getTimeManager().reload(new Date(timestamp));
+    }
 
-            BOB.getInstance().getFocusManager().finishReload();
+    private void onGameStateSync(ReplyPacket pack) {
+        if (pack.getMessage() == null) return;
+
+        try {
+            BOB.getInstance().getGameManager().setGameState(GameState.valueOf(pack.getMessage()));
+        } catch (IllegalArgumentException e) {
+            if (BOB.getInstance().isDebug()) System.out.println("couldn't find gamestate named: " + pack.getMessage());
+        }
+    }
+    private void onCountryUpdate(ReplyPacket pack) {
+        String[] strings = pack.getMessage().split(";");
+
+        Country c = BOB.getInstance().getCountryManager().byAbbreviation(valueOf(strings[0], "id"));
+        if (c == null) return;
+
+        String s1 = strings[1];
+
+        if (s1.startsWith("overlord")) c.setOverlord(valueOf(s1, "overlord"));
+        else if (s1.startsWith("manpower")) {
+            //System.out.println(pack.getMessage());
+            c.setManpower(Long.parseLong(valueOf(s1, "manpower")));
+        }
+        else if (s1.startsWith("major")) c.setMajor(Boolean.parseBoolean(valueOf(s1, "major")));
+        else if (s1.startsWith("conscription")) c.setConscription(Country.Conscription.valueOf(valueOf(s1, "conscription")));
+        else if (s1.startsWith("puppetState")) {
+            try {
+                c.setPuppetState(PuppetState.valueOf(valueOf(s1, "puppetState")));
+            } catch (IllegalArgumentException ignored) {}
+        } else if (s1.startsWith("personality")) {
+            AIPersonality pers = AIPersonality.fromDataString(valueOf(s1, "personality"));
+
+            if (pers == null) pers = new AIPersonality(1, 1, 1, 1);
+
+            c.setPersonality(pers);
+        }
+    }
+
+    private void onFactionUpdate(ReplyPacket pack) {
+        String[] strings = pack.getMessage().split(";");
+
+        Faction faction = BOB.getInstance().getFactionManager().factionBy(valueOf(strings[0], "id"));
+        if (faction == null) return;
+
+        String s1 = strings[1];
+
+        if (s1.startsWith("addMember")) faction.addMember(valueOf(s1, "addMember"));
+        else if (s1.startsWith("removeMember")) faction.rmMember(valueOf(s1, "removeMember"));
+        else if (s1.startsWith("changeName")) faction.setName(valueOf(s1, "changeName"));
+    }
+
+    private void onPpUpdate(ReplyPacket pack) {
+        String[] strings = pack.getMessage().split(";");
+
+        double pp = Double.parseDouble(strings[1]);
+
+        Country c = BOB.getInstance().getCountryManager().byAbbreviation(strings[0]);
+        if (c == null) return;
+
+        c.setPoliticalPower(pp, BOB.getInstance().getPlayer().country());
+    }
+
+    private void onIdeologyUpdate(ReplyPacket pack) {
+        CountryResolver r = BOB.getInstance().getCountryManager();
+
+        String[] parts = pack.getMessage().split("=", 2);
+        if (parts.length != 2) return;
+
+        String action = parts[0];
+
+        String[] values = parts[1].split(";", 2);
+        if (values.length != 2) return;
+
+        Country country = r.byAbbreviation(values[0]);
+        Ideology ideology = BOB.getInstance().getIdeologyManager().byAbbreviation(values[1]);
+
+        if (country == null || ideology == null) return;
+
+        switch (action) {
+            case "start" -> country.setStartIdeologySimple(ideology);
+            case "add" -> country.addAvailableIdeologiesSimple(ideology);
+            case "remove" -> country.rmAvailableIdeologiesSimple(ideology);
+            case "ruling" -> country.setRulingIdeologySimple(ideology);
+        }
+    }
+
+    private void onMilAccess(ReplyPacket pack) {
+        var pair = Country.getAccessUpdate(pack.getMessage());
+
+        Country c1 = BOB.getInstance().getCountryManager().byAbbreviation(pair.key());
+        Country c2 = BOB.getInstance().getCountryManager().byAbbreviation(pair.value().key());
+        boolean added = pair.value().value();
+
+        if (c1 == null || c2 == null) return;
+
+        RenderPanel panel = BOB.getInstance().getMainRenderer().getGamePanel();
+
+        if (added) {
+            panel.showGenericPopup("MILITARY ACCESS GRANTED!", "granted military access to", c1, c2, 5000, ACCEPTED_COLOR);
+            c1.addMilAccess(c2.getAbbreviation());
+        } else {
+            panel.showGenericPopup("MILITARY ACCESS DENIED!", "denied military access to", c1, c2, 5000);
+            c1.removeMilAccess(c2.getAbbreviation());
+        }
+
+        panel.getHud().updateTabsFr();
+    }
+
+    private void onCapitulateCountry(ReplyPacket pack) {
+        String[] parts = pack.getMessage().split(";");
+
+        Country country = BOB.getInstance().getCountryManager().byAbbreviation(parts[0]);
+        if (country == null) return;
+
+        country.setCapitulated(Boolean.parseBoolean(parts[1]));
+
+        //TODO: show popup that a country capped (idk since its a bit dumb currentlky since peace starts immediatly)
+    }
+
+    private void onEndWar(ReplyPacket pack) {
+        WarStatus status = WarStatus.fromString(pack.getMessage(), BOB.getInstance().getCountryManager());
+        WarManager wm = BOB.getInstance().getWarManager();
+
+        status.getAttackers().forEach(c -> wm.endWar(c.getAbbreviation(), status));
+        status.getDefenders().forEach(c -> wm.endWar(c.getAbbreviation(), status));
+
+        //TODO: show popup that a war ended and start peace conference (oh gosh i need to code that) (idk since its a bit dumb currentlky since peace starts immediatly)
+    }
+
+    private void onStartWar(ReplyPacket pack) {
+        WarStatus status = WarStatus.fromString(pack.getMessage(), BOB.getInstance().getCountryManager());
+        WarManager wm = BOB.getInstance().getWarManager();
+
+        status.getAttackers().forEach(c -> wm.addWar(c.getAbbreviation(), status));
+        status.getDefenders().forEach(c -> wm.addWar(c.getAbbreviation(), status));
+
+        BOB.getInstance().getMainRenderer().getGamePanel().showGenericPopup("WAR DECLARED!", "declared war on", status.getAttackers().getFirst(), status.getDefenders().getFirst(), 5000);
+    }
+
+    private void onConferenceStarted(ReplyPacket pack) {
+        PeaceConference conference = PeaceConference.deserialize(BOB.getInstance().getSharedCore(), BOB.getInstance().getCountryManager(), BOB.getInstance().getTileManager(), pack.getMessage());
+
+        BOB.getInstance().getPeaceHelper().addPeaces(conference);
+    }
+
+    private void onEndConference(ReplyPacket pack) {
+        UUID uuid = parseUuid(pack.getMessage());
+        if (uuid == null) return;
+
+        PeaceConference c = BOB.getInstance().getPeaceHelper().getBy(uuid);
+
+        if (c != null) {
+            BOB.getInstance().getMainRenderer().getGamePanel().showGenericPopup("PEACE ACHIEVED!", "achieved peace with", c.getWinners().getFirst(), c.getDefeated().getFirst(), 5000, ACCEPTED_COLOR);
+        }
+
+        BOB.getInstance().getPeaceHelper().removePeaces(uuid);
+    }
+
+    private void onRoundEnded(ReplyPacket pack) {
+        PeaceConference conf = BOB.getInstance().getPeaceHelper().getBy(PeaceConference.getUUID(pack.getMessage()));
+        if (conf == null) return;
+
+        conf.deserializeUpdate(BOB.getInstance().getTileManager(), pack.getMessage());
+
+        BOB.getInstance().getPeaceHelper().nextRound(conf.getUUID());
+    }
+
+    private void onRoundUpdate(ReplyPacket pack) {
+        PeaceConference conf = BOB.getInstance().getPeaceHelper().getBy(PeaceConference.getUUID(pack.getMessage()));
+        if (conf == null) return;
+
+        conf.deserializeUpdate(BOB.getInstance().getTileManager(), pack.getMessage());
+    }
+
+    private void onTileConnectionChange(ReplyPacket pack) {
+        String msg = pack.getMessage();
+
+        if (msg.startsWith("broken=")) {
+            var pair = Tile.TileConnection.deserializeBroken(msg);
+            BOB.getInstance().getTileManager().getConnection(pair.value()).setBrokenSimple(pair.key());
+        } else if (msg.startsWith("type=")) {
+            var pair = Tile.TileConnection.deserializeType(msg);
+            BOB.getInstance().getTileManager().getConnection(pair.value()).setTypeSimple(pair.key());
+        }
+    }
+    private void onTileUpdate(ReplyPacket pack) {
+        String msg = pack.getMessage();
+        if (msg.isEmpty()) return;
+
+        String[] strings = msg.split(";");
+
+        Tile t = BOB.getInstance().getTileManager().byAbbreviation(valueOf(strings[0], "id"));
+        if (t == null) return;
+
+        String s1 = strings[1];
+
+        if (s1.startsWith("population")) t.setPopulation(Double.parseDouble(valueOf(s1, "population")));
+        else if (s1.startsWith("addCore")) t.addCore(valueOf(s1, "addCore"));
+        else if (s1.startsWith("removeCore")) t.removeCore(valueOf(s1, "removeCore"));
+        else if (s1.startsWith("addClaim")) t.addClaim(valueOf(s1, "addClaim"));
+        else if (s1.startsWith("removeClaim")) t.removeClaim(valueOf(s1, "removeClaim"));
+    }
+
+    private void onTileChange(ReplyPacket pack) {
+        String s = pack.getMessage();
+        if (s.isEmpty()) return;
+
+        Pair<Tile, Country> pair = Tile.deconstructChange(s, BOB.getInstance().getCountryManager(), BOB.getInstance().getTileManager());
+
+        Tile tile = pair.key();
+        if (tile == null) return;
+
+        Country country = pair.value();
+        if (country == null) return;
+
+        Color c = country.countryColor() == null ? Color.WHITE : country.countryColor();
+
+        TileChangedEvent.Type t = Tile.getChangeType(s);
+
+        if (Objects.equals(t, TileChangedEvent.Type.OWNER)) tile.setOwner(country);
+        else if (Objects.equals(t, TileChangedEvent.Type.CONTROLLER)) {
+            tile.setController(country);
+            BOB.getInstance().getTileManager().recolorTile(tile, c);
+        }
+    }
+
+    private void onPlayerChange(ReplyPacket pack, PacketRegistry.PacketReceiveEvent event) {
+        String[] parts = pack.getMessage().split(";");
+
+        String abbreviation = parts[1]; // parts[0] is the uuid, ig use this over the channel one?!
+        String status = parts[2];
+
+        if (!Boolean.parseBoolean(status)) return;
+
+        Country country = BOB.getInstance().getCountryManager().byAbbreviation(abbreviation);
+
+        //if(country == null) return; ALLOW null countries for spectator
+
+        Player p = BOB.getInstance().getPlayerManager().getPlayer(AddressUtil.getRemoteAddress(event.getChannel()));
+        if (p == null) return;
+
+        p.country(country == null ? null : country.getAbbreviation());
+    }
+
+    private static String valueOf(String part, String key) {
+        return part.substring(key.length() + 1);
+    }
+
+    private static UUID parseUuid(String s) {
+        try {
+            return UUID.fromString(s);
+        } catch (IllegalArgumentException e) {
+            return null;
         }
     }
 }
