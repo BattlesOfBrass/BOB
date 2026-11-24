@@ -2,6 +2,7 @@ package de.idiotischer.bob.game;
 
 import de.idiotischer.bob.Server;
 import de.idiotischer.bob.SharedCore;
+import de.idiotischer.bob.country.Country;
 import de.idiotischer.bob.networking.packet.impl.TimeCheckAndCorrectPacket;
 import de.idiotischer.bob.networking.packet.impl.pp.ReplyPacket;
 import de.idiotischer.bob.networking.packet.impl.pp.Type;
@@ -142,22 +143,17 @@ public class ServerGameManager implements TimeResolver {
     }
 
     public void tickTime() {
-        if (state != GameState.INGAME) {
-            lastUpdate = System.nanoTime();
-            return;
-        }
-
-        timeTicks++;
-
-        exec.execute(this::process);
+        if (state != GameState.INGAME) { lastUpdate = System.nanoTime(); return; }
+        final long tick = ++timeTicks;
+        exec.execute(() -> process(tick));      // ideally a single-thread executor so ticks can't overlap
     }
 
-    private void process() {
+    private void process(long tick) {
         try {
             new ArrayList<>(timeHook.entrySet()).forEach(e -> {
-                if (timeTicks >= e.getValue().key()) {
+                if (tick >= e.getValue().key()) {
                     timeHook.remove(e.getKey());
-                    try { e.getValue().value().accept(timeTicks); }
+                    try { e.getValue().value().accept(tick); }
                     catch (Exception ex) { ex.printStackTrace(); }
                 }
             });
@@ -169,25 +165,28 @@ public class ServerGameManager implements TimeResolver {
 
                 double drawn = missing > 0 ? Server.getInstance().getCountryManager().removePopulationCheck(missing, entry.getFinalStack().getController()) : 0;
 
-                if (entry.canTrainServer(Server.getInstance().getServerSocket(), Server.getInstance().getSendTool(), drawn) && entry.isFullyPaid() && timeTicks >= entry.getEndTick()) tm.finishTraining(entry);
+                if (entry.canTrainServer(Server.getInstance().getServerSocket(), Server.getInstance().getSendTool(), drawn) && entry.isFullyPaid() && tick >= entry.getEndTick()) tm.finishTraining(entry);
             });
 
             //TODO for every troop update them and add equipment and population, whatever they miss and you have like health etc too ig allthoguh that comes with manpower ig
-
-            Server.getInstance().getCountryManager().getCountries().forEach(c -> {
-                if (timeTicks % (60 * 24) == 0) {
-                    try {
-                        double total = Server.getInstance().getCountryManager().getTotalPopulation(c);
-                        c.newDay(Server.getInstance().getServerSocket(), Server.getInstance().getSendTool(), c.getDailyManpower(total), (long) total);
-                        Server.getInstance().getCountryManager().addPopPercent(0.0041F /*like hoi4*/, c);
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
+            boolean newDay = tick % (60 * 24) == 0;
+            for (Country c : Server.getInstance().getCountryManager().getCountries()) {
+                try {
+                    if (newDay) {
+                        try {
+                            double total = Server.getInstance().getCountryManager().getTotalPopulation(c);
+                            c.newDay(Server.getInstance().getServerSocket(), Server.getInstance().getSendTool(), c.getDailyManpower(total), (long) total);
+                            Server.getInstance().getCountryManager().addPopPercent(0.0041F /*like hoi4*/, c);
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                        }
                     }
-                    /*if (timeTicks % (60 * 12) == 0)*/
-                    broadcastTimeSync();
-                }
-                if(c.getPlayer() instanceof ArtificalPlayer pl) pl.think();
-            });
+                    if (c.getPlayer() instanceof ArtificalPlayer pl) pl.think();
+                } catch (Throwable t) { t.printStackTrace(); }
+            }
+
+            if (newDay) broadcastTimeSync();
+
         } catch (Throwable t) {
             t.printStackTrace();
         }
